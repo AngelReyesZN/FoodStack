@@ -5,7 +5,6 @@ import Checkbox from 'expo-checkbox';
 
 const LoginScreen = ({ navigation }) => {
   const [isChecked, setChecked] = useState(false);
-  const [fontsLoaded] = useFonts({ Montserrat_400Regular, Montserrat_700Bold });
 
   return (
     <View style={styles.container}>
