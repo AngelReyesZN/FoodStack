@@ -1,11 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
-
+import registros from './data';
 
 const LoginScreen = ({ navigation }) => {
   const [isChecked, setChecked] = useState(false);
-  const [fontsLoaded] = useFonts({ Montserrat_400Regular, Montserrat_700Bold });
+  const [nombreUsuario, setNombreUsuario] = useState('');
+  const [contraseña, setContraseña] = useState('');
+
+  const handleLogin = () => {
+    console.log("Nombre de usuario:", nombreUsuario);
+    console.log("Contraseña:", contraseña);
+    
+    const usuario = registros.find(registro => registro.nombre === nombreUsuario && registro.correo === contraseña);
+    console.log("Usuario encontrado:", usuario);
+  
+    if (usuario) {
+      navigation.navigate('Home');
+    } else {
+      Alert.alert('Error', 'Usuario y/o contraseña incorrectos');
+    }
+  };
+  
 
   return (
     <View style={styles.container}>
@@ -22,10 +38,19 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.subtitle}>Introduce tus datos debajo</Text>
 
         <Text style={styles.labelUser}>Nombre de usuario</Text>
-        <TextInput style={styles.inputField} />
+        <TextInput 
+          style={styles.inputField} 
+          value={nombreUsuario}
+          onChangeText={text => setNombreUsuario(text)} // Actualiza el estado nombreUsuario
+        />
 
         <Text style={styles.labelpassword}>Contraseña</Text>
-        <TextInput style={styles.inputField} />
+        <TextInput 
+          style={styles.inputField}
+          value={contraseña}
+          onChangeText={text => setContraseña(text)} // Actualiza el estado contraseña
+          secureTextEntry={true}
+        />
 
         {/* CheckBox y texto "Recordarme" */}
         <View style={styles.checkboxContainer}>
@@ -40,28 +65,28 @@ const LoginScreen = ({ navigation }) => {
           <Button
             title="Iniciar"
             color="#030A8C"
-            onPress={() => {/* Acción al presionar el botón */}}
+            onPress={handleLogin}
           />
-        <View style={styles.orContainer}>
-          <View style={styles.line}></View>
-          <Text style={styles.orText}>o inicia con</Text>
-          <View style={styles.line}></View>
-        </View>
+          <View style={styles.orContainer}>
+            <View style={styles.line}></View>
+            <Text style={styles.orText}>o inicia con</Text>
+            <View style={styles.line}></View>
+          </View>
 
-        <View style={styles.socialContainer}>
-        <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
-          <Image source={require('../assets/google.png')} style={styles.logoImage}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
-          <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
-        </TouchableOpacity>
-        </View>
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>No tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Regis')}>
-            <Text style={[styles.registerText, { color: '#030A8C' }]}>Regístrate</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
+              <Image source={require('../assets/google.png')} style={styles.logoImage}/>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
+              <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>No tienes cuenta? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Regis')}>
+              <Text style={[styles.registerText, { color: '#030A8C' }]}>Regístrate</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -202,7 +227,7 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 16,
   },
-   
 });
 
 export default LoginScreen;
+
