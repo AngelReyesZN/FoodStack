@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 
 const Verify = ({ route, navigation }) => {
@@ -7,6 +7,21 @@ const Verify = ({ route, navigation }) => {
   const [inputText2, setInputText2] = useState('');
   const [inputText3, setInputText3] = useState('');
   const [inputText4, setInputText4] = useState('');
+  const inputRef2 = useRef(null);
+  const inputRef3 = useRef(null);
+  const inputRef4 = useRef(null);
+
+  const handleKeyPress1 = () => {
+    inputRef2.current.focus();
+  };
+
+  const handleKeyPress2 = () => {
+    inputRef3.current.focus();
+  };
+
+  const handleKeyPress3 = () => {
+    inputRef4.current.focus();
+  };
 
   return (
     <View style={styles.container}>
@@ -20,38 +35,46 @@ const Verify = ({ route, navigation }) => {
         <TextInput
           style={styles.input}
           value={inputText1}
-          onChangeText={setInputText1}
+          onChangeText={(text) => {
+            setInputText1(text);
+            if (text.length === 1) {
+              handleKeyPress1();
+            }
+          }}
           fontSize={30}
           keyboardType="numeric"
           maxLength={1}
           textAlign="center"
-          // Ajuste horizontal del texto
-          paddingLeft={5}
-          paddingRight={5}
         />
         <TextInput
           style={styles.input}
           value={inputText2}
-          onChangeText={setInputText2}
+          onChangeText={(text) => {
+            setInputText2(text);
+            if (text.length === 1) {
+              handleKeyPress2();
+            }
+          }}
           fontSize={30}
           keyboardType="numeric"
           maxLength={1}
           textAlign="center"
-          // Ajuste horizontal del texto
-          paddingLeft={5}
-          paddingRight={5}
+          ref={inputRef2}
         />
         <TextInput
           style={styles.input}
           value={inputText3}
-          onChangeText={setInputText3}
+          onChangeText={(text) => {
+            setInputText3(text);
+            if (text.length === 1) {
+              handleKeyPress3();
+            }
+          }}
           fontSize={30}
           keyboardType="numeric"
           maxLength={1}
           textAlign="center"
-          // Ajuste horizontal del texto
-          paddingLeft={5}
-          paddingRight={5}
+          ref={inputRef3}
         />
         <TextInput
           style={styles.input}
@@ -61,16 +84,14 @@ const Verify = ({ route, navigation }) => {
           keyboardType="numeric"
           maxLength={1}
           textAlign="center"
-          // Ajuste horizontal del texto
-          paddingLeft={5}
-          paddingRight={5}
+          ref={inputRef4}
         />
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.cancelButton}>
           <Text style={styles.cancelButtonText}>Cancelar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.verifyButton} onPress={() => navigation.navigate('Successful')}>
+        <TouchableOpacity style={styles.verifyButton} onPress={() => navigation.navigate('successful')}>
           <Text style={styles.verifyButtonText}>Verificar código</Text>
         </TouchableOpacity>
       </View>
@@ -78,7 +99,7 @@ const Verify = ({ route, navigation }) => {
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={[styles.registerText, { color: '#030A8C' }]}>Reenviar código</Text>
         </TouchableOpacity>
-        </View>
+      </View>
     </View>
   );
 };
@@ -143,18 +164,17 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: '5%', // Ajuste al 5% del ancho de la pantalla
-    marginRight: '1%', // Espacio entre los botones
+    paddingHorizontal: '5%',
+    marginRight: '1%',
     marginLeft: '5%',
-
   },
   verifyButton: {
     flex: 1,
     backgroundColor: '#030A8C',
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: '5%', // Ajuste al 5% del ancho de la pantalla
-    marginLeft: '1%', // Espacio entre los botones
+    paddingHorizontal: '5%',
+    marginLeft: '1%',
     marginRight: '5%',
   },
   cancelButtonText: {
