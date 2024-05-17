@@ -2,17 +2,22 @@ import React from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
 import LoginScreen from '../screens/LoginScreen';
 import StackScreen from '../screens/StackScreen';
 import LoadScreen from '../screens/LoadScreen';
 import RegisScreen from '../screens/RegisScreen';
 import VerifyScreen from '../screens/VerifyScreen';
 import HomeScreen from '../screens/HomeScreen';
-import SearchResults from '../screens/SearchResults';
+import MenuScreen from '../screens/MenuScreen';
+import ChatScreen from '../screens/ChatScreen';
+import SearchScreen from '../screens/SearchScreen';
+import AddProductsScreen from '../screens/addProductsScreen.jsx';
+import ProductScreen from '../screens/ProductScreen.jsx';
+import SuccessfulScreen from '../screens/SuccessfulScreen';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
-import SuccessfulScreen from '../screens/SuccessfulScreen';
 
 const Stack = createStackNavigator();
 
@@ -29,15 +34,6 @@ function MyScreens() {
         component={LoginScreen}
         options={{ headerShown: false }}
       />
-
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-        
-      />
-
-
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
@@ -82,9 +78,35 @@ function MyScreens() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="SearchResults"
-        component={SearchResults}
+        name="ProductScreen"
+        component={ProductScreen}
         options={{ headerShown: false }}
+      />
+
+      {/* Navegacion del BottomMenuBar */}
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Chats"
+        component={ChatScreen}
+      />
+      <Stack.Screen
+        name="Menu"
+        component={MenuScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AddProduct"
+        component={AddProductsScreen}
+        //options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
