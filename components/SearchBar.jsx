@@ -9,7 +9,7 @@ const SearchBar = () => {
   const navigation = useNavigation();
 
   const handleSearch = () => {
-    navigation.navigate('SearchResults', { searchQuery });
+    navigation.navigate('Search', { searchQuery });
   };
 
   return (
