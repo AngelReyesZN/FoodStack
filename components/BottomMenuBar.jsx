@@ -1,38 +1,66 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-const BottomMenuBar = () => {
+const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  const [menuIcon, setMenuIcon] = useState(require('../assets/iconsButtonBar/menuIcon.png'));
+
+  useEffect(() => {
+    if (isMenuScreen && isFocused) {
+      setMenuIcon(require('../assets/iconsButtonBar/menuIconBlue.png'));
+    } else {
+      setMenuIcon(require('../assets/iconsButtonBar/menuIcon.png'));
+    }
+  }, [isMenuScreen, isFocused]);
+
+  const [homeIcon, setHomeIcon] = useState(require('../assets/iconsButtonBar/homeIcon.png'));
+
+  useEffect(() => {
+    if (isHomeScreen && isFocused) {
+      setHomeIcon(require('../assets/iconsButtonBar/homeIconBlue.png'));
+    } else {
+      setHomeIcon(require('../assets/iconsButtonBar/homeIcon.png'));
+    }
+  }, [isHomeScreen, isFocused]);
+
+  const [chatIcon, setChatIcon] = useState(require('../assets/iconsButtonBar/chatIcon.png'));
+
+  useEffect(() => {
+    if (isChatScreen && isFocused) {
+      setChatIcon(require('../assets/iconsButtonBar/chatIconBlue.png'));
+    } else {
+      setChatIcon(require('../assets/iconsButtonBar/chatIcon.png'));
+    }
+  }, [isChatScreen, isFocused]);
+
+  const navigateToScreen = (screenName) => {
+    navigation.navigate(screenName);
+  };
+
   return (
     <View style={styles.container}>
-        {/* Botón de más en el centro arriba */}
-        <TouchableOpacity style={styles.addButtonContainer}>
-        <View style={styles.addButton}>
-            {/* Círculo azul */}
-            <View style={styles.plusButtonCircle}>
-            {/* Cruz blanca */}
-            <Text style={styles.plusButtonCross}>+</Text>
-            </View>
-        </View>
+      <View style={styles.containerAddButton}>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('AddProduct')}>
+          <Image source={require('../assets/iconsButtonBar/addButton.png')} style={styles.addButton} />
         </TouchableOpacity>
-        {/* Espacio para los 4 iconos de la barra de menú */}
-        <View style={styles.menuIconsContainer}>
-            {/* Icono 1 */}
-            <TouchableOpacity style={styles.iconContainer}>
-            <Image source={require('../assets/icono1.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-            {/* Icono 2 */}
-            <TouchableOpacity style={[styles.iconContainer, { paddingRight: 40 }]}>
-            <Image source={require('../assets/icono2.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-            {/* Icono 3 */}
-            <TouchableOpacity style={[styles.iconContainer, { paddingLeft: 40 }]}>
-            <Image source={require('../assets/icono3.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-            {/* Icono 4 */}
-            <TouchableOpacity style={styles.iconContainer}>
-            <Image source={require('../assets/icono4.png')} style={styles.iconImage} />
-            </TouchableOpacity>
-        </View>
+      </View>
+      <View style={styles.menuIconsContainer}>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Home')}>
+          <Image source={homeIcon} style={styles.iconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconContainerSearch} onPress={() => navigateToScreen('Search')}>
+          <Image source={require('../assets/iconsButtonBar/searchIcon.png')} style={styles.iconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Chats')}>
+          <Image source={chatIcon} style={styles.iconImage} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Menu')}>
+          <Image source={menuIcon} style={styles.iconImage} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -43,7 +71,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
     elevation: 10,
@@ -53,43 +81,32 @@ const styles = StyleSheet.create({
   menuIconsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     flex: 1,
   },
   iconContainer: {
     padding: 10,
   },
+  iconContainerSearch: {
+    paddingRight: 80,
+  },
   iconImage: {
     width: 19,
     height: 19,
   },
-  addButtonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    width: '110%',
-    justifyContent: 'center', // Alinea el botón verticalmente en el centro
-    alignItems: 'center', // Alinea el botón horizontalmente en el centro
-    paddingBottom: 30, // Ajusta la posición vertical según sea necesario
-  },
   addButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: 'blue',
-    borderRadius: 20,
+    width: 100,
+    height: 70,
+  },
+  containerAddButton: {
+    position: 'absolute',
+    width: '100%',
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  plusButtonCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 35,
-    backgroundColor: '#030A8C',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  plusButtonCross: {
-    fontWeight: 'bold',
-    fontSize: 30, // Tamaño de la cruz
-    color: 'white', // Color blanco
+    paddingLeft: 25,
+    paddingBottom: 45,
+    elevation: 10,
   },
 });
 
