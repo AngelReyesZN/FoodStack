@@ -1,9 +1,17 @@
-import React from "react";
-import Navigation from "./navigation/StackNavigator.jsx";
-import { GestureHandlerRootView} from 'react-native-gesture-handler'
+import React from 'react';
+import Navigation from './navigation/StackNavigator.jsx';
 
-export default function App(){
+//Proveemos de contexto a la aplicacion
+
+import { UserProvider } from './context/UserContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+export default function App() {
   return (
-    <Navigation />
+    <UserProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <Navigation />
+      </GestureHandlerRootView>
+    </UserProvider>
   );
 }
