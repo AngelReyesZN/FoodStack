@@ -18,6 +18,7 @@ import SuccessfulScreen from '../screens/SuccessfulScreen';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
+import SuccessfulScreen from '../screens/SuccessfulScreen';
 
 const Stack = createStackNavigator();
 
@@ -34,6 +35,14 @@ function MyScreens() {
         component={LoginScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+        
+      />
+
+
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
@@ -77,6 +86,7 @@ function MyScreens() {
         component={SuccessfulScreen}
         options={{ headerShown: false }}
       />
+
       <Stack.Screen
         name="ProductScreen"
         component={ProductScreen}
