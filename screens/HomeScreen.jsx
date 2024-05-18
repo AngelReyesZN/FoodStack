@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+
+import products from '../data/products'; // Importa tus datos de productos
+import LogoImage from '../assets/Logo.png';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import BottomMenuBar from '../components/BottomMenuBar';
+import SearchBar from '../components/SearchBar';
+import { useNavigation } from '@react-navigation/native';
+
 import products from './products'; // Importa tus datos de productos
 import LogoImage from '../assets/Logo.png';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
+
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0); // Índice de la imagen actual
   const [favorites, setFavorites] = useState([]); // Estado para manejar los productos favoritos
+  const navigation = useNavigation();
+
 
   const advertisements = [
     'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
@@ -18,12 +29,16 @@ const HomeScreen = () => {
   ];
 
   const handleSearch = (text) => {
+
+    navigation.navigate('SearchResults', { searchQuery });
+
     setSearchQuery(text);
     const filtered = products.filter(product =>
       product.nombre.toLowerCase().includes(text.toLowerCase()) || 
       product.unidades.toString().toLowerCase().includes(text.toLowerCase())
     );
     setFilteredProducts(filtered);
+
   };
 
   const nextAd = () => {
@@ -45,6 +60,24 @@ const HomeScreen = () => {
     }
   };
 
+
+  const renderItem = ({ item }) => {
+    const isFavorite = favorites.includes(item.id);
+    return (
+      <TouchableOpacity
+        style={styles.productItem}
+        onPress={() =>
+          navigation.navigate('ProductScreen', {
+            product: item,
+            isFavorite: favorites.includes(item.id), // Pasar el estado de favorito
+          })
+        }      
+        >
+        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item.id)}>
+          <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
+        </TouchableOpacity>
+        <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
+
   const renderItem = ({ item }) => {
     const isFavorite = favorites.includes(item.id);
 
@@ -54,6 +87,7 @@ const HomeScreen = () => {
           <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
         </TouchableOpacity>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center'}]} />
+
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.productName}>{item.nombre}</Text>
@@ -67,6 +101,9 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
+
+      {/* Barra de búsqueda */}
+      <SearchBar />
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
           <Image
@@ -84,6 +121,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       {/* Contenedor de anuncios */}
       <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
         <Animated.Image
@@ -91,6 +129,7 @@ const HomeScreen = () => {
           style={styles.adImage}
         />
       </TouchableOpacity>
+
       {searchQuery !== '' && (
         <FlatList
           data={filteredProducts}
@@ -100,6 +139,7 @@ const HomeScreen = () => {
           contentContainerStyle={styles.productList}
         />
       )}
+
       {/* Texto con enlace */}
       <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
         <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
@@ -148,7 +188,11 @@ const HomeScreen = () => {
         contentContainerStyle={styles.productList}
       />
       {/* Agregar la barra de menú al final */}
+
+      <BottomMenuBar isHomeScreen={true}/>
+
       <BottomMenuBar />
+
     </View>
   );
 };
@@ -158,7 +202,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     paddingTop: 20,
+
+
     padding: 0,
+
   },
   header: {
     backgroundColor: 'white',
@@ -178,6 +225,26 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     marginTop: 8,
   },
+
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  image: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  price: {
+    fontSize: 14,
+    color: '#888',
+  },
+
   adContainer: {
     paddingTop: 20,
     justifyContent: 'center',
@@ -298,8 +365,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
+
+  },
+  searchResultContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    zIndex: 1, // Asegura que los resultados de la búsqueda estén por encima de todo
+  },
+});
+
+export default HomeScreen;
+
+
     
   }
 });
 
 export default HomeScreen;
+

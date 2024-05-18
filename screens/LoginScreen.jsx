@@ -1,14 +1,34 @@
+
+import React, { useState, useContext } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
+import Checkbox from 'expo-checkbox';
+import registros from '../data/data';
+import { UserContext } from '../context/UserContext';
+
+const LoginScreen = ({ navigation }) => {
+  const { setUser } = useContext(UserContext);
+
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import registros from './data';
 
 const LoginScreen = ({ navigation }) => {
+
   const [isChecked, setChecked] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [contraseña, setContraseña] = useState('');
 
   const handleLogin = () => {
+
+    const usuario = registros.find(
+      registro => registro.nombre === nombreUsuario && registro.contrasena === contraseña
+    );
+
+  
+    if (usuario) {
+      setUser(usuario);
+
     console.log("Nombre de usuario:", nombreUsuario);
     console.log("Contraseña:", contraseña);
     
