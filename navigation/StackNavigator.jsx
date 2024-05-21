@@ -15,10 +15,11 @@ import SearchScreen from '../screens/SearchScreen';
 import AddProductsScreen from '../screens/addProductsScreen.jsx';
 import ProductScreen from '../screens/ProductScreen.jsx';
 import SuccessfulScreen from '../screens/SuccessfulScreen';
+import PersonalDataScreen from '../screens/PersonalDataScreen';
+import FavoritesScreen from '../screens/FavoritesScreen'; // Nueva importación
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
-import SuccessfulScreen from '../screens/SuccessfulScreen';
 
 const Stack = createStackNavigator();
 
@@ -35,14 +36,6 @@ function MyScreens() {
         component={LoginScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-        
-      />
-
-
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
@@ -86,7 +79,6 @@ function MyScreens() {
         component={SuccessfulScreen}
         options={{ headerShown: false }}
       />
-
       <Stack.Screen
         name="ProductScreen"
         component={ProductScreen}
@@ -117,6 +109,16 @@ function MyScreens() {
         name="AddProduct"
         component={AddProductsScreen}
         //options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="PersonalInfo"
+        component={PersonalDataScreen} // Nueva pantalla
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Favorites"
+        component={FavoritesScreen} // Nueva pantalla
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

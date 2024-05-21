@@ -16,6 +16,7 @@ const options = [
 
 const MenuScreen = ({ navigation }) => {
   const { user, setUser } = useContext(UserContext);
+  
 
   const handleLogout = () => {
     Alert.alert(
@@ -33,6 +34,14 @@ const MenuScreen = ({ navigation }) => {
       ],
       { cancelable: false }
     );
+  };
+
+  const handleOptionPress = (option) => {
+    if (option.id === '2') {
+      navigation.navigate('Favorites'); // Navega a la pantalla de Favoritos
+    } else if (option.id === '6') {
+      navigation.navigate('PersonalInfo', { label: option.label, userId: user.id });
+    }
   };
 
   if (!user) {
@@ -64,7 +73,7 @@ const MenuScreen = ({ navigation }) => {
           </TouchableOpacity>
           <View style={styles.optionsContainer}>
             {options.map((option) => (
-              <TouchableOpacity key={option.id} style={styles.optionButton}>
+              <TouchableOpacity key={option.id} style={styles.optionButton} onPress={() => handleOptionPress(option)}>
                 <Image source={option.icon} style={styles.optionIcon} />
                 <Text style={styles.optionText}>{option.label}</Text>
               </TouchableOpacity>
