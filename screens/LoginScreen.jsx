@@ -1,4 +1,3 @@
-
 import React, { useState, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
@@ -7,20 +6,11 @@ import { UserContext } from '../context/UserContext';
 
 const LoginScreen = ({ navigation }) => {
   const { setUser } = useContext(UserContext);
-
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
-import Checkbox from 'expo-checkbox';
-import registros from './data';
-
-const LoginScreen = ({ navigation }) => {
-
   const [isChecked, setChecked] = useState(false);
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [contraseña, setContraseña] = useState('');
 
   const handleLogin = () => {
-
     const usuario = registros.find(
       registro => registro.nombre === nombreUsuario && registro.contrasena === contraseña
     );
@@ -28,14 +18,6 @@ const LoginScreen = ({ navigation }) => {
   
     if (usuario) {
       setUser(usuario);
-
-    console.log("Nombre de usuario:", nombreUsuario);
-    console.log("Contraseña:", contraseña);
-    
-    const usuario = registros.find(registro => registro.nombre === nombreUsuario && registro.correo === contraseña);
-    console.log("Usuario encontrado:", usuario);
-  
-    if (usuario) {
       navigation.navigate('Home');
     } else {
       Alert.alert('Error', 'Usuario y/o contraseña incorrectos');
