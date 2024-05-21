@@ -35,7 +35,7 @@ const registros = [
     {
         id: 5,
         nombre: 'M',
-        correo: 'm_@gmailcom',
+        correo: 'm_@gmail.com',
         foto: require('../assets/rscMenu/profileUser.png'),
         calificacion: 4.80,
         contrasena: 'm',
