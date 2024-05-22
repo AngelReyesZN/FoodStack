@@ -18,6 +18,12 @@ import SuccessfulScreen from '../screens/SuccessfulScreen';
 import PersonalDataScreen from '../screens/PersonalDataScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
 import HistoryScreen from '../screens/HistoryScreen';
+import MyReviewsScreen from '../screens/MyReviewsScreen';
+import CardsScreen from '../screens/CardsScreen';
+import MyProductsScreen from '../screens/MyProductsScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+
+
 import PurchaseScreen from '../screens/PurchaseScreen';
 import SellScreen from '../screens/SellScreen';
 
@@ -126,13 +132,32 @@ function MyScreens() {
         component={FavoritesScreen}
         options={{ headerShown: false }}
       />
-
       <Stack.Screen
         name="History"
         component={HistoryScreen}
         options={{ headerShown: false }}
       />
-
+      <Stack.Screen
+        name="MyReviews"
+        component={MyReviewsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Cards"
+        component={CardsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MyProducts"
+        component={MyProductsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={NotificationsScreen}
+        options={{ headerShown: false }}
+      />
+      
       {/*Navegacion HistoryScreen */}
 
       <Stack.Screen

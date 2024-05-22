@@ -5,18 +5,17 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import { UserContext } from '../context/UserContext';
 
 const options = [
-  { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/notificationIcon.png') },
-  { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/favIcon.png') },
-  { id: '3', label: 'Historial', icon: require('../assets/rscMenu/historyIcon.png') },
-  { id: '4', label: 'Mis productos', icon: require('../assets/rscMenu/productsIcon.png') },
-  { id: '5', label: 'Mis reseñas', icon: require('../assets/rscMenu/reviewsIcon.png') },
-  { id: '6', label: 'Información personal', icon: require('../assets/rscMenu/userIcon.png') },
-  { id: '7', label: 'Tarjetas', icon: require('../assets/rscMenu/cardsIcon.png') },
+  { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/notificationIcon.png'), screen: 'Notifications' },
+  { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/favIcon.png'), screen: 'Favorites' },
+  { id: '3', label: 'Historial', icon: require('../assets/rscMenu/historyIcon.png'), screen: 'History' },
+  { id: '4', label: 'Mis productos', icon: require('../assets/rscMenu/productsIcon.png'), screen: 'MyProducts' },
+  { id: '5', label: 'Mis reseñas', icon: require('../assets/rscMenu/reviewsIcon.png'), screen: 'MyReviews' },
+  { id: '6', label: 'Información personal', icon: require('../assets/rscMenu/userIcon.png'), screen: 'PersonalInfo' },
+  { id: '7', label: 'Tarjetas', icon: require('../assets/rscMenu/cardsIcon.png'), screen: 'Cards' },
 ];
 
 const MenuScreen = ({ navigation }) => {
   const { user, setUser } = useContext(UserContext);
-  
 
   const handleLogout = () => {
     Alert.alert(
@@ -37,14 +36,7 @@ const MenuScreen = ({ navigation }) => {
   };
 
   const handleOptionPress = (option) => {
-    if (option.id === '3') {
-      navigation.navigate('History');
-    }
-    else if (option.id === '2') {
-      navigation.navigate('Favorites'); // Navega a la pantalla de Favoritos
-    } else if (option.id === '6') {
-      navigation.navigate('PersonalInfo', { label: option.label, userId: user.id });
-    }
+    navigation.navigate(option.screen, { label: option.label, userId: user.id });
   };
 
   if (!user) {
