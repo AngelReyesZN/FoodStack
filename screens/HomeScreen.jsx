@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import products from '../data/products'; // Importa tus datos de productos
 import LogoImage from '../assets/Logo.png';
@@ -6,12 +6,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../context/UserContext';
 
 const HomeScreen = () => {
+  const { favorites, addToFavorites, removeFromFavorites } = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0); // Índice de la imagen actual
-  const [favorites, setFavorites] = useState([]); // Estado para manejar los productos favoritos
   const navigation = useNavigation();
 
   const advertisements = [
@@ -35,28 +36,27 @@ const HomeScreen = () => {
     return () => clearInterval(intervalId); // Limpia el intervalo cuando el componente se desmonta
   }, [currentAdIndex]); // Ejecuta el efecto cuando cambia el índice del anuncio actual
 
-  const toggleFavorite = (productId) => {
-    if (favorites.includes(productId)) {
-      setFavorites(favorites.filter(id => id !== productId));
+  const toggleFavorite = (product) => {
+    if (favorites.some(fav => fav.id === product.id)) {
+      removeFromFavorites(product.id);
     } else {
-      setFavorites([...favorites, productId]);
+      addToFavorites(product);
     }
   };
 
-
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.includes(item.id);
+    const isFavorite = favorites.some(fav => fav.id === item.id);
     return (
       <TouchableOpacity
         style={styles.productItem}
         onPress={() =>
           navigation.navigate('ProductScreen', {
             product: item,
-            isFavorite: favorites.includes(item.id), // Pasar el estado de favorito
+            isFavorite: isFavorite,
           })
         }      
         >
-        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item.id)}>
+        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item)}>
           <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
         </TouchableOpacity>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
@@ -73,20 +73,16 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Barra de búsqueda */}
       <SearchBar />
-      {/* Contenedor de anuncios */}
       <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
         <Animated.Image
           source={{ uri: advertisements[currentAdIndex] }}
           style={styles.adImage}
         />
       </TouchableOpacity>
-      {/* Texto con enlace */}
       <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
         <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
       </TouchableOpacity>
-      {/* Iconos */}
       <View style={styles.iconContainer}>
         <View style={styles.iconWrapper}>
           <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
@@ -119,9 +115,7 @@ const HomeScreen = () => {
           <Text style={styles.iconText}>Dispositivos</Text>
         </View>
       </View>
-      {/* Texto "Todos los productos" */}
       <Text style={styles.allProductsText}>Todos los productos</Text>
-      {/* Catálogo de productos */}
       <FlatList
         data={products}
         renderItem={renderItem}
@@ -129,7 +123,6 @@ const HomeScreen = () => {
         numColumns={2}
         contentContainerStyle={styles.productList}
       />
-      {/* Agregar la barra de menú al final */}
       <BottomMenuBar isHomeScreen={true}/>
     </View>
   );
