@@ -37,7 +37,10 @@ const MenuScreen = ({ navigation }) => {
   };
 
   const handleOptionPress = (option) => {
-    if (option.id === '2') {
+    if (option.id === '3') {
+      navigation.navigate('History');
+    }
+    else if (option.id === '2') {
       navigation.navigate('Favorites'); // Navega a la pantalla de Favoritos
     } else if (option.id === '6') {
       navigation.navigate('PersonalInfo', { label: option.label, userId: user.id });

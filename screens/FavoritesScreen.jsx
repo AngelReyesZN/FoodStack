@@ -38,7 +38,7 @@ const FavoritesScreen = () => {
           contentContainerStyle={styles.productList}
         />
       )}
-      <BottomMenuBar />
+      <BottomMenuBar isMenuScreen = {true}/>
     </View>
   );
 };
