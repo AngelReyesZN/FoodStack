@@ -1,16 +1,19 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
+import BackButton from '../components/BackButton';
+
 
 const MyReviewsScreen = () => {
   return (
     <View style={styles.container}>
       <TopBar />
-      {/* Contenido de la pantalla de menú */}
-      {/* Por ejemplo, aquí puedes poner tu lista de opciones de menú */}
-
+      <View style={styles.headerContainer}>
+        <BackButton />
+        <Text style={styles.title}>Reseñas</Text>
+      </View>
 
       <BottomMenuBar isMenuScreen={true}/>
     </View>
@@ -20,7 +23,19 @@ const MyReviewsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between', 
+    backgroundColor: 'white',
+  },
+  title: {
+    fontSize: 22,
+        fontWeight: 'bold',
+        color: '#030A8C',
+        marginLeft: 10,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
 });
 

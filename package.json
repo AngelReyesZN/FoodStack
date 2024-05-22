@@ -11,6 +11,8 @@
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.2.3",
     "@react-native-community/checkbox": "^0.5.17",
+    "@react-native-firebase/app": "^20.0.0",
+    "@react-native-firebase/firestore": "^20.0.0",
     "@react-navigation/native": "^6.1.16",
     "@react-navigation/stack": "^6.3.28",
     "expo": "^51.0.8",
