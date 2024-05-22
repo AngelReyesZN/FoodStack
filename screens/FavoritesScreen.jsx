@@ -50,9 +50,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#030A8C',
+        fontWeight: 'bold',
+        color: '#030A8C',
+        marginLeft: 10,
   },
   noFavoritesText: {
     fontSize: 16,

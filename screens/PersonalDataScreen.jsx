@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
         color: '#030A8C',
-        marginLeft: 50,
+        marginLeft: 10,
     },
     userInfoContainer: {
         backgroundColor: '#fff',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     userPhoto: {
         width: 100,
         height: 100,
-        borderRadius: 40,
+        borderRadius: 50,
         marginBottom: 10,
         backgroundColor: '#e1e4e8',
     },
