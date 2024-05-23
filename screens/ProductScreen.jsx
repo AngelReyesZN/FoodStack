@@ -8,6 +8,7 @@ import SellerImage from '../assets/rscMenu/profileUser.png'; // Importar la imag
 import BotonMenos from '../assets/rscMenu/BotonMenos.png'; // Importar imagen del botón de menos
 import BotonMas from '../assets/rscMenu/BotonMas.png'; // Importar imagen del botón de más
 import BotonImagen from '../assets/rscMenu/BotonImagen.png'; // Importar imagen del botón de imagen
+import BackButton from '../components/BackButton.jsx'
 
 const ProductScreen = ({ route }) => {
     const { product, isFavorite: initialIsFavorite } = route.params; // Obtener el estado de favorito de los parámetros de la ruta
@@ -36,7 +37,7 @@ const ProductScreen = ({ route }) => {
       <View style={styles.container}>
         <SearchBar />
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={22} color="#030A8C" />
+          <BackButton/>
         </TouchableOpacity>
         <Text style={styles.category}>{product.categoria}</Text>
         <Text style={styles.name}>{product.nombre}</Text>
@@ -44,7 +45,7 @@ const ProductScreen = ({ route }) => {
         <View style={styles.sellerContainer}>
           <Image source={SellerImage} style={styles.sellerImage} />
           <View style={styles.sellerInfo}>
-            <Text style={styles.sellerName}>{product.vendedor}</Text>
+            <Text style={styles.sellerName}>{product.vendedor.nombre}</Text>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>4.5</Text>
               <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />
@@ -59,7 +60,7 @@ const ProductScreen = ({ route }) => {
           <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
             <Image source={BotonMas} style={styles.buttonIcon} />
           </TouchableOpacity>
-          <Text style={styles.price}>{product.precio}</Text>
+          <Text style={styles.price}>${product.precio}.00</Text>
         </View>
         {/* Botón de imagen y botón de favoritos */}
         <View style={styles.buttonRow}>
@@ -88,8 +89,8 @@ const styles = StyleSheet.create({
     },
     backButton: {
       marginRight: 10,
-      paddingTop: 20,
-      paddingLeft: 25,
+      paddingTop: 10,
+      paddingLeft: 15,
     },
     category: {
       fontSize: 22,
@@ -209,8 +210,4 @@ const styles = StyleSheet.create({
     
   });
 
-
-  
-
 export default ProductScreen;
-

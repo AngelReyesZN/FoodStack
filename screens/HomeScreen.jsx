@@ -1,19 +1,43 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import products from '../data/products'; // Importa tus datos de productos
-import LogoImage from '../assets/Logo.png';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
 import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
+import { getDocuments } from '../services/firestore';
+import { getDoc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 
 const HomeScreen = () => {
   const { favorites, addToFavorites, removeFromFavorites } = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0); // Índice de la imagen actual
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [products, setProducts] = useState([]);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const productsList = await getDocuments('productos');
+        const productsWithVendors = await Promise.all(productsList.map(async (product) => {
+          try {
+            const vendorDoc = await getDoc(product.vendedorRef);
+            return { ...product, vendedor: vendorDoc.data() };
+          } catch (error) {
+            console.error("Error fetching vendor data:", error);
+            return { ...product, vendedor: null }; // Return product without vendor if error occurs
+          }
+        }));
+        setProducts(productsWithVendors);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const advertisements = [
     'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
@@ -26,15 +50,13 @@ const HomeScreen = () => {
   };
 
   const nextAd = () => {
-    // Incrementa el índice de la imagen actual y vuelve al principio si llega al final
     setCurrentAdIndex(currentAdIndex === advertisements.length - 1 ? 0 : currentAdIndex + 1);
   };
 
   useEffect(() => {
-    // Configura un intervalo para cambiar automáticamente de anuncio cada 5 segundos
     const intervalId = setInterval(nextAd, 5000);
-    return () => clearInterval(intervalId); // Limpia el intervalo cuando el componente se desmonta
-  }, [currentAdIndex]); // Ejecuta el efecto cuando cambia el índice del anuncio actual
+    return () => clearInterval(intervalId);
+  }, [currentAdIndex]);
 
   const toggleFavorite = (product) => {
     if (favorites.some(fav => fav.id === product.id)) {
@@ -51,11 +73,19 @@ const HomeScreen = () => {
         style={styles.productItem}
         onPress={() =>
           navigation.navigate('ProductScreen', {
-            product: item,
+            product: {
+              id: item.id,
+              nombre: item.nombre,
+              imagen: item.imagen,
+              precio: item.precio,
+              cantidad: item.cantidad,
+              categoria: item.categoria,
+              vendedor: item.vendedor, // Pasar los datos del vendedor en lugar de la referencia
+            },
             isFavorite: isFavorite,
           })
-        }      
-        >
+        }
+      >
         <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item)}>
           <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
         </TouchableOpacity>
@@ -63,9 +93,9 @@ const HomeScreen = () => {
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>Precio: {item.precio}</Text>
+            <Text style={styles.productPrice}>${item.precio}.00</Text>
           </View>
-          <Text style={styles.productUnits}>Unidades: {item.unidades}</Text>
+          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -197,7 +227,7 @@ const styles = StyleSheet.create({
     width: 225,
     borderRadius: 20,
     borderColor: '#ccc',
-    elevation: 30, // Efecto de elevación
+    elevation: 30,
   },
   iconContainer: {
     flexDirection: 'row',
@@ -267,18 +297,18 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   productName: {
-    flex: 1, // Para ocupar todo el espacio disponible en la fila
+    flex: 1,
     fontSize: 13,
     fontWeight: 'bold',
     marginLeft: 2,
-    textAlign: 'left', // Alinear el texto a la izquierda
+    textAlign: 'left',
   },
   productPrice: {
     fontSize: 11,
     fontWeight: 'bold',
     marginRight: 3,
-    color: '#030A8C', // Cambiar el color a azul
-    textAlign: 'right', // Alinear el texto a la derecha
+    color: '#030A8C',
+    textAlign: 'right',
   },
   productUnits: {
     fontSize: 12,
@@ -294,7 +324,7 @@ const styles = StyleSheet.create({
   searchResultContainer: {
     flexGrow: 1,
     paddingBottom: 20,
-    zIndex: 1, // Asegura que los resultados de la búsqueda estén por encima de todo
+    zIndex: 1,
   },
 });
 

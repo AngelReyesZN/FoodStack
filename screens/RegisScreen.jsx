@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
+import TopBar from '../components/TopBar';
 
 const Registro = ({ navigation }) => {
+  const [expediente, setExpediente] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [telefono, setTelefono] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [confirmarContrasena, setConfirmarContrasena] = useState('');
+  const [image, setImage] = useState(null);
+  const [correo, setCorreo] = useState('');
 
-  const handleRegistro = () => {
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const handleRegistro = async () => {
     // Verificar si las contraseñas son iguales
     if (contrasena !== confirmarContrasena) {
       alert('Las contraseñas no coinciden');
@@ -20,75 +40,121 @@ const Registro = ({ navigation }) => {
       return;
     }
 
-    // Si pasa todas las validaciones, navega a la pantalla de Verificar
-    navigation.navigate('Verify', { telefono: telefono });
+    try {
+      // Registrar el usuario en Firestore
+      await addDoc(collection(db, 'usuarios'), {
+        expediente: Number(expediente),
+        nombre: nombreUsuario,
+        telefono: telefono,
+        contrasena: contrasena,
+        foto: image,
+        correo: correo,
+      });
+
+      // Navegar a la pantalla de Verificar
+      navigation.navigate('Verify', { telefono: telefono });
+    } catch (error) {
+      console.error("Error al registrar el usuario:", error);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Registro</Text>
-      <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
+    <View style={styles.container1}>
+      <TopBar/>
+      <View style={styles.container}>
+        <Text style={styles.title}>Registro</Text>
+        <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
+        
+        <TouchableOpacity onPress={handlePickImage}>
+          <View style={styles.imagePicker}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.image} />
+            ) : (
+              <Text style={styles.imagePlaceholder}>Seleccionar Imagen</Text>
+            )}
+          </View>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>Nombre de usuario</Text>
-      <TextInput 
-        value={nombreUsuario}
-        onChangeText={setNombreUsuario}
-        style={styles.input}
-      />
+        <Text style={styles.label}>Expediente</Text>
+        <TextInput 
+          value={expediente}
+          onChangeText={setExpediente}
+          style={styles.input}
+          keyboardType="numeric"
+        />
 
-      <Text style={styles.label}>Teléfono</Text>
-      <TextInput 
-        value={telefono}
-        onChangeText={setTelefono}
-        style={styles.input}
-        keyboardType="numeric"
-      />
+        <Text style={styles.label}>Nombre completo</Text>
+        <TextInput 
+          value={nombreUsuario}
+          onChangeText={setNombreUsuario}
+          style={styles.input}
+        />
 
-      <Text style={styles.label}>Contraseña</Text>
-      <TextInput 
-        value={contrasena}
-        onChangeText={setContrasena}
-        style={styles.input}
-        secureTextEntry
-      />
+        <Text style={styles.label}>Correo electronico</Text>
+        <TextInput 
+          value={correo}
+          onChangeText={setCorreo}
+          style={styles.input}
+        />
 
-      <Text style={styles.label}>Confirmar contraseña</Text>
-      <TextInput 
-        value={confirmarContrasena}
-        onChangeText={setConfirmarContrasena}
-        style={styles.input}
-        secureTextEntry
-      />
+        <Text style={styles.label}>Teléfono</Text>
+        <TextInput 
+          value={telefono}
+          onChangeText={setTelefono}
+          style={styles.input}
+          keyboardType="numeric"
+        />
 
-      <View style={styles.buttonContainer}>
-        <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
-        <View style={styles.orContainer}>
-          <View style={styles.line}></View>
-          <Text style={styles.orText}>o inicia con</Text>
-          <View style={styles.line}></View>
+        <Text style={styles.label}>Contraseña</Text>
+        <TextInput 
+          value={contrasena}
+          onChangeText={setContrasena}
+          style={styles.input}
+          secureTextEntry
+        />
+
+        <Text style={styles.label}>Confirmar contraseña</Text>
+        <TextInput 
+          value={confirmarContrasena}
+          onChangeText={setConfirmarContrasena}
+          style={styles.input}
+          secureTextEntry
+        />
+
+        <View style={styles.buttonContainer}>
+          <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
+          <View style={styles.orContainer}>
+            <View style={styles.line}></View>
+            <Text style={styles.orText}>o inicia con</Text>
+            <View style={styles.line}></View>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.socialContainer}>
-        <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
-          <Image source={require('../assets/google.png')} style={styles.logoImage}/>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
-          <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.socialContainer}>
+          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
+            <Image source={require('../assets/google.png')} style={styles.logoImage}/>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
+            <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>Tienes cuenta? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={[styles.registerText, { color: '#030A8C' }]}>Inicia sesión</Text>
-        </TouchableOpacity>
+        <View style={styles.registerContainer}>
+          <Text style={styles.registerText}>Tienes cuenta? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={[styles.registerText, { color: '#030A8C' }]}>Inicia sesión</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container1: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -106,6 +172,24 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 10,
   },
+  imagePicker: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#eee',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  imagePlaceholder: {
+    color: '#aaa',
+    textAlign: 'center',
+  },
   label: {
     alignSelf: 'flex-start',
     marginLeft: 20,
@@ -114,7 +198,6 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 5, // Agrega un poco de espacio debajo del nombre de usuario
   },
-  
   input: {
     height: 40,
     marginTop: 5,

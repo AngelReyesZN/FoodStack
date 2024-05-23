@@ -27,7 +27,7 @@ const MenuScreen = ({ navigation }) => {
           text: 'Sí', onPress: () => {
             setUser(null);
             navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
-            BackHandler.exitApp(); // Cerrar la aplicación
+            //BackHandler.exitApp(); // Cerrar la aplicación
           }
         },
       ],
