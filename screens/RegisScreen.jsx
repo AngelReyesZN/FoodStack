@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
 import TopBar from '../components/TopBar';
+import BackButton from '../components/BackButton';
 
 const Registro = ({ navigation }) => {
   const [expediente, setExpediente] = useState('');
@@ -60,91 +61,96 @@ const Registro = ({ navigation }) => {
 
   return (
     <View style={styles.container1}>
-      <TopBar/>
+      <TopBar />
       <View style={styles.container}>
-        <Text style={styles.title}>Registro</Text>
+        <View style={styles.headerContainer}>
+          <BackButton style={styles.backButton}/>
+          <Text style={styles.title}>Registro</Text>
+        </View>
         <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
         
-        <TouchableOpacity onPress={handlePickImage}>
-          <View style={styles.imagePicker}>
-            {image ? (
-              <Image source={{ uri: image }} style={styles.image} />
-            ) : (
-              <Text style={styles.imagePlaceholder}>Seleccionar Imagen</Text>
-            )}
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
+          <TouchableOpacity onPress={handlePickImage}>
+            <View style={styles.imagePicker}>
+              {image ? (
+                <Image source={{ uri: image }} style={styles.image} />
+              ) : (
+                <Text style={styles.imagePlaceholder}>Seleccionar Imagen</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          <Text style={styles.label}>Expediente</Text>
+          <TextInput 
+            value={expediente}
+            onChangeText={setExpediente}
+            style={styles.input}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Nombre completo</Text>
+          <TextInput 
+            value={nombreUsuario}
+            onChangeText={setNombreUsuario}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Correo electrónico</Text>
+          <TextInput 
+            value={correo}
+            onChangeText={setCorreo}
+            style={styles.input}
+          />
+
+          <Text style={styles.label}>Teléfono</Text>
+          <TextInput 
+            value={telefono}
+            onChangeText={setTelefono}
+            style={styles.input}
+            keyboardType="numeric"
+          />
+
+          <Text style={styles.label}>Contraseña</Text>
+          <TextInput 
+            value={contrasena}
+            onChangeText={setContrasena}
+            style={styles.input}
+            secureTextEntry
+          />
+
+          <Text style={styles.label}>Confirmar contraseña</Text>
+          <TextInput 
+            value={confirmarContrasena}
+            onChangeText={setConfirmarContrasena}
+            style={styles.input}
+            secureTextEntry
+          />
+
+          <View style={styles.buttonContainer}>
+            <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
+            <View style={styles.orContainer}>
+              <View style={styles.line}></View>
+              <Text style={styles.orText}>o inicia con</Text>
+              <View style={styles.line}></View>
+            </View>
           </View>
-        </TouchableOpacity>
 
-        <Text style={styles.label}>Expediente</Text>
-        <TextInput 
-          value={expediente}
-          onChangeText={setExpediente}
-          style={styles.input}
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Nombre completo</Text>
-        <TextInput 
-          value={nombreUsuario}
-          onChangeText={setNombreUsuario}
-          style={styles.input}
-        />
-
-        <Text style={styles.label}>Correo electronico</Text>
-        <TextInput 
-          value={correo}
-          onChangeText={setCorreo}
-          style={styles.input}
-        />
-
-        <Text style={styles.label}>Teléfono</Text>
-        <TextInput 
-          value={telefono}
-          onChangeText={setTelefono}
-          style={styles.input}
-          keyboardType="numeric"
-        />
-
-        <Text style={styles.label}>Contraseña</Text>
-        <TextInput 
-          value={contrasena}
-          onChangeText={setContrasena}
-          style={styles.input}
-          secureTextEntry
-        />
-
-        <Text style={styles.label}>Confirmar contraseña</Text>
-        <TextInput 
-          value={confirmarContrasena}
-          onChangeText={setConfirmarContrasena}
-          style={styles.input}
-          secureTextEntry
-        />
-
-        <View style={styles.buttonContainer}>
-          <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
-          <View style={styles.orContainer}>
-            <View style={styles.line}></View>
-            <Text style={styles.orText}>o inicia con</Text>
-            <View style={styles.line}></View>
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
+              <Image source={require('../assets/google.png')} style={styles.logoImage}/>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
+              <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
-            <Image source={require('../assets/google.png')} style={styles.logoImage}/>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
-            <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={[styles.registerText, { color: '#030A8C' }]}>Inicia sesión</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>¿Tienes cuenta? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={[styles.registerText, { color: '#030A8C' }]}>Inicia sesión</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -160,17 +166,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     alignItems: 'center',
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: 'black',
+    color: '#030A8C',
+    flex: 1,
+    paddingLeft: 10,
   },
   subtitle: {
     fontSize: 15,
     color: 'black',
     textAlign: 'center',
     marginTop: 5,
-    marginBottom: 10,
   },
   imagePicker: {
     width: 100,
@@ -190,13 +205,21 @@ const styles = StyleSheet.create({
     color: '#aaa',
     textAlign: 'center',
   },
+  scrollView: {
+    width: '100%',
+    marginVertical: 20,
+  },
+  scrollViewContent: {
+    alignItems: 'center',
+    padding: 20,
+  },
   label: {
     alignSelf: 'flex-start',
     marginLeft: 20,
     marginTop: 8,
     fontSize: 15,
     color: '#000',
-    marginBottom: 5, // Agrega un poco de espacio debajo del nombre de usuario
+    marginBottom: 5,
   },
   input: {
     height: 40,
