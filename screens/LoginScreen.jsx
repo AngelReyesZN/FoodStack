@@ -1,29 +1,41 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
-import registros from '../data/data';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, db } from '../services/firebaseConfig'; // Asegúrate de importar auth y db correctamente
 import { UserContext } from '../context/UserContext';
 
 const LoginScreen = ({ navigation }) => {
   const { setUser } = useContext(UserContext);
   const [isChecked, setChecked] = useState(false);
-  const [nombreUsuario, setNombreUsuario] = useState('');
+  const [expediente, setExpediente] = useState('');
   const [contraseña, setContraseña] = useState('');
 
-  const handleLogin = () => {
-    const usuario = registros.find(
-      registro => registro.nombre === nombreUsuario && registro.contrasena === contraseña
-    );
+  const handleLogin = async () => {
+    try {
+      // Buscar al usuario por expediente en Firestore
+      const usersRef = collection(db, 'usuarios');
+      const q = query(usersRef, where('expediente', '==', Number(expediente)));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userEmail = userDoc.data().correo;
 
-  
-    if (usuario) {
-      setUser(usuario);
-      navigation.navigate('Home');
-    } else {
+        // Iniciar sesión con el correo electrónico y la contraseña
+        await signInWithEmailAndPassword(auth, userEmail, contraseña);
+        
+        // Guardar la información del usuario en el contexto
+        setUser(userDoc.data());
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Error', 'Expediente no encontrado');
+      }
+    } catch (error) {
       Alert.alert('Error', 'Usuario y/o contraseña incorrectos');
+      console.error("Error al iniciar sesión:", error);
     }
   };
-  
 
   return (
     <View style={styles.container}>
@@ -39,11 +51,12 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.title}>Bienvenido</Text>
         <Text style={styles.subtitle}>Introduce tus datos debajo</Text>
 
-        <Text style={styles.labelUser}>Nombre de usuario</Text>
+        <Text style={styles.labelUser}>Expediente</Text>
         <TextInput 
           style={styles.inputField} 
-          value={nombreUsuario}
-          onChangeText={text => setNombreUsuario(text)} // Actualiza el estado nombreUsuario
+          value={expediente}
+          onChangeText={text => setExpediente(text)} // Actualiza el estado expediente
+          keyboardType="numeric"
         />
 
         <Text style={styles.labelpassword}>Contraseña</Text>
@@ -85,7 +98,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>No tienes cuenta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Regis')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Registro')}>
               <Text style={[styles.registerText, { color: '#030A8C' }]}>Regístrate</Text>
             </TouchableOpacity>
           </View>
