@@ -12,7 +12,7 @@ import HomeScreen from '../screens/HomeScreen';
 import MenuScreen from '../screens/MenuScreen';
 import ChatScreen from '../screens/ChatScreen';
 import SearchScreen from '../screens/SearchScreen';
-import AddProductsScreen from '../screens/addProductsScreen.jsx';
+import AddProductsScreen from '../screens/AddProductsScreen.jsx';
 import ProductScreen from '../screens/ProductScreen.jsx';
 import SuccessfulScreen from '../screens/SuccessfulScreen';
 import PersonalDataScreen from '../screens/PersonalDataScreen';
@@ -103,7 +103,7 @@ function MyScreens() {
       <Stack.Screen
         name="AddProduct"
         component={AddProductsScreen}
-      //options={{ headerShown: false }}
+        options={{ headerShown: false }}
       />
 
       {/* Navegacion del MenuScreen */}
