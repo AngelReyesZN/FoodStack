@@ -129,12 +129,11 @@ const styles = StyleSheet.create({
     sellerName: {
       fontSize: 20,
       textDecorationLine: 'underline',
-      marginRight: 10,
+      marginRight: 15, 
     },
     ratingContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginLeft: 90,
     },
     ratingText: {
       fontSize: 20,

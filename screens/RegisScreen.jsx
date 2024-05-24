@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
-import { db } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, auth } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 
-const Registro = ({ navigation }) => {
+const RegisScreen = ({ navigation }) => {
   const [expediente, setExpediente] = useState('');
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -42,6 +43,10 @@ const Registro = ({ navigation }) => {
     }
 
     try {
+      // Crear el usuario en Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
+      const user = userCredential.user;
+
       // Obtener la colección de usuarios
       const usersCollectionRef = collection(db, 'usuarios');
       const usersSnapshot = await getDocs(usersCollectionRef);
@@ -63,6 +68,7 @@ const Registro = ({ navigation }) => {
       navigation.navigate('Verify', { telefono: telefono });
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
+      alert("Error al registrar el usuario: " + error.message);
     }
   };
 
@@ -180,16 +186,12 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
   },
-  backButton: {
-    // Asegúrate de que el botón tenga el estilo adecuado para alinearse a la izquierda
-  },
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: 'black',
-    textAlign: 'center',
+    color: '#030A8C',
     flex: 1,
-    marginLeft: -20, // Ajusta esto según sea necesario para centrar el título visualmente
+    marginLeft: 10,
   },
   subtitle: {
     fontSize: 15,
@@ -290,4 +292,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Registro;
+export default RegisScreen;
