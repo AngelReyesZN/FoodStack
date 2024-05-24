@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
@@ -42,8 +42,15 @@ const Registro = ({ navigation }) => {
     }
 
     try {
-      // Registrar el usuario en Firestore
-      await addDoc(collection(db, 'usuarios'), {
+      // Obtener la colección de usuarios
+      const usersCollectionRef = collection(db, 'usuarios');
+      const usersSnapshot = await getDocs(usersCollectionRef);
+
+      // Generar un nuevo ID secuencial
+      const newUserId = `user${usersSnapshot.size + 1}`;
+
+      // Registrar el usuario en Firestore con el ID generado
+      await setDoc(doc(db, 'usuarios', newUserId), {
         expediente: Number(expediente),
         nombre: nombreUsuario,
         telefono: telefono,
@@ -172,14 +179,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
-    paddingBottom: 10,
+  },
+  backButton: {
+    // Asegúrate de que el botón tenga el estilo adecuado para alinearse a la izquierda
   },
   title: {
     fontSize: 25,
     fontWeight: 'bold',
-    color: '#030A8C',
+    color: 'black',
+    textAlign: 'center',
     flex: 1,
-    paddingLeft: 10,
+    marginLeft: -20, // Ajusta esto según sea necesario para centrar el título visualmente
   },
   subtitle: {
     fontSize: 15,
