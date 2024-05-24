@@ -145,14 +145,16 @@ const HomeScreen = () => {
           <Text style={styles.iconText}>Dispositivos</Text>
         </View>
       </View>
-      <Text style={styles.allProductsText}>Todos los productos</Text>
-      <FlatList
-        data={products}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.productList}
-      />
+      <View style={styles.containerProduccts}>
+        <Text style={styles.allProductsText}>Todos los productos</Text>
+        <FlatList
+          data={products}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.productList}
+        />
+      </View>
       <BottomMenuBar isHomeScreen={true}/>
     </View>
   );
@@ -261,10 +263,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 12,
   },
+  containerProduccts:{
+    margin: 20,
+  },
   allProductsText: {
     fontSize: 20,
     marginLeft: 10,
-    marginTop: 20,
+    marginBottom:  10,
     fontWeight: 'bold',
   },
   productList: {
@@ -274,46 +279,49 @@ const styles = StyleSheet.create({
   productItem: {
     flex: 1,
     justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     margin: 5,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
-      width: 0,
+      width: 4, 
       height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderWidth: .5,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   productImage: {
     width: 80,
     height: 80,
     borderRadius: 10,
-    marginTop: 5,
+    margin: 10,
   },
   productInfo: {
     flex: 1,
-    marginLeft: 5,
+    marginLeft: 8,
   },
   productName: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: 'bold',
     marginLeft: 2,
     textAlign: 'left',
   },
   productPrice: {
-    fontSize: 11,
+    marginRight: 10,
+    fontSize: 15,
     fontWeight: 'bold',
-    marginRight: 3,
     color: '#030A8C',
     textAlign: 'right',
   },
   productUnits: {
-    fontSize: 12,
+    fontSize: 14,
+    marginTop: 5,
     marginLeft: 2,
-    marginBottom: 3,
+    marginBottom: 5,
     color: '#666',
   },
   favoriteIcon: {
