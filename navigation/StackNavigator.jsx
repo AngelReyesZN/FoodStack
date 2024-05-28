@@ -22,6 +22,7 @@ import MyReviewsScreen from '../screens/MyReviewsScreen';
 import CardsScreen from '../screens/CardsScreen';
 import MyProductsScreen from '../screens/MyProductsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
+import LoadProductScreen from '../screens/LoadProductScreen';
 
 
 import PurchaseScreen from '../screens/PurchaseScreen';
@@ -155,6 +156,13 @@ function MyScreens() {
       <Stack.Screen
         name="Sell"
         component={SellScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/**Otras pantallas*/}
+      <Stack.Screen
+        name="LoadProduct"
+        component={LoadProductScreen}
         options={{ headerShown: false }}
       />
 
