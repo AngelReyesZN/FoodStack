@@ -6,7 +6,7 @@ import SearchBar from '../components/SearchBar';
 import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { getDocuments } from '../services/firestore';
-import { getDoc } from 'firebase/firestore';
+import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
 const HomeScreen = () => {
@@ -22,12 +22,22 @@ const HomeScreen = () => {
       try {
         const productsList = await getDocuments('productos');
         const productsWithVendors = await Promise.all(productsList.map(async (product) => {
-          try {
-            const vendorDoc = await getDoc(product.vendedorRef);
-            return { ...product, vendedor: vendorDoc.data() };
-          } catch (error) {
-            console.error("Error fetching vendor data:", error);
-            return { ...product, vendedor: null }; // Return product without vendor if error occurs
+          if (product.vendedorRef && typeof product.vendedorRef === 'object' && 'path' in product.vendedorRef) {
+            try {
+              const vendorDoc = await getDoc(doc(db, product.vendedorRef.path));
+              if (vendorDoc.exists()) {
+                return { ...product, vendedor: vendorDoc.data() };
+              } else {
+                console.error("Vendor document not found for reference:", product.vendedorRef.path);
+                return { ...product, vendedor: null };
+              }
+            } catch (error) {
+              console.error("Error fetching vendor data:", error);
+              return { ...product, vendedor: null };
+            }
+          } else {
+            console.error("Invalid vendor reference:", product.vendedorRef);
+            return { ...product, vendedor: null };
           }
         }));
         setProducts(productsWithVendors);
@@ -80,7 +90,8 @@ const HomeScreen = () => {
               precio: item.precio,
               cantidad: item.cantidad,
               categoria: item.categoria,
-              vendedor: item.vendedor, // Pasar los datos del vendedor en lugar de la referencia
+              vendedor: item.vendedor,
+              fotoVendedor: item.vendedor?.foto // Asegurar que fotoVendedor sea opcional
             },
             isFavorite: isFavorite,
           })
@@ -152,7 +163,7 @@ const HomeScreen = () => {
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
-          contentContainerStyle={styles.productList}
+          contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
         />
       </View>
       <BottomMenuBar isHomeScreen={true}/>
@@ -264,6 +275,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   containerProduccts:{
+    flex: 1,
     margin: 20,
   },
   allProductsText: {
@@ -274,7 +286,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingHorizontal: 10,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   productItem: {
     flex: 1,

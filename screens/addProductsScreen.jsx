@@ -1,12 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
+import { collection, addDoc, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { ProductContext } from '../context/ProductContext';
-import { UserContext } from '../context/UserContext'; // Importar el contexto de usuario
+import { UserContext } from '../context/UserContext';
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -15,7 +17,23 @@ const AddProductsScreen = ({ navigation }) => {
   const [productCategory, setProductCategory] = useState('');
   const [productImage, setProductImage] = useState(null);
   const { addProduct } = useContext(ProductContext);
-  const { user } = useContext(UserContext); // Usar el contexto de usuario
+  const { user } = useContext(UserContext);
+  const [userDocId, setUserDocId] = useState('');
+
+  useEffect(() => {
+    const fetchUserDocId = async () => {
+      const q = query(collection(db, 'usuarios'), where('correo', '==', user.correo));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        setUserDocId(userDoc.id);
+      } else {
+        console.error('No se encontró el usuario');
+      }
+    };
+
+    fetchUserDocId();
+  }, [user]);
 
   const handleChooseImage = async () => {
     let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -34,19 +52,41 @@ const AddProductsScreen = ({ navigation }) => {
     }
   };
 
-  const handlePublishProduct = () => {
+  const handlePublishProduct = async () => {
     if (productName && productPrice && productUnits && productImage && productCategory) {
-      const newProduct = {
-        id: Math.random().toString(),
-        nombre: productName,
-        precio: `$${productPrice}`,
-        unidades: productUnits,
-        imagen: productImage,
-        vendedor: user.nombre, // Usar el nombre del usuario autenticado
-        categoria: productCategory,
-      };
-      addProduct(newProduct);
-      navigation.navigate('LoadProduct');
+      try {
+        // Obtener la colección de productos
+        const productsCollectionRef = collection(db, 'productos');
+        const productsSnapshot = await getDocs(productsCollectionRef);
+
+        // Generar un nuevo ID secuencial para el producto
+        const newProductId = `producto${productsSnapshot.size + 1}`;
+
+        // Crear referencias a los documentos del usuario
+        const userDocRef = doc(db, 'usuarios', userDocId);
+
+        const newProduct = {
+          nombre: productName,
+          precio: Number(productPrice),
+          cantidad: Number(productUnits),
+          imagen: productImage,
+          categoria: productCategory,
+          fotoVendedorRef: userDocRef, // Referencia al usuario autenticado
+          vendedorRef: userDocRef, // Referencia al usuario autenticado
+        };
+
+        // Agregar el nuevo producto a Firestore
+        await setDoc(doc(db, 'productos', newProductId), newProduct);
+
+        // Agregar el producto al contexto (opcional, dependiendo de tu lógica)
+        addProduct(newProduct);
+
+        // Navegar a la pantalla de productos cargados
+        navigation.navigate('LoadProduct');
+      } catch (error) {
+        console.error("Error al agregar el producto:", error);
+        Alert.alert("Error", "Hubo un problema al agregar el producto.");
+      }
     } else {
       Alert.alert('Por favor completa todos los campos');
     }
@@ -56,9 +96,9 @@ const AddProductsScreen = ({ navigation }) => {
     <View style={styles.container}>
       <TopBar />
       <View style={styles.headerContainer}>
-          <BackButton />
-          <Text style={styles.title}>Publicar Producto</Text>
-        </View>
+        <BackButton />
+        <Text style={styles.title}>Publicar Producto</Text>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Nombre del Producto</Text>
@@ -139,7 +179,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     marginLeft: 10,
     marginRight: 10,
-
   },
   headerContainer: {
     flexDirection: 'row',
