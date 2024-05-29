@@ -1,13 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../services/firebaseConfig'; // Asegúrate de importar auth y db correctamente
-import { UserContext } from '../context/UserContext';
 
 const LoginScreen = ({ navigation }) => {
-  const { setUser } = useContext(UserContext);
   const [isChecked, setChecked] = useState(false);
   const [expediente, setExpediente] = useState('');
   const [contraseña, setContraseña] = useState('');
@@ -23,10 +21,15 @@ const LoginScreen = ({ navigation }) => {
         const userEmail = userDoc.data().correo;
 
         // Iniciar sesión con el correo electrónico y la contraseña
-        await signInWithEmailAndPassword(auth, userEmail, contraseña);
-        
-        // Guardar la información del usuario en el contexto
-        setUser(userDoc.data());
+        const userCredential = await signInWithEmailAndPassword(auth, userEmail, contraseña);
+        const user = userCredential.user;
+
+        // Verificar si el correo está verificado
+        if (!user.emailVerified) {
+          Alert.alert('Error', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+          return;
+        }
+
         navigation.navigate('Home');
       } else {
         Alert.alert('Error', 'Expediente no encontrado');
@@ -45,29 +48,23 @@ const LoginScreen = ({ navigation }) => {
           style={styles.logo}
         />
       </View>
-
-      {/* View con fondo blanco para el contenido debajo del logo */}
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Bienvenido</Text>
         <Text style={styles.subtitle}>Introduce tus datos debajo</Text>
-
         <Text style={styles.labelUser}>Expediente</Text>
-        <TextInput 
-          style={styles.inputField} 
+        <TextInput
+          style={styles.inputField}
           value={expediente}
-          onChangeText={text => setExpediente(text)} // Actualiza el estado expediente
+          onChangeText={text => setExpediente(text)}
           keyboardType="numeric"
         />
-
         <Text style={styles.labelpassword}>Contraseña</Text>
-        <TextInput 
+        <TextInput
           style={styles.inputField}
           value={contraseña}
-          onChangeText={text => setContraseña(text)} // Actualiza el estado contraseña
+          onChangeText={text => setContraseña(text)}
           secureTextEntry={true}
         />
-
-        {/* CheckBox y texto "Recordarme" */}
         <View style={styles.checkboxContainer}>
           <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setChecked} />
           <Text style={styles.checkboxLabel}>Recordarme</Text>
@@ -75,7 +72,6 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.forgotPasswordText}>Contraseña olvidada?</Text>
           </TouchableOpacity>
         </View>
-
         <View style={styles.buttonContainer}>
           <Button
             title="Iniciar"
@@ -87,13 +83,12 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.orText}>o inicia con</Text>
             <View style={styles.line}></View>
           </View>
-
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
-              <Image source={require('../assets/google.png')} style={styles.logoImage}/>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {}}>
+              <Image source={require('../assets/google.png')} style={styles.logoImage} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
-              <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {}}>
+              <Image source={require('../assets/facebook.png')} style={styles.logoImage} />
             </TouchableOpacity>
           </View>
           <View style={styles.registerContainer}>
@@ -116,14 +111,14 @@ const styles = StyleSheet.create({
   logoContainer: {
     backgroundColor: '#030A8C',
     width: '100%',
-    padding: 15, // Ajusta este valor según necesites
+    padding: 15,
     paddingTop: 35,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
-    width: 125, // Ajusta el tamaño según necesites
-    height: 125, // Ajusta el tamaño según necesites
+    width: 125,
+    height: 125,
   },
   contentContainer: {
     flex: 1,
@@ -131,7 +126,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     alignItems: 'center',
-    paddingTop: 20, // Agrega un poco de espacio en la parte superior
+    paddingTop: 20,
   },
   title: {
     fontSize: 35,
@@ -141,7 +136,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: 'black',
-    marginTop: 5, // Espacio entre el título y el subtítulo
+    marginTop: 5,
   },
   labelUser: {
     alignSelf: 'flex-start',
@@ -149,7 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 25,
     fontSize: 15,
     color: '#000',
-    marginBottom: 5, // Agrega un poco de espacio debajo del nombre de usuario
+    marginBottom: 5,
   },
   labelpassword: {
     alignSelf: 'flex-start',
@@ -157,9 +152,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 15,
     color: '#000',
-    marginBottom: 5, // Agrega un poco de espacio debajo de la contraseña
+    marginBottom: 5,
   },
-  
   inputField: {
     height: 40,
     marginTop: 5,
@@ -170,13 +164,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '90%',
   },
-
-
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 0,
-    marginLeft: 20, // Mueve el CheckBox a la izquierda
+    marginLeft: 20,
   },
   checkbox: {
     alignSelf: 'center',
@@ -186,7 +178,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: 'gray',
-    flex: 1, // Para que ocupe todo el espacio disponible
+    flex: 1,
   },
   forgotPasswordText: {
     color: '#1a0dab',
@@ -231,7 +223,7 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 21,
     height: 21,
-  }, 
+  },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

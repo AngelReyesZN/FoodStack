@@ -3,8 +3,8 @@ import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, Scr
 import * as ImagePicker from 'expo-image-picker';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, storage } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { db, auth, storage } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 
@@ -20,8 +20,8 @@ const RegisScreen = ({ navigation }) => {
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true, // Habilita la funcionalidad de recorte
-      aspect: [1, 1], // Proporción 1:1 para recorte cuadrado
+      allowsEditing: true,
+      aspect: [1, 1],
       quality: 1,
     });
 
@@ -31,50 +31,35 @@ const RegisScreen = ({ navigation }) => {
   };
 
   const handleRegistro = async () => {
-    // Verificar si las contraseñas son iguales
     if (contrasena !== confirmarContrasena) {
-      alert('Las contraseñas no coinciden');
+      Alert.alert('Error', 'Las contraseñas no coinciden');
       return;
     }
 
-    // Verificar si el número de teléfono tiene 10 dígitos
     if (telefono.length !== 10) {
-      alert('El número de teléfono debe tener 10 dígitos');
+      Alert.alert('Error', 'El número de teléfono debe tener 10 dígitos');
       return;
     }
 
     try {
-      // Crear el usuario en Firebase Authentication
-      const tempEmail = `temp_${correo}`;
-      const tempPassword = `temp_${contrasena}`;
-      const userCredential = await createUserWithEmailAndPassword(auth, tempEmail, tempPassword);
-      const tempUser = userCredential.user;
+      const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
+      const user = userCredential.user;
 
-      // Subir la imagen a Firebase Storage si existe una imagen seleccionada
+      await sendEmailVerification(user);
+
       let imageUrl = '';
       if (image) {
         const response = await fetch(image);
         const blob = await response.blob();
-        const storageRef = ref(storage, `usuarios/${tempUser.uid}-profile`);
+        const storageRef = ref(storage, `usuarios/${user.uid}-profile`);
         await uploadBytes(storageRef, blob);
         imageUrl = await getDownloadURL(storageRef);
       }
 
-      // Eliminar el usuario temporal
-      await tempUser.delete();
-
-      // Crear el usuario final en Firebase Authentication
-      const finalUserCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
-      const finalUser = finalUserCredential.user;
-
-      // Obtener la colección de usuarios
       const usersCollectionRef = collection(db, 'usuarios');
       const usersSnapshot = await getDocs(usersCollectionRef);
-
-      // Generar un nuevo ID secuencial
       const newUserId = `user${usersSnapshot.size + 1}`;
 
-      // Registrar el usuario en Firestore con el ID generado
       await setDoc(doc(db, 'usuarios', newUserId), {
         expediente: Number(expediente),
         nombre: nombreUsuario,
@@ -84,8 +69,8 @@ const RegisScreen = ({ navigation }) => {
         correo: correo,
       });
 
-      // Navegar a la pantalla de Verificar
-      navigation.navigate('Verify', { telefono: telefono });
+      Alert.alert('Registro exitoso', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+      navigation.navigate('Login');
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
       Alert.alert("Error", "Hubo un problema al registrar el usuario.");
@@ -97,11 +82,10 @@ const RegisScreen = ({ navigation }) => {
       <TopBar />
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <BackButton style={styles.backButton}/>
+          <BackButton style={styles.backButton} />
           <Text style={styles.title}>Registro</Text>
         </View>
         <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
-        
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
           <TouchableOpacity onPress={handlePickImage}>
             <View style={styles.imagePicker}>
@@ -112,53 +96,46 @@ const RegisScreen = ({ navigation }) => {
               )}
             </View>
           </TouchableOpacity>
-
           <Text style={styles.label}>Expediente</Text>
-          <TextInput 
+          <TextInput
             value={expediente}
             onChangeText={setExpediente}
             style={styles.input}
             keyboardType="numeric"
           />
-
           <Text style={styles.label}>Nombre completo</Text>
-          <TextInput 
+          <TextInput
             value={nombreUsuario}
             onChangeText={setNombreUsuario}
             style={styles.input}
           />
-
           <Text style={styles.label}>Correo electrónico</Text>
-          <TextInput 
+          <TextInput
             value={correo}
             onChangeText={setCorreo}
             style={styles.input}
           />
-
           <Text style={styles.label}>Teléfono</Text>
-          <TextInput 
+          <TextInput
             value={telefono}
             onChangeText={setTelefono}
             style={styles.input}
             keyboardType="numeric"
           />
-
           <Text style={styles.label}>Contraseña</Text>
-          <TextInput 
+          <TextInput
             value={contrasena}
             onChangeText={setContrasena}
             style={styles.input}
             secureTextEntry
           />
-
           <Text style={styles.label}>Confirmar contraseña</Text>
-          <TextInput 
+          <TextInput
             value={confirmarContrasena}
             onChangeText={setConfirmarContrasena}
             style={styles.input}
             secureTextEntry
           />
-
           <View style={styles.buttonContainer}>
             <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
             <View style={styles.orContainer}>
@@ -167,16 +144,14 @@ const RegisScreen = ({ navigation }) => {
               <View style={styles.line}></View>
             </View>
           </View>
-
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {/* Acción al presionar el botón de Google */}}>
-              <Image source={require('../assets/google.png')} style={styles.logoImage}/>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {}}>
+              <Image source={require('../assets/google.png')} style={styles.logoImage} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {/* Acción al presionar el botón de Facebook */}}>
-              <Image source={require('../assets/facebook.png')} style={styles.logoImage}/>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {}}>
+              <Image source={require('../assets/facebook.png')} style={styles.logoImage} />
             </TouchableOpacity>
           </View>
-
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>¿Tienes cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
