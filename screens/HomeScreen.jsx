@@ -4,13 +4,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
 const HomeScreen = () => {
-  const { favorites, addToFavorites, removeFromFavorites } = useContext(UserContext);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
@@ -74,16 +72,7 @@ const HomeScreen = () => {
     return () => clearInterval(intervalId);
   }, [currentAdIndex]);
 
-  const toggleFavorite = (product) => {
-    if (favorites.some(fav => fav.id === product.id)) {
-      removeFromFavorites(product.id);
-    } else {
-      addToFavorites(product);
-    }
-  };
-
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.some(fav => fav.id === item.id);
     return (
       <TouchableOpacity
         style={styles.productItem}
@@ -99,13 +88,10 @@ const HomeScreen = () => {
               vendedor: item.vendedor,
               fotoVendedor: item.vendedor?.foto // Asegurar que fotoVendedor sea opcional
             },
-            isFavorite: isFavorite,
           })
         }
       >
-        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item)}>
-          <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
-        </TouchableOpacity>
+        
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
