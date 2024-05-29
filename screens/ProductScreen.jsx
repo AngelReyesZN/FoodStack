@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -24,6 +24,19 @@ const ProductScreen = ({ route }) => {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
+  };
+
+  const handleWhatsApp = () => {
+    const phoneNumber = product.vendedor?.telefono;
+    if (phoneNumber) {
+      const url = `whatsapp://send?phone=${phoneNumber}`;
+      Linking.openURL(url)
+        .catch(() => {
+          Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
+        });
+    } else {
+      Alert.alert('Error', 'Número de teléfono no disponible.');
+    }
   };
 
   return (
@@ -56,7 +69,7 @@ const ProductScreen = ({ route }) => {
         <Text style={styles.price}>${product.precio}.00</Text>
       </View>
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.imageButton}>
+        <TouchableOpacity style={styles.imageButton} onPress={handleWhatsApp}>
           <Image source={require('../assets/rscMenu/BotonImagen.png')} style={styles.imageButtonIcon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
