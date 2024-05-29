@@ -131,7 +131,7 @@ const RegisScreen = ({ navigation }) => {
         telefono: telefonoConPrefijo,
         contrasena: contrasena,
         foto: imageUrl,
-        correo: correo,
+        correo: normalizedEmail,
       });
 
       Alert.alert('Registro exitoso', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
