@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { db, auth, storage } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 
@@ -19,8 +20,8 @@ const RegisScreen = ({ navigation }) => {
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
+      allowsEditing: true, // Habilita la funcionalidad de recorte
+      aspect: [1, 1], // Proporción 1:1 para recorte cuadrado
       quality: 1,
     });
 
@@ -44,8 +45,27 @@ const RegisScreen = ({ navigation }) => {
 
     try {
       // Crear el usuario en Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
-      const user = userCredential.user;
+      const tempEmail = `temp_${correo}`;
+      const tempPassword = `temp_${contrasena}`;
+      const userCredential = await createUserWithEmailAndPassword(auth, tempEmail, tempPassword);
+      const tempUser = userCredential.user;
+
+      // Subir la imagen a Firebase Storage si existe una imagen seleccionada
+      let imageUrl = '';
+      if (image) {
+        const response = await fetch(image);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `usuarios/${tempUser.uid}-profile`);
+        await uploadBytes(storageRef, blob);
+        imageUrl = await getDownloadURL(storageRef);
+      }
+
+      // Eliminar el usuario temporal
+      await tempUser.delete();
+
+      // Crear el usuario final en Firebase Authentication
+      const finalUserCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
+      const finalUser = finalUserCredential.user;
 
       // Obtener la colección de usuarios
       const usersCollectionRef = collection(db, 'usuarios');
@@ -60,7 +80,7 @@ const RegisScreen = ({ navigation }) => {
         nombre: nombreUsuario,
         telefono: telefono,
         contrasena: contrasena,
-        foto: image,
+        foto: imageUrl,
         correo: correo,
       });
 
@@ -68,7 +88,7 @@ const RegisScreen = ({ navigation }) => {
       navigation.navigate('Verify', { telefono: telefono });
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
-      alert("Error al registrar el usuario: " + error.message);
+      Alert.alert("Error", "Hubo un problema al registrar el usuario.");
     }
   };
 

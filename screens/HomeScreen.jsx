@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
@@ -17,37 +17,43 @@ const HomeScreen = () => {
   const [products, setProducts] = useState([]);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const productsList = await getDocuments('productos');
-        const productsWithVendors = await Promise.all(productsList.map(async (product) => {
-          if (product.vendedorRef && typeof product.vendedorRef === 'object' && 'path' in product.vendedorRef) {
-            try {
-              const vendorDoc = await getDoc(doc(db, product.vendedorRef.path));
-              if (vendorDoc.exists()) {
-                return { ...product, vendedor: vendorDoc.data() };
-              } else {
-                console.error("Vendor document not found for reference:", product.vendedorRef.path);
-                return { ...product, vendedor: null };
-              }
-            } catch (error) {
-              console.error("Error fetching vendor data:", error);
+  const fetchProducts = async () => {
+    try {
+      const productsList = await getDocuments('productos');
+      const productsWithVendors = await Promise.all(productsList.map(async (product) => {
+        if (product.vendedorRef && typeof product.vendedorRef === 'object' && 'path' in product.vendedorRef) {
+          try {
+            const vendorDoc = await getDoc(doc(db, product.vendedorRef.path));
+            if (vendorDoc.exists()) {
+              return { ...product, vendedor: vendorDoc.data() };
+            } else {
+              console.error("Vendor document not found for reference:", product.vendedorRef.path);
               return { ...product, vendedor: null };
             }
-          } else {
-            console.error("Invalid vendor reference:", product.vendedorRef);
+          } catch (error) {
+            console.error("Error fetching vendor data:", error);
             return { ...product, vendedor: null };
           }
-        }));
-        setProducts(productsWithVendors);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
+        } else {
+          console.error("Invalid vendor reference:", product.vendedorRef);
+          return { ...product, vendedor: null };
+        }
+      }));
+      setProducts(productsWithVendors);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   const advertisements = [
     'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',

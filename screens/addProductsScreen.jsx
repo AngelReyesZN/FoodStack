@@ -2,8 +2,9 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { collection, addDoc, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
-import { db } from '../services/firebaseConfig';
+import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
@@ -42,7 +43,10 @@ const AddProductsScreen = ({ navigation }) => {
       return;
     }
 
-    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: false, // Desactiva la funcionalidad de recorte
+    });
+    console.log('Picker result:', pickerResult);
     if (pickerResult.cancelled === true) {
       return;
     }
@@ -55,6 +59,15 @@ const AddProductsScreen = ({ navigation }) => {
   const handlePublishProduct = async () => {
     if (productName && productPrice && productUnits && productImage && productCategory) {
       try {
+        // Subir la imagen a Firebase Storage
+        const response = await fetch(productImage);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `productos/${Date.now()}-${productName}`);
+        await uploadBytes(storageRef, blob);
+
+        // Obtener la URL de descarga de la imagen
+        const imageUrl = await getDownloadURL(storageRef);
+
         // Obtener la colección de productos
         const productsCollectionRef = collection(db, 'productos');
         const productsSnapshot = await getDocs(productsCollectionRef);
@@ -69,10 +82,10 @@ const AddProductsScreen = ({ navigation }) => {
           nombre: productName,
           precio: Number(productPrice),
           cantidad: Number(productUnits),
-          imagen: productImage,
+          imagen: imageUrl,
           categoria: productCategory,
-          fotoVendedorRef: userDocRef, // Referencia al usuario autenticado
-          vendedorRef: userDocRef, // Referencia al usuario autenticado
+          fotoVendedorRef: userDocRef,
+          vendedorRef: userDocRef,
         };
 
         // Agregar el nuevo producto a Firestore
