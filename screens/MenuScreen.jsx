@@ -1,8 +1,10 @@
-import React, { useContext } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, BackHandler, ScrollView, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import { UserContext } from '../context/UserContext';
+import { getAuth, signOut } from 'firebase/auth';
+import { getDocs, query, collection, where } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 
 const options = [
   { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/notificationIcon.png'), screen: 'Notifications' },
@@ -15,7 +17,30 @@ const options = [
 ];
 
 const MenuScreen = ({ navigation }) => {
-  const { user, setUser } = useContext(UserContext);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const q = query(collection(db, 'usuarios'), where('correo', '==', user.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            setUserData(userDoc.data());
+          } else {
+            console.error('No se encontró el usuario con el correo:', user.email);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -25,9 +50,12 @@ const MenuScreen = ({ navigation }) => {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Sí', onPress: () => {
-            setUser(null);
-            navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
-            //BackHandler.exitApp(); // Cerrar la aplicación
+            const auth = getAuth();
+            signOut(auth).then(() => {
+              navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
+            }).catch((error) => {
+              console.error('Error al cerrar sesión:', error);
+            });
           }
         },
       ],
@@ -36,15 +64,15 @@ const MenuScreen = ({ navigation }) => {
   };
 
   const handleOptionPress = (option) => {
-    navigation.navigate(option.screen, { label: option.label, userId: user.id });
+    navigation.navigate(option.screen, { label: option.label });
   };
 
-  if (!user) {
+  if (!userData) {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <TopBar />
         <Text style={styles.menuTitle}>Menú</Text>
-        <Text style={styles.noUserText}>No hay usuario autenticado</Text>
+        <Text style={styles.loadingText}>Cargando datos del usuario...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </SafeAreaView>
     );
@@ -57,11 +85,11 @@ const MenuScreen = ({ navigation }) => {
         <View style={styles.contentContainer}>
           <Text style={styles.menuTitle}>Menú</Text>
           <TouchableOpacity style={styles.userContainer}>
-            <Image source={user.foto} style={styles.userPhoto} />
+            <Image source={{ uri: userData.foto }} style={styles.userPhoto} />
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{user.nombre}</Text>
+              <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">{userData.nombre}</Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.userRating}>{user.calificacion}</Text>
+                <Text style={styles.userRating}>4.5</Text>
                 <Image source={require('../assets/rscMenu/starCalification.png')} style={styles.starIcon} />
               </View>
             </View>
@@ -120,38 +148,41 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   userPhoto: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   userInfo: {
     marginLeft: 10,
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   userName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#030A8C',
-    paddingLeft: 15,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 5,
   },
   starIcon: {
-    width: 25,
-    height: 25,
-    marginLeft: 10,
+    width: 20,
+    height: 20,
+    marginLeft: 5,
   },
   userRating: {
-    fontSize: 25,
+    fontSize: 18,
   },
   noUserText: {
     fontSize: 18,
     color: 'red',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#666',
     textAlign: 'center',
     marginVertical: 20,
   },
