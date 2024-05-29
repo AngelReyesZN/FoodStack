@@ -1,15 +1,14 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../services/firebaseConfig';
+import { db, storage, auth } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
-import { ProductContext } from '../context/ProductContext';
-import { UserContext } from '../context/UserContext';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -17,24 +16,32 @@ const AddProductsScreen = ({ navigation }) => {
   const [productUnits, setProductUnits] = useState('');
   const [productCategory, setProductCategory] = useState('');
   const [productImage, setProductImage] = useState(null);
-  const { addProduct } = useContext(ProductContext);
-  const { user } = useContext(UserContext);
   const [userDocId, setUserDocId] = useState('');
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
-    const fetchUserDocId = async () => {
-      const q = query(collection(db, 'usuarios'), where('correo', '==', user.correo));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        setUserDocId(userDoc.id);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserEmail(user.email);
+        fetchUserDocId(user.email);
       } else {
-        console.error('No se encontró el usuario');
+        // Handle user not signed in
       }
-    };
+    });
 
-    fetchUserDocId();
-  }, [user]);
+    return () => unsubscribe();
+  }, []);
+
+  const fetchUserDocId = async (email) => {
+    const q = query(collection(db, 'usuarios'), where('correo', '==', email));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      setUserDocId(userDoc.id);
+    } else {
+      console.error('No se encontró el usuario');
+    }
+  };
 
   const handleChooseImage = async () => {
     let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -44,9 +51,8 @@ const AddProductsScreen = ({ navigation }) => {
     }
 
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: false, // Desactiva la funcionalidad de recorte
+      allowsEditing: false,
     });
-    console.log('Picker result:', pickerResult);
     if (pickerResult.cancelled === true) {
       return;
     }
@@ -90,9 +96,6 @@ const AddProductsScreen = ({ navigation }) => {
 
         // Agregar el nuevo producto a Firestore
         await setDoc(doc(db, 'productos', newProductId), newProduct);
-
-        // Agregar el producto al contexto (opcional, dependiendo de tu lógica)
-        addProduct(newProduct);
 
         // Navegar a la pantalla de productos cargados
         navigation.navigate('LoadProduct');
