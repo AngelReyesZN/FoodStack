@@ -80,7 +80,7 @@ const RegisScreen = ({ navigation }) => {
 
     // Verificar si hay errores
     if (Object.keys(errors).length > 0) {
-      Alert.alert('Error', 'Por favor, completa todos los campos');
+      Alert.alert('Error', 'Por favor, completa todos los campos correctamente');
       return;
     }
 
