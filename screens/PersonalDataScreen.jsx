@@ -1,109 +1,174 @@
-import React, { useContext, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { UserContext } from '../context/UserContext';
+import React, { useContext, useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, SafeAreaView, ScrollView } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { getDocs, query, collection, where, doc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db } from '../services/firebaseConfig';
+import * as ImagePicker from 'expo-image-picker';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 
-const PersonalDataScreen = ({ route }) => {
-    const { registros, updateUser } = useContext(UserContext);
-    const { label, userId } = route.params;
-    const user = registros.find((u) => u.id === userId);
+const PersonalDataScreen = ({ route, navigation }) => {
+    const [user, setUser] = useState(null);
+    const [isEditingPhone, setIsEditingPhone] = useState(false);
+    const [newPhone, setNewPhone] = useState('');
 
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [isEditingMail, setIsEditingMail] = useState(false);
-    const [newName, setNewName] = useState(user?.nombre);
-    const [newMail, setNewMail] = useState(user?.correo);
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const auth = getAuth();
+            const currentUser = auth.currentUser;
+            if (currentUser) {
+                try {
+                    const q = query(collection(db, 'usuarios'), where('correo', '==', currentUser.email));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        const userDoc = querySnapshot.docs[0];
+                        const userData = userDoc.data();
+                        setUser({ ...userData, id: userDoc.id });
+                        setNewPhone(userData.telefono);
+                    } else {
+                        console.error('No se encontró el usuario con el correo:', currentUser.email);
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                }
+            }
+        };
 
-    const initialName = user?.nombre;
-    const initialMail = user?.correo;
+        fetchUserData();
+    }, []);
+
+    const updateUser = async (userId, updatedData) => {
+        try {
+            const userRef = doc(db, 'usuarios', userId);
+            await updateDoc(userRef, updatedData);
+            setUser((prevUser) => ({ ...prevUser, ...updatedData }));
+            Alert.alert('Exitoso', 'La información ha sido actualizada.');
+        } catch (error) {
+            console.error('Error updating user data:', error);
+            Alert.alert('Error', 'Hubo un problema al actualizar la información.');
+        }
+    };
 
     const handleSave = () => {
-        if (isEditingName || isEditingMail) {
-            if (isEditingName) {
-                updateUser(user.id, { nombre: newName });
-            }
-            if (isEditingMail) {
-                updateUser(user.id, { correo: newMail });
-            }
-            setIsEditingName(false);
-            setIsEditingMail(false);
-            Alert.alert('Exitoso', 'La información ha sido actualizada.');
+        if (isEditingPhone) {
+            updateUser(user.id, { telefono: newPhone });
+            setIsEditingPhone(false);
         }
     };
 
     const handleCancel = () => {
-        setNewName(initialName);
-        setNewMail(initialMail);
-        setIsEditingName(false);
-        setIsEditingMail(false);
+        setNewPhone(user?.telefono);
+        setIsEditingPhone(false);
     };
 
+    const handleChangePassword = () => {
+        Alert.alert('Solicitud de cambio de contraseña', 'Haz solicitado el cambio de tu contraseña.');
+    };
+
+    const handleChangePhoto = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const localUri = result.assets[0].uri;
+            const filename = localUri.split('/').pop();
+            const response = await fetch(localUri);
+            const blob = await response.blob();
+
+            const storage = getStorage();
+            const storageRef = ref(storage, `profile_pictures/${filename}`);
+
+            await uploadBytes(storageRef, blob);
+            const newPhotoUrl = await getDownloadURL(storageRef);
+
+            updateUser(user.id, { foto: newPhotoUrl });
+        }
+    };
+
+    if (!user) {
+        return null;
+    }
+
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.safeContainer}>
             <TopBar />
-            <View style={styles.headerContainer}>
-                <BackButton />
-                <Text style={styles.headerTitle}>{label}</Text>
-            </View>
-            {user && (
-                <View style={styles.userInfoContainer}>
-                    <Image source={user.foto} style={styles.userPhoto} />
-                    <TouchableOpacity>
-                        <Text style={styles.changePhotoText}>Cambiar foto de perfil</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.label}>Nombre de usuario</Text>
-                    {isEditingName ? (
-                        <TextInput
-                            style={styles.input}
-                            value={newName}
-                            onChangeText={setNewName}
-                        />
-                    ) : (
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                <View style={styles.contentContainer}>
+                    <View style={styles.headerContainer}>
+                        <BackButton />
+                        <Text style={styles.headerTitle}>Información Personal</Text>
+                    </View>
+                    <View style={styles.userInfoContainer}>
+                        <Image source={{ uri: user.foto }} style={styles.userPhoto} />
+                        <TouchableOpacity onPress={handleChangePhoto}>
+                            <Text style={styles.changePhotoText}>Cambiar foto de perfil</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.label}>Nombre de usuario</Text>
                         <Text style={[styles.userInfo, { color: '#8c8c8c' }]}>{user.nombre}</Text>
-                    )}
-                    <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingName(true)}>
-                        <Text style={styles.changeText}>Cambiar nombre de usuario</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.label}>Teléfono</Text>
-                    {isEditingMail ? (
-                        <TextInput
-                            style={styles.input}
-                            value={newMail}
-                            onChangeText={setNewMail}
-                        />
-                    ) : (
+
+                        <Text style={styles.label}>Correo</Text>
                         <Text style={[styles.userInfo, { color: '#8c8c8c' }]}>{user.correo}</Text>
-                    )}
-                    <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingMail(true)}>
-                        <Text style={styles.changeText}>Cambiar teléfono</Text>
-                    </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.changePassButton}>
-                        <Text style={styles.textCahngeP} >Cambiar Contraseña</Text>
-                    </TouchableOpacity>
+                        <Text style={styles.label}>Expediente</Text>
+                        <Text style={[styles.userInfo, { color: '#8c8c8c' }]}>{user.expediente}</Text>
 
-                    {(isEditingName || isEditingMail) && (
-                        <View style={styles.buttonContainer}>
-                            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                                <Text style={styles.saveButtonText}>Guardar cambios</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                                <Text style={styles.cancelButtonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
+                        <Text style={styles.label}>Teléfono</Text>
+                        {isEditingPhone ? (
+                            <TextInput
+                                style={styles.input}
+                                value={newPhone}
+                                onChangeText={setNewPhone}
+                                keyboardType="numeric"
+                            />
+                        ) : (
+                            <Text style={[styles.userInfo, { color: '#8c8c8c' }]}>{user.telefono}</Text>
+                        )}
+                        <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingPhone(true)}>
+                            <Text style={styles.changeText}>Cambiar teléfono</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.changePassButton} onPress={handleChangePassword}>
+                            <Text style={styles.textCahngeP}>Cambiar Contraseña</Text>
+                        </TouchableOpacity>
+
+                        {isEditingPhone && (
+                            <View style={styles.buttonContainer}>
+                                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                                    <Text style={styles.saveButtonText}>Guardar cambios</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                                    <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
                 </View>
-            )}
+            </ScrollView>
             <BottomMenuBar isMenuScreen={true} />
-        </View>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
+    safeContainer: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
     container: {
         flex: 1,
         backgroundColor: 'white',
+    },
+    scrollContainer: {
+        flexGrow: 1,
+    },
+    contentContainer: {
+        paddingBottom: 120,
     },
     headerContainer: {
         flexDirection: 'row',
@@ -201,15 +266,11 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 25,
         marginTop: 20,
-
-
-
     },
     textCahngeP: {
         color: '#fff',
         fontSize: 15,
-
-    }
+    },
 });
 
 export default PersonalDataScreen;
