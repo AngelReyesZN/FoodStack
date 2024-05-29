@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { db, auth, storage } from '../services/firebaseConfig';
+import { db, auth, storage } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 
@@ -16,6 +16,8 @@ const RegisScreen = ({ navigation }) => {
   const [confirmarContrasena, setConfirmarContrasena] = useState('');
   const [image, setImage] = useState(null);
   const [correo, setCorreo] = useState('');
+
+  const [errors, setErrors] = useState({});
 
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -30,7 +32,58 @@ const RegisScreen = ({ navigation }) => {
     }
   };
 
+  const validateField = (field, value) => {
+    if (!value) {
+      setErrors(prevErrors => ({ ...prevErrors, [field]: 'Este campo es obligatorio' }));
+    } else {
+      setErrors(prevErrors => {
+        const { [field]: removed, ...rest } = prevErrors;
+        return rest;
+      });
+    }
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrors(prevErrors => ({ ...prevErrors, correo: 'Correo no válido' }));
+    } else {
+      setErrors(prevErrors => {
+        const { correo, ...rest } = prevErrors;
+        return rest;
+      });
+    }
+  };
+
+  const validatePasswordLength = (password, field) => {
+    if (password.length < 6) {
+      setErrors(prevErrors => ({ ...prevErrors, [field]: 'La contraseña debe tener al menos 6 caracteres' }));
+    } else {
+      setErrors(prevErrors => {
+        const { [field]: removed, ...rest } = prevErrors;
+        return rest;
+      });
+    }
+  };
+
   const handleRegistro = async () => {
+    // Validar campos
+    validateField('expediente', expediente);
+    validateField('nombreUsuario', nombreUsuario);
+    validateField('telefono', telefono);
+    validateField('correo', correo);
+    validateEmail(correo);
+    validateField('contrasena', contrasena);
+    validatePasswordLength(contrasena, 'contrasena');
+    validateField('confirmarContrasena', confirmarContrasena);
+    validatePasswordLength(confirmarContrasena, 'confirmarContrasena');
+
+    // Verificar si hay errores
+    if (Object.keys(errors).length > 0) {
+      Alert.alert('Error', 'Por favor, completa todos los campos');
+      return;
+    }
+
     if (contrasena !== confirmarContrasena) {
       Alert.alert('Error', 'Las contraseñas no coinciden');
       return;
@@ -42,6 +95,16 @@ const RegisScreen = ({ navigation }) => {
     }
 
     try {
+      // Verificar si el expediente ya existe en Firestore
+      const usersCollectionRef = collection(db, 'usuarios');
+      const expedienteQuery = query(usersCollectionRef, where('expediente', '==', Number(expediente)));
+      const expedienteSnapshot = await getDocs(expedienteQuery);
+
+      if (!expedienteSnapshot.empty) {
+        Alert.alert('Error', 'El expediente ya existe');
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
       const user = userCredential.user;
 
@@ -56,14 +119,16 @@ const RegisScreen = ({ navigation }) => {
         imageUrl = await getDownloadURL(storageRef);
       }
 
-      const usersCollectionRef = collection(db, 'usuarios');
       const usersSnapshot = await getDocs(usersCollectionRef);
       const newUserId = `user${usersSnapshot.size + 1}`;
+
+      // Agregar +52 al número de teléfono
+      const telefonoConPrefijo = `52${telefono}`;
 
       await setDoc(doc(db, 'usuarios', newUserId), {
         expediente: Number(expediente),
         nombre: nombreUsuario,
-        telefono: telefono,
+        telefono: telefonoConPrefijo,
         contrasena: contrasena,
         foto: imageUrl,
         correo: correo,
@@ -96,46 +161,85 @@ const RegisScreen = ({ navigation }) => {
               )}
             </View>
           </TouchableOpacity>
+
           <Text style={styles.label}>Expediente</Text>
           <TextInput
             value={expediente}
-            onChangeText={setExpediente}
+            onChangeText={text => {
+              setExpediente(text);
+              validateField('expediente', text);
+            }}
             style={styles.input}
             keyboardType="numeric"
+            maxLength={6} // Permitir solo 6 dígitos
           />
+          {errors.expediente && <Text style={styles.errorText}>{errors.expediente}</Text>}
+
           <Text style={styles.label}>Nombre completo</Text>
           <TextInput
             value={nombreUsuario}
-            onChangeText={setNombreUsuario}
+            onChangeText={text => {
+              setNombreUsuario(text);
+              validateField('nombreUsuario', text);
+            }}
             style={styles.input}
           />
+          {errors.nombreUsuario && <Text style={styles.errorText}>{errors.nombreUsuario}</Text>}
+
           <Text style={styles.label}>Correo electrónico</Text>
           <TextInput
             value={correo}
-            onChangeText={setCorreo}
+            onChangeText={text => {
+              setCorreo(text);
+              validateField('correo', text);
+              validateEmail(text);
+            }}
             style={styles.input}
           />
+          {errors.correo && <Text style={styles.errorText}>{errors.correo}</Text>}
+
           <Text style={styles.label}>Teléfono</Text>
-          <TextInput
-            value={telefono}
-            onChangeText={setTelefono}
-            style={styles.input}
-            keyboardType="numeric"
-          />
+          <View style={styles.phoneInputContainer}>
+            <Text style={styles.phonePrefix}>🇲🇽 +52</Text>
+            <TextInput
+              value={telefono}
+              onChangeText={text => {
+                setTelefono(text);
+                validateField('telefono', text);
+              }}
+              style={styles.phoneInput}
+              keyboardType="numeric"
+              maxLength={10} // Permitir solo 10 dígitos
+            />
+          </View>
+          {errors.telefono && <Text style={styles.errorText}>{errors.telefono}</Text>}
+
           <Text style={styles.label}>Contraseña</Text>
           <TextInput
             value={contrasena}
-            onChangeText={setContrasena}
+            onChangeText={text => {
+              setContrasena(text);
+              validateField('contrasena', text);
+              validatePasswordLength(text, 'contrasena');
+            }}
             style={styles.input}
             secureTextEntry
           />
+          {errors.contrasena && <Text style={styles.errorText}>{errors.contrasena}</Text>}
+
           <Text style={styles.label}>Confirmar contraseña</Text>
           <TextInput
             value={confirmarContrasena}
-            onChangeText={setConfirmarContrasena}
+            onChangeText={text => {
+              setConfirmarContrasena(text);
+              validateField('confirmarContrasena', text);
+              validatePasswordLength(text, 'confirmarContrasena');
+            }}
             style={styles.input}
             secureTextEntry
           />
+          {errors.confirmarContrasena && <Text style={styles.errorText}>{errors.confirmarContrasena}</Text>}
+
           <View style={styles.buttonContainer}>
             <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
             <View style={styles.orContainer}>
@@ -144,14 +248,16 @@ const RegisScreen = ({ navigation }) => {
               <View style={styles.line}></View>
             </View>
           </View>
+
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => {}}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => { }}>
               <Image source={require('../assets/google.png')} style={styles.logoImage} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => {}}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => { }}>
               <Image source={require('../assets/facebook.png')} style={styles.logoImage} />
             </TouchableOpacity>
           </View>
+
           <View style={styles.registerContainer}>
             <Text style={styles.registerText}>¿Tienes cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -238,6 +344,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: '90%',
   },
+  phoneInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '90%',
+  },
+  phonePrefix: {
+    fontSize: 16,
+    marginRight: 5,
+    color: 'black',
+  },
+  phoneInput: {
+    flex: 1,
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingLeft: 10,
+    borderRadius: 5,
+  },
   buttonContainer: {
     width: '90%',
     marginTop: 15,
@@ -284,6 +409,13 @@ const styles = StyleSheet.create({
   registerText: {
     color: 'black',
     fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    alignSelf: 'flex-start',
+    marginLeft: 20,
+    marginBottom: 5,
+    fontSize: 12,
   },
 });
 
