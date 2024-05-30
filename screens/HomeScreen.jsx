@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -13,6 +13,8 @@ const HomeScreen = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [products, setProducts] = useState([]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState('Todos');
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -38,8 +40,18 @@ const HomeScreen = () => {
         }
       }));
       setProducts(productsWithVendors);
+      applyCategoryFilter(productsWithVendors, currentCategory); // Apply category filter
     } catch (error) {
       console.error("Error fetching products:", error);
+    }
+  };
+
+  const applyCategoryFilter = (products, category) => {
+    if (category === 'Todos') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => product.categoria === category);
+      setFilteredProducts(filtered);
     }
   };
 
@@ -50,8 +62,22 @@ const HomeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
-    }, [])
+    }, [currentCategory]) // Add currentCategory as dependency
   );
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const advertisements = [
     'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
@@ -90,66 +116,77 @@ const HomeScreen = () => {
     );
   };
 
+  const filterByCategory = (category) => {
+    setCurrentCategory(category);
+    applyCategoryFilter(products, category);
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <SearchBar />
-      <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
-        <Animated.Image
-          source={{ uri: advertisements[currentAdIndex] }}
-          style={styles.adImage}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
-        <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
-      </TouchableOpacity>
-      <View style={styles.iconContainer}>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
-            <Image source={require('../assets/frituras.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Frituras</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#5fe8bf' }]}>
-            <Image source={require('../assets/dulces.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dulces</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#dfe164' }]}>
-            <Image source={require('../assets/comida.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Comida</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#f496e5' }]}>
-            <Image source={require('../assets/postres.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Postres</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#aa9e9e' }]}>
-            <Image source={require('../assets/dispositivos.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dispositivos</Text>
-        </View>
-      </View>
-      <View style={styles.containerProduccts}>
-        <Text style={styles.allProductsText}>Todos los productos</Text>
-        <FlatList
-          data={products}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          numColumns={2}
-          contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
-        />
-      </View>
-      <BottomMenuBar isHomeScreen={true}/>
-    </View>
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
+              <Animated.Image
+                source={{ uri: advertisements[currentAdIndex] }}
+                style={styles.adImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
+              <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
+            </TouchableOpacity>
+
+            <View style={styles.categoryContainer}>
+              <FlatList
+                horizontal
+                data={[
+                  { key: 'Todos', color: '#030A8C', icon: 'th' },
+                  { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
+                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/bebidas.png') },
+                  { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
+                  { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
+                  { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
+                  { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
+                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/otros.png') },
+                ]}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
+                    <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+                      {typeof item.icon === 'string' ? (
+                        <Icon name={item.icon} size={24} color="white" />
+                      ) : (
+                        <Image source={item.icon} style={styles.iconImage} />
+                      )}
+                    </View>
+                    <Text style={styles.iconText}>{item.key}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={item => item.key}
+                showsHorizontalScrollIndicator={false}
+              />
+              <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
+            </View>
+          </>
+        }
+        data={filteredProducts}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        numColumns={2}
+        contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
+      />
+      {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  ScrollViewMain:{
+    marginBottom: 45,
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -229,21 +266,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     alignItems: 'center',
   },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
   iconImage: {
     width: 40,
     height: 40,
@@ -259,12 +281,13 @@ const styles = StyleSheet.create({
   allProductsText: {
     fontSize: 20,
     marginLeft: 10,
-    marginBottom:  10,
+    marginBottom:  5,
     fontWeight: 'bold',
+    marginTop: 15,
   },
   productList: {
     paddingHorizontal: 10,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   productItem: {
     flex: 1,
@@ -319,10 +342,46 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
+
+  // Estilos de categorySearch
+
   searchResultContainer: {
     flexGrow: 1,
     paddingBottom: 20,
     zIndex: 1,
+  },
+  categoryContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  searchResultContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    zIndex: 1,
+  },
+  iconScrollView: {
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  iconWrapper: {
+    paddingTop: 8,
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 

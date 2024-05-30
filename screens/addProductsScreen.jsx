@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
@@ -15,9 +15,11 @@ const AddProductsScreen = ({ navigation }) => {
   const [productPrice, setProductPrice] = useState('');
   const [productUnits, setProductUnits] = useState('');
   const [productCategory, setProductCategory] = useState('');
+  const [productDescription, setProductDescription] = useState('');
   const [productImage, setProductImage] = useState(null);
   const [userDocId, setUserDocId] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -30,6 +32,20 @@ const AddProductsScreen = ({ navigation }) => {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
   }, []);
 
   const fetchUserDocId = async (email) => {
@@ -53,7 +69,7 @@ const AddProductsScreen = ({ navigation }) => {
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: false,
     });
-    if (pickerResult.cancelled === true) {
+    if (pickerResult.canceled) {
       return;
     }
 
@@ -63,7 +79,7 @@ const AddProductsScreen = ({ navigation }) => {
   };
 
   const handlePublishProduct = async () => {
-    if (productName && productPrice && productUnits && productImage && productCategory) {
+    if (productName && productPrice && productUnits && productImage && productCategory && productDescription) {
       try {
         // Subir la imagen a Firebase Storage
         const response = await fetch(productImage);
@@ -88,10 +104,12 @@ const AddProductsScreen = ({ navigation }) => {
           nombre: productName,
           precio: Number(productPrice),
           cantidad: Number(productUnits),
+          descripcion: productDescription,
           imagen: imageUrl,
           categoria: productCategory,
           fotoVendedorRef: userDocRef,
           vendedorRef: userDocRef,
+          statusView: true,
         };
 
         // Agregar el nuevo producto a Firestore
@@ -109,7 +127,10 @@ const AddProductsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TopBar />
       <View style={styles.headerContainer}>
         <BackButton />
@@ -165,6 +186,13 @@ const AddProductsScreen = ({ navigation }) => {
               </View>
             </View>
           </View>
+          <Text style={styles.label}>Descripción</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={productDescription}
+            onChangeText={setProductDescription}
+            multiline
+          />
           <Text style={styles.labelImage}>Imagen del Producto</Text>
           <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
             {productImage ? (
@@ -180,8 +208,8 @@ const AddProductsScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <BottomMenuBar />
-    </View>
+      {!keyboardVisible && <BottomMenuBar />}
+    </KeyboardAvoidingView>
   );
 };
 
