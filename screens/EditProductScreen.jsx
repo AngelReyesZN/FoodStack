@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -20,6 +20,7 @@ const EditProductScreen = ({ route, navigation }) => {
   const [categoria, setCategoria] = useState('');
   const [imagen, setImagen] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -42,6 +43,20 @@ const EditProductScreen = ({ route, navigation }) => {
 
     fetchProductData();
   }, [productId]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -119,7 +134,10 @@ const EditProductScreen = ({ route, navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TopBar />
       <View style={styles.headerContainer}>
         <BackButton />
@@ -207,8 +225,8 @@ const EditProductScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <BottomMenuBar isMenuScreen={true} />
-    </View>
+      {!keyboardVisible && <BottomMenuBar isMenuScreen={true} />}
+    </KeyboardAvoidingView>
   );
 };
 
@@ -240,6 +258,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     marginBottom: 20,
+    marginTop: 5,
   },
   label: {
     fontSize: 17,
@@ -251,7 +270,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 12,
     fontSize: 16,
-    marginBottom: 15,
+    marginTop: 5,
+    marginBottom: 20,
   },
   inputWithoutBorder: {
     flex: 1,
@@ -307,8 +327,8 @@ const styles = StyleSheet.create({
     padding: 25,
   },
   productImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     marginBottom: 10,
   },
