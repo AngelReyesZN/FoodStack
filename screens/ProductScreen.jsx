@@ -53,6 +53,10 @@ const ProductScreen = ({ route }) => {
     setIsFavorite(!isFavorite);
   };
 
+  const navigateToSellerInfo = () => {
+    navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
+  };
+
   const handleWhatsApp = () => {
     const phoneNumber = product.vendedor?.telefono;
     if (phoneNumber) {
@@ -76,9 +80,13 @@ const ProductScreen = ({ route }) => {
       <Text style={styles.name}>{product.nombre}</Text>
       <Image source={{ uri: product.imagen }} style={styles.image} />
       <View style={styles.sellerContainer}>
-        <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
+        <TouchableOpacity onPress={navigateToSellerInfo}>
+          <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
+        </TouchableOpacity>
         <View style={styles.sellerInfo}>
-          <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
+          <TouchableOpacity onPress={navigateToSellerInfo}>
+            <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
+          </TouchableOpacity>
           <View style={styles.ratingContainer}>
             <Text style={styles.ratingText}>4.5</Text>
             <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />

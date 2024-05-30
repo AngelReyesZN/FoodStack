@@ -17,16 +17,8 @@ import ProductScreen from '../screens/ProductScreen.jsx';
 import SuccessfulScreen from '../screens/SuccessfulScreen';
 import PersonalDataScreen from '../screens/PersonalDataScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
-import HistoryScreen from '../screens/HistoryScreen';
-import MyReviewsScreen from '../screens/MyReviewsScreen';
-import CardsScreen from '../screens/CardsScreen';
-import MyProductsScreen from '../screens/MyProductsScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
 import LoadProductScreen from '../screens/LoadProductScreen';
-import EditProductScreen from '../screens/EditProductScreen';
-
-import PurchaseScreen from '../screens/PurchaseScreen';
-import SellScreen from '../screens/SellScreen';
+import InfoSellerScreen from '../screens/InfoSellerScreen.jsx';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
@@ -49,7 +41,21 @@ function MyScreens() {
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
-        options={{ headerShown: false }}
+        options={({ navigation }) => ({
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
+              <Image
+                source={LogoImage}
+                style={{ width: 35, height: 35, marginRight:5, marginStart: 30 }}
+              />
+              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center',fontWeight: 'bold', alignItems: 'center'}}>Changarrito FIF</Text>
+            </View>
+          ),
+          headerStyle: {
+            backgroundColor: 'white',
+          },
+          headerTintColor: '#030A8C',
+        })}
       />
       <Stack.Screen
         name='Verify'
@@ -59,9 +65,9 @@ function MyScreens() {
             <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
               <Image
                 source={LogoImage}
-                style={{ width: 35, height: 35, marginRight: 5, marginStart: 30 }}
+                style={{ width: 35, height: 35, marginRight:5, marginStart: 30 }}
               />
-              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center', fontWeight: 'bold', alignItems: 'center' }}>Changarrito FIF</Text>
+              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center',fontWeight: 'bold', alignItems: 'center'}}>Changarrito FIF</Text>
             </View>
           ),
           headerStyle: {
@@ -78,6 +84,16 @@ function MyScreens() {
       <Stack.Screen
         name="ProductScreen"
         component={ProductScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LoadProduct"
+        component={LoadProductScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="InfoSeller"
+        component={InfoSellerScreen}
         options={{ headerShown: false }}
       />
 
@@ -106,74 +122,16 @@ function MyScreens() {
         component={AddProductsScreen}
         options={{ headerShown: false }}
       />
-
-      {/* Navegacion del MenuScreen */}
-      
       <Stack.Screen
         name="PersonalInfo"
-        component={PersonalDataScreen}
+        component={PersonalDataScreen} // Nueva pantalla
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Favorites"
-        component={FavoritesScreen}
+        component={FavoritesScreen} // Nueva pantalla
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name="History"
-        component={HistoryScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MyReviews"
-        component={MyReviewsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Cards"
-        component={CardsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MyProducts"
-        component={MyProductsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{ headerShown: false }}
-      />
-      
-      {/*Navegacion HistoryScreen */}
-
-      <Stack.Screen
-        name="Purchase"
-        component={PurchaseScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="Sell"
-        component={SellScreen}
-        options={{ headerShown: false }}
-      />
-
-      {/**Otras pantallas*/}
-      <Stack.Screen
-        name="LoadProduct"
-        component={LoadProductScreen}
-        options={{ headerShown: false }}
-      />
-
-      {/** Navegacion MisProductos */}
-      <Stack.Screen
-        name="EditProduct"
-        component={EditProductScreen}
-        options={{ headerShown: false }}
-      />
-
-
     </Stack.Navigator>
   );
 }
