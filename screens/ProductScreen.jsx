@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 
 const ProductScreen = ({ route }) => {
-  const { product, isFavorite: initialIsFavorite } = route.params;
-  const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  const { productId } = route.params;
+  const [product, setProduct] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
   const navigation = useNavigation();
 
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const productDoc = await getDoc(doc(db, 'productos', productId));
+      if (productDoc.exists()) {
+        const productData = productDoc.data();
+        const vendorDoc = await getDoc(doc(db, productData.vendedorRef.path));
+        const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
+        setProduct({ ...productData, vendedor: vendorData });
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
   const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
+    if (product && product.cantidad > 1) {
+      setProduct({ ...product, cantidad: product.cantidad - 1 });
     }
   };
 
   const increaseQuantity = () => {
-    setQuantity(quantity + 1);
+    if (product) {
+      setProduct({ ...product, cantidad: product.cantidad + 1 });
+    }
   };
 
   const toggleFavorite = () => {
@@ -27,17 +45,24 @@ const ProductScreen = ({ route }) => {
   };
 
   const handleWhatsApp = () => {
-    const phoneNumber = product.vendedor?.telefono;
+    const phoneNumber = product?.vendedor?.telefono;
     if (phoneNumber) {
       const url = `whatsapp://send?phone=${phoneNumber}`;
-      Linking.openURL(url)
-        .catch(() => {
-          Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
-        });
+      Linking.openURL(url).catch(() => {
+        Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
+      });
     } else {
       Alert.alert('Error', 'Número de teléfono no disponible.');
     }
   };
+
+  if (!product) {
+    return (
+      <View style={styles.container}>
+        <Text>Cargando...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -49,7 +74,7 @@ const ProductScreen = ({ route }) => {
       <Text style={styles.name}>{product.nombre}</Text>
       <Image source={{ uri: product.imagen }} style={styles.image} />
       <View style={styles.sellerContainer}>
-        <Image source={{ uri: product.fotoVendedor || 'path/to/default/image' }} style={styles.sellerImage} />
+        <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
         <View style={styles.sellerInfo}>
           <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
           <View style={styles.ratingContainer}>
@@ -62,7 +87,7 @@ const ProductScreen = ({ route }) => {
         <TouchableOpacity style={styles.button} onPress={decreaseQuantity}>
           <Image source={require('../assets/rscMenu/BotonMenos.png')} style={styles.buttonIcon} />
         </TouchableOpacity>
-        <Text style={styles.quantity}>{quantity}</Text>
+        <Text style={styles.quantity}>{product.cantidad}</Text>
         <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
           <Image source={require('../assets/rscMenu/BotonMas.png')} style={styles.buttonIcon} />
         </TouchableOpacity>
@@ -73,10 +98,10 @@ const ProductScreen = ({ route }) => {
           <Image source={require('../assets/rscMenu/BotonImagen.png')} style={styles.imageButtonIcon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-          <Icon 
-            name={isFavorite ? 'heart' : 'heart-o'} 
-            size={27} 
-            color={isFavorite ? '#e82d2d' : '#030A8C'} 
+          <Icon
+            name={isFavorite ? 'heart' : 'heart-o'}
+            size={27}
+            color={isFavorite ? '#e82d2d' : '#030A8C'}
             style={[styles.favoriteIcon]}
           />
         </TouchableOpacity>
