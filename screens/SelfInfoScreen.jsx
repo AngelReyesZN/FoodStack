@@ -4,43 +4,52 @@ import SearchBar from '../components/SearchBar';
 import BackButton from '../components/BackButton';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { getAuth } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
-const InfoSeller = ({ route, navigation }) => {
-  const { sellerId } = route.params;
-  const [seller, setSeller] = useState(null);
-  const [sellerProducts, setSellerProducts] = useState([]);
+const SelfInfoScreen = ({ navigation }) => {
+  const [user, setUser] = useState(null);
+  const [userProducts, setUserProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const fetchSellerData = async () => {
-      try {
-        const sellerDoc = await getDoc(doc(db, 'usuarios', sellerId));
-        if (sellerDoc.exists()) {
-          setSeller(sellerDoc.data());
-        } else {
-          console.error("Vendedor no encontrado");
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const q = query(collection(db, 'usuarios'), where('correo', '==', currentUser.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            const userData = userDoc.data();
+            setUser({ ...userData, id: userDoc.id });
+
+            // Fetch user products after setting user data
+            fetchUserProducts(userDoc.id);
+          } else {
+            console.error('No se encontró el usuario con el correo:', currentUser.email);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
         }
-      } catch (error) {
-        console.error("Error al cargar los datos del vendedor:", error);
       }
     };
 
-    const fetchSellerProducts = async () => {
+    const fetchUserProducts = async (userId) => {
       try {
-        const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', sellerId)));
+        const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', userId)));
         const querySnapshot = await getDocs(q);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setSellerProducts(products);
+        setUserProducts(products);
       } catch (error) {
-        console.error("Error al cargar los productos del vendedor:", error);
+        console.error('Error al cargar los productos del usuario:', error);
       }
     };
 
-    fetchSellerData();
-    fetchSellerProducts();
-  }, [sellerId]);
+    fetchUserData();
+  }, []);
 
   const toggleFavorite = (productId) => {
     if (favorites.includes(productId)) {
@@ -72,7 +81,7 @@ const InfoSeller = ({ route, navigation }) => {
     );
   };
 
-  if (!seller) {
+  if (!user) {
     return <Text>Cargando...</Text>;
   }
 
@@ -86,10 +95,10 @@ const InfoSeller = ({ route, navigation }) => {
         </View>
       </View>
       <View style={styles.profileContainer}>
-        <Image source={{ uri: seller.foto || 'path/to/default/image' }} style={styles.profileImage} />
+        <Image source={{ uri: user.foto || 'path/to/default/image' }} style={styles.profileImage} />
       </View>
-      <Text style={styles.sellerName}>{seller.nombre}</Text>
-      <Text style={styles.sellerInfo}>
+      <Text style={styles.userName}>{user.nombre}</Text>
+      <Text style={styles.userInfo}>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque ipsum non sapien dignissim, in dignissim ligula aliquam. Nullam scelerisque ipsum non sapien dignissim.
       </Text>
       <View style={styles.detailsContainer}>
@@ -106,11 +115,11 @@ const InfoSeller = ({ route, navigation }) => {
         </View>
       </View>
       <Text style={styles.allProductsText}>Productos</Text>
-      {sellerProducts.length === 0 ? (
+      {userProducts.length === 0 ? (
         <Text style={styles.noProductsText}>No hay productos para mostrar.</Text>
       ) : (
         <FlatList
-          data={sellerProducts}
+          data={userProducts}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
@@ -154,12 +163,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#030A8C',
   },
-  sellerName: {
+  userName: {
     fontSize: 25,
     paddingTop: 15,
     paddingLeft: 30,
   },
-  sellerInfo: {
+  userInfo: {
     fontSize: 16,
     color: '#000',
     paddingHorizontal: 30,
@@ -266,4 +275,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default InfoSeller;
+export default SelfInfoScreen;

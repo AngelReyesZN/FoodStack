@@ -67,6 +67,14 @@ const MenuScreen = ({ navigation }) => {
     navigation.navigate(option.screen, { label: option.label });
   };
 
+  const navigateToUserInfo = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      navigation.navigate('SelfInfoScreen', { userId: user.uid });
+    }
+  };
+
   if (!userData) {
     return (
       <SafeAreaView style={styles.safeContainer}>
@@ -84,7 +92,7 @@ const MenuScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.contentContainer}>
           <Text style={styles.menuTitle}>Menú</Text>
-          <TouchableOpacity style={styles.userContainer}>
+          <TouchableOpacity style={styles.userContainer} onPress={navigateToUserInfo}>
             <Image source={{ uri: userData.foto }} style={styles.userPhoto} />
             <View style={styles.userInfo}>
               <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">{userData.nombre}</Text>

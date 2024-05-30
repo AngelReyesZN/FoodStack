@@ -27,6 +27,7 @@ import MyProductsScreen from '../screens/MyProductsScreen.jsx';
 import PurchaseScreen from '../screens/PurchaseScreen.jsx';
 import SellScreen from '../screens/SellScreen.jsx';
 import EditProductScreen from '../screens/EditProductScreen.jsx';
+import SelfInfoScreen from '../screens/SelfInfoScreen';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
@@ -128,6 +129,11 @@ function MyScreens() {
       
       
         {/* Navegacion del MenuScreen */}
+        <Stack.Screen 
+        name="SelfInfoScreen" 
+        component={SelfInfoScreen} 
+        options={{ headerShown: false }}
+        />
       
       <Stack.Screen
         name="PersonalInfo"
