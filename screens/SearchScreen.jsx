@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import products from '../data/products';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SearchResults = ({ route }) => {
@@ -11,10 +12,21 @@ const SearchResults = ({ route }) => {
   const searchInputRef = useRef(null);
   const navigation = useNavigation();
 
-  const handleSearch = (text) => {
+  const handleSearch = async (text) => {
+    if (text.trim() === '') {
+      setFilteredProducts([]);
+      return;
+    }
+
+    const lowerText = text.toLowerCase();
+    const productsQuery = query(collection(db, 'productos'));
+    const querySnapshot = await getDocs(productsQuery);
+    const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     const filtered = products.filter(product =>
-      product.nombre.toLowerCase().includes(text.toLowerCase())
+      product.nombre.toLowerCase().includes(lowerText)
     );
+
     setFilteredProducts(filtered);
   };
 
@@ -27,7 +39,7 @@ const SearchResults = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('ProductScreen', { product: item })}
+      onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
     >
       <View style={styles.item}>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />

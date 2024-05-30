@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, Alert } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 
 const ProductScreen = ({ route }) => {
-  const { product, isFavorite: initialIsFavorite } = route.params;
+  const { productId, isFavorite: initialIsFavorite } = route.params;
+  const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const productDoc = await getDoc(doc(db, 'productos', productId));
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          const vendorDoc = await getDoc(productData.vendedorRef);
+          const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
+          setProduct({ ...productData, vendedor: vendorData });
+        } else {
+          console.error("Producto no encontrado");
+        }
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  if (!product) {
+    return <Text>Cargando...</Text>;
+  }
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -49,7 +76,7 @@ const ProductScreen = ({ route }) => {
       <Text style={styles.name}>{product.nombre}</Text>
       <Image source={{ uri: product.imagen }} style={styles.image} />
       <View style={styles.sellerContainer}>
-        <Image source={{ uri: product.fotoVendedor || 'path/to/default/image' }} style={styles.sellerImage} />
+        <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
         <View style={styles.sellerInfo}>
           <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
           <View style={styles.ratingContainer}>
@@ -73,10 +100,10 @@ const ProductScreen = ({ route }) => {
           <Image source={require('../assets/rscMenu/BotonImagen.png')} style={styles.imageButtonIcon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-          <Icon 
-            name={isFavorite ? 'heart' : 'heart-o'} 
-            size={27} 
-            color={isFavorite ? '#e82d2d' : '#030A8C'} 
+          <Icon
+            name={isFavorite ? 'heart' : 'heart-o'}
+            size={27}
+            color={isFavorite ? '#e82d2d' : '#030A8C'}
             style={[styles.favoriteIcon]}
           />
         </TouchableOpacity>

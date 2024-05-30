@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -102,20 +102,7 @@ const HomeScreen = () => {
     return (
       <TouchableOpacity
         style={styles.productItem}
-        onPress={() =>
-          navigation.navigate('ProductScreen', {
-            product: {
-              id: item.id,
-              nombre: item.nombre,
-              imagen: item.imagen,
-              precio: item.precio,
-              cantidad: item.cantidad,
-              categoria: item.categoria,
-              vendedor: item.vendedor,
-              fotoVendedor: item.vendedor?.foto // Asegurar que fotoVendedor sea opcional
-            },
-          })
-        }
+        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
       >
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
@@ -140,87 +127,57 @@ const HomeScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <SearchBar />
-      <ScrollView style={styles.ScrollViewMain}>
-        <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
-          <Animated.Image
-            source={{ uri: advertisements[currentAdIndex] }}
-            style={styles.adImage}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
-          <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
-        </TouchableOpacity>
-
-        <View style={styles.categoryContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconScrollView}>
-            <TouchableOpacity onPress={() => filterByCategory('Todos')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#030A8C' }]}>
-                <Icon name="th" size={24} color="white" />
-              </View>
-              <Text style={styles.iconText}>Todos</Text>
+      <FlatList
+        ListHeaderComponent={
+          <>
+            <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
+              <Animated.Image
+                source={{ uri: advertisements[currentAdIndex] }}
+                style={styles.adImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
+              <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => filterByCategory('Comida')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#dfe164' }]}>
-                <Image source={require('../assets/comida.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Comida</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Bebidas')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#f5a623' }]}>
-                <Image source={require('../assets/bebidas.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Bebidas</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Frituras')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
-                <Image source={require('../assets/frituras.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Frituras</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Postres')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#f496e5' }]}>
-                <Image source={require('../assets/postres.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Postres</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Dulces')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#5fe8bf' }]}>
-                <Image source={require('../assets/dulces.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Dulces</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Dispositivos')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#8e44ad' }]}>
-                <Image source={require('../assets/dispositivos.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Dispositivos</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => filterByCategory('Otros')} style={styles.iconWrapper}>
-              <View style={[styles.iconCircle, { backgroundColor: '#aa9e9e' }]}>
-                <Image source={require('../assets/otros.png')} style={styles.iconImage} />
-              </View>
-              <Text style={styles.iconText}>Otros</Text>
-            </TouchableOpacity>
-          </ScrollView>
-
-          <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
-        </View>
-
-        <FlatList
-          data={filteredProducts}
-          renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
-          numColumns={2}
-          contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
-        />
-      </ScrollView>
+            <View style={styles.categoryContainer}>
+              <FlatList
+                horizontal
+                data={[
+                  { key: 'Todos', color: '#030A8C', icon: 'th' },
+                  { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
+                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/bebidas.png') },
+                  { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
+                  { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
+                  { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
+                  { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
+                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/otros.png') },
+                ]}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
+                    <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+                      {typeof item.icon === 'string' ? (
+                        <Icon name={item.icon} size={24} color="white" />
+                      ) : (
+                        <Image source={item.icon} style={styles.iconImage} />
+                      )}
+                    </View>
+                    <Text style={styles.iconText}>{item.key}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={item => item.key}
+                showsHorizontalScrollIndicator={false}
+              />
+              <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
+            </View>
+          </>
+        }
+        data={filteredProducts}
+        renderItem={renderItem}
+        keyExtractor={item => item.id.toString()}
+        numColumns={2}
+        contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
+      />
       {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
     </KeyboardAvoidingView>
   );
@@ -324,12 +281,13 @@ const styles = StyleSheet.create({
   allProductsText: {
     fontSize: 20,
     marginLeft: 10,
-    marginBottom:  10,
+    marginBottom:  5,
     fontWeight: 'bold',
+    marginTop: 15,
   },
   productList: {
     paddingHorizontal: 10,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   productItem: {
     flex: 1,
@@ -393,7 +351,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   categoryContainer: {
-    paddingHorizontal: 10,
+    marginTop: 10,
     marginBottom: 10,
   },
   searchResultContainer: {
