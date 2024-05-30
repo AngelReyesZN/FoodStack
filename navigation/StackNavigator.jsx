@@ -23,7 +23,7 @@ import CardsScreen from '../screens/CardsScreen';
 import MyProductsScreen from '../screens/MyProductsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import LoadProductScreen from '../screens/LoadProductScreen';
-
+import EditProductScreen from '../screens/EditProductScreen';
 
 import PurchaseScreen from '../screens/PurchaseScreen';
 import SellScreen from '../screens/SellScreen';
@@ -163,6 +163,13 @@ function MyScreens() {
       <Stack.Screen
         name="LoadProduct"
         component={LoadProductScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/** Navegacion MisProductos */}
+      <Stack.Screen
+        name="EditProduct"
+        component={EditProductScreen}
         options={{ headerShown: false }}
       />
 

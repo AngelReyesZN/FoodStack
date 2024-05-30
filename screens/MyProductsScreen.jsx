@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, FlatList, Image } from 'react-native';
+import { View, StyleSheet, Text, FlatList, Image, TouchableOpacity } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
@@ -7,7 +7,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 
-const MyProductsScreen = () => {
+const MyProductsScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -25,18 +25,16 @@ const MyProductsScreen = () => {
             const userData = userDoc.data();
             const userId = userDoc.id;
             setUser({ ...userData, id: userId });
-            console.log('User Data:', { ...userData, id: userId });
 
             const allProductsSnapshot = await getDocs(collection(db, 'productos'));
             const allProducts = allProductsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log('All Products:', allProducts);
 
             const userDocRef = doc(db, 'usuarios', userId);
             const userProducts = allProducts.filter(product => {
               const vendedorRef = product.vendedorRef;
               return vendedorRef && vendedorRef._key && vendedorRef._key.path.segments.includes(userId);
             });
-            console.log('User Products:', userProducts);
+
             setProducts(userProducts);
           } else {
             console.error('No se encontró el usuario con el correo:', currentUser.email);
@@ -55,9 +53,19 @@ const MyProductsScreen = () => {
   const renderProductItem = ({ item }) => (
     <View style={styles.productItem}>
       <Image source={{ uri: item.imagen }} style={styles.productImage} />
-      <Text style={styles.productName}>{item.nombre}</Text>
-      <Text style={styles.productDescription}>{item.categoria}</Text>
-      <Text style={styles.productPrice}>${item.precio}</Text>
+      <TouchableOpacity
+        style={styles.editIcon}
+        onPress={() => navigation.navigate('EditProduct', { productId: item.id })}
+      >
+        <Image source={require('../assets/iconEdit.png')} style={styles.iconImage} />
+      </TouchableOpacity>
+      <View style={styles.productInfoContainer}>
+        <View style={styles.productInfoRow}>
+          <Text style={styles.productName}>{item.nombre}</Text>
+          <Text style={styles.productPrice}>${item.precio.toFixed(2)}</Text>
+        </View>
+        <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
+      </View>
     </View>
   );
 
@@ -87,6 +95,8 @@ const MyProductsScreen = () => {
         renderItem={renderProductItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.productList}
+        numColumns={2}
+        key={2}
       />
       <BottomMenuBar isMenuScreen={true} />
     </View>
@@ -111,47 +121,65 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   productList: {
-    padding: 20,
-    marginBottom: 40,
+    padding: 10,
   },
   productItem: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 15,
-    marginVertical: 10,
+    padding: 10,
+    margin: 10,
+    flex: 1,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    position: 'relative',
   },
   productImage: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 10,
     marginBottom: 10,
   },
-  productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#030A8C',
+  productInfoContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
   },
-  productDescription: {
-    fontSize: 14,
-    color: '#8c8c8c',
-    textAlign: 'center',
+  productInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 5,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   productPrice: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#030A8C',
+  },
+  productUnits: {
+    fontSize: 14,
+    color: '#8c8c8c',
   },
   loadingText: {
     fontSize: 18,
     color: '#666',
     textAlign: 'center',
     marginVertical: 20,
+  },
+  editIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  iconImage: {
+    width: 20,
+    height: 20,
   },
 });
 
