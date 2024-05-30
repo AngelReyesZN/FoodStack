@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
@@ -17,19 +19,24 @@ const EditProductScreen = ({ route, navigation }) => {
   const [descripcion, setDescripcion] = useState('');
   const [categoria, setCategoria] = useState('');
   const [imagen, setImagen] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchProductData = async () => {
-      const productDoc = await getDoc(doc(db, 'productos', productId));
-      if (productDoc.exists()) {
-        const productData = productDoc.data();
-        setProduct(productData);
-        setNombre(productData.nombre);
-        setPrecio(productData.precio.toString());
-        setCantidad(productData.cantidad.toString());
-        setDescripcion(productData.descripcion);
-        setCategoria(productData.categoria);
-        setImagen(productData.imagen);
+      try {
+        const productDoc = await getDoc(doc(db, 'productos', productId));
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          setProduct(productData);
+          setNombre(productData.nombre);
+          setPrecio(productData.precio.toString());
+          setCantidad(productData.cantidad.toString());
+          setDescripcion(productData.descripcion);
+          setCategoria(productData.categoria);
+          setImagen(productData.imagen);
+        }
+      } catch (error) {
+        console.error('Error fetching product data:', error);
       }
     };
 
@@ -37,20 +44,68 @@ const EditProductScreen = ({ route, navigation }) => {
   }, [productId]);
 
   const handleSave = async () => {
-    await updateDoc(doc(db, 'productos', productId), {
-      nombre,
-      precio: parseFloat(precio),
-      cantidad: parseInt(cantidad, 10),
-      descripcion,
-      categoria,
-      imagen,
-    });
-    navigation.goBack();
+    try {
+      await updateDoc(doc(db, 'productos', productId), {
+        nombre,
+        precio: parseFloat(precio),
+        cantidad: parseInt(cantidad, 10),
+        descripcion,
+        categoria,
+        imagen,
+      });
+      Alert.alert('Éxito', 'Producto modificado exitosamente.');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error al actualizar el producto:', error);
+    }
   };
 
   const handleDelete = async () => {
-    await deleteDoc(doc(db, 'productos', productId));
-    navigation.goBack();
+    try {
+      await updateDoc(doc(db, 'productos', productId), {
+        statusView: false,
+      });
+      Alert.alert('Éxito', 'Producto eliminado exitosamente.');
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const localUri = result.assets[0].uri;
+      const filename = localUri.split('/').pop();
+      const response = await fetch(localUri);
+      const blob = await response.blob();
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `product_images/${filename}`);
+
+      setUploading(true);
+      try {
+        await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(storageRef);
+        setImagen(downloadURL);
+        setUploading(false);
+      } catch (error) {
+        console.error('Error al subir la imagen:', error);
+        setUploading(false);
+      }
+    }
+  };
+
+  const handleDescriptionChange = (text) => {
+    const words = text.split(' ');
+    if (words.length <= 100) {
+      setDescripcion(text);
+    }
   };
 
   if (!product) {
@@ -66,11 +121,11 @@ const EditProductScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <TopBar />
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <Text style={styles.title}>Editar producto</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.headerContainer}>
+        <BackButton />
+        <Text style={styles.title}>Editar producto</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Nombre del producto</Text>
           <TextInput
@@ -126,16 +181,21 @@ const EditProductScreen = ({ route, navigation }) => {
           <TextInput
             style={[styles.input, styles.textArea]}
             value={descripcion}
-            onChangeText={setDescripcion}
+            onChangeText={handleDescriptionChange}
             multiline
           />
 
           <Text style={styles.label}>Imagen del producto</Text>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: imagen }} style={styles.productImage} />
-            <TouchableOpacity style={styles.editIcon}>
+            {imagen ? (
+              <Image source={{ uri: imagen }} style={styles.productImage} />
+            ) : (
+              <Text style={styles.noImageText}>No hay imagen</Text>
+            )}
+            <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
               <Image source={require('../assets/iconEdit.png')} style={styles.iconImage} />
             </TouchableOpacity>
+            {uploading && <Text style={styles.uploadingText}>Subiendo imagen...</Text>}
           </View>
         </View>
         <View style={styles.buttonContainer}>
@@ -189,7 +249,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
-    padding: 10,
+    padding: 12,
     fontSize: 16,
     marginBottom: 15,
   },
@@ -252,6 +312,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 10,
   },
+  noImageText: {
+    fontSize: 16,
+    color: '#ccc',
+  },
   editIcon: {
     position: 'absolute',
     top: 10,
@@ -260,6 +324,10 @@ const styles = StyleSheet.create({
   iconImage: {
     width: 20,
     height: 20,
+  },
+  uploadingText: {
+    marginTop: 10,
+    color: '#666',
   },
   buttonContainer: {
     flexDirection: 'row',
