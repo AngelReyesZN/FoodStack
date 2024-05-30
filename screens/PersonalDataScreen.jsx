@@ -1,5 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, SafeAreaView, ScrollView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -13,6 +13,7 @@ const PersonalDataScreen = ({ route, navigation }) => {
     const [user, setUser] = useState(null);
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [newPhone, setNewPhone] = useState('');
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -37,6 +38,20 @@ const PersonalDataScreen = ({ route, navigation }) => {
         };
 
         fetchUserData();
+    }, []);
+
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+            setKeyboardVisible(true);
+        });
+        const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardVisible(false);
+        });
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
     }, []);
 
     const updateUser = async (userId, updatedData) => {
@@ -96,7 +111,10 @@ const PersonalDataScreen = ({ route, navigation }) => {
     }
 
     return (
-        <SafeAreaView style={styles.safeContainer}>
+        <KeyboardAvoidingView
+            style={styles.safeContainer}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
             <TopBar />
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.contentContainer}>
@@ -150,17 +168,13 @@ const PersonalDataScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             </ScrollView>
-            <BottomMenuBar isMenuScreen={true} />
-        </SafeAreaView>
+            {!keyboardVisible && <BottomMenuBar isMenuScreen={true} />}
+        </KeyboardAvoidingView>
     );
 };
 
 const styles = StyleSheet.create({
     safeContainer: {
-        flex: 1,
-        backgroundColor: 'white',
-    },
-    container: {
         flex: 1,
         backgroundColor: 'white',
     },
