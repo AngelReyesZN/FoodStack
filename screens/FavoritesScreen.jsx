@@ -1,15 +1,45 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 
 const FavoritesScreen = () => {
-  <View style={styles.container}>
-    <TopBar/>
-    <BackButton/>
-    <BottomMenuBar/>
-  </View>
+  const { favorites, removeFromFavorites } = useState();
+
+  const renderItem = ({ item }) => (
+    <View style={styles.productItem}>
+      <Image source={{ uri: item.imagen }} style={styles.productImage} />
+      <View style={styles.productInfo}>
+        <Text style={styles.productName}>{item.nombre}</Text>
+        <Text style={styles.productPrice}>{item.precio}</Text>
+      </View>
+      <TouchableOpacity onPress={() => removeFromFavorites(item.id)}>
+        <Text style={styles.removeButton}>Eliminar</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <TopBar />
+      <View style={styles.headerContainer}>
+        <BackButton />
+        <Text style={styles.title}>Favoritos</Text>
+      </View>
+      {favorites.length === 0 ? (
+        <Text style={styles.noFavoritesText}>No tienes productos favoritos aún.</Text>
+      ) : (
+        <FlatList
+          data={favorites}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.productList}
+        />
+      )}
+      <BottomMenuBar isMenuScreen = {true}/>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
