@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
@@ -76,22 +76,8 @@ const HomeScreen = () => {
     return (
       <TouchableOpacity
         style={styles.productItem}
-        onPress={() =>
-          navigation.navigate('ProductScreen', {
-            product: {
-              id: item.id,
-              nombre: item.nombre,
-              imagen: item.imagen,
-              precio: item.precio,
-              cantidad: item.cantidad,
-              categoria: item.categoria,
-              vendedor: item.vendedor,
-              fotoVendedor: item.vendedor?.foto // Asegurar que fotoVendedor sea opcional
-            },
-          })
-        }
+        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
       >
-        
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

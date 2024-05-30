@@ -5,39 +5,48 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
-import { getDoc, doc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 
 const ProductScreen = ({ route }) => {
-  const { productId } = route.params;
+  const { productId, isFavorite: initialIsFavorite } = route.params;
   const [product, setProduct] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const productDoc = await getDoc(doc(db, 'productos', productId));
-      if (productDoc.exists()) {
-        const productData = productDoc.data();
-        const vendorDoc = await getDoc(doc(db, productData.vendedorRef.path));
-        const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
-        setProduct({ ...productData, vendedor: vendorData });
+      try {
+        const productDoc = await getDoc(doc(db, 'productos', productId));
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          const vendorDoc = await getDoc(productData.vendedorRef);
+          const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
+          setProduct({ ...productData, vendedor: vendorData });
+        } else {
+          console.error("Producto no encontrado");
+        }
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
       }
     };
 
     fetchProduct();
   }, [productId]);
 
+  if (!product) {
+    return <Text>Cargando...</Text>;
+  }
+
   const decreaseQuantity = () => {
-    if (product && product.cantidad > 1) {
-      setProduct({ ...product, cantidad: product.cantidad - 1 });
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
     }
   };
 
   const increaseQuantity = () => {
-    if (product) {
-      setProduct({ ...product, cantidad: product.cantidad + 1 });
-    }
+    setQuantity(quantity + 1);
   };
 
   const toggleFavorite = () => {
@@ -45,24 +54,17 @@ const ProductScreen = ({ route }) => {
   };
 
   const handleWhatsApp = () => {
-    const phoneNumber = product?.vendedor?.telefono;
+    const phoneNumber = product.vendedor?.telefono;
     if (phoneNumber) {
       const url = `whatsapp://send?phone=${phoneNumber}`;
-      Linking.openURL(url).catch(() => {
-        Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
-      });
+      Linking.openURL(url)
+        .catch(() => {
+          Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
+        });
     } else {
       Alert.alert('Error', 'Número de teléfono no disponible.');
     }
   };
-
-  if (!product) {
-    return (
-      <View style={styles.container}>
-        <Text>Cargando...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -87,7 +89,7 @@ const ProductScreen = ({ route }) => {
         <TouchableOpacity style={styles.button} onPress={decreaseQuantity}>
           <Image source={require('../assets/rscMenu/BotonMenos.png')} style={styles.buttonIcon} />
         </TouchableOpacity>
-        <Text style={styles.quantity}>{product.cantidad}</Text>
+        <Text style={styles.quantity}>{quantity}</Text>
         <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
           <Image source={require('../assets/rscMenu/BotonMas.png')} style={styles.buttonIcon} />
         </TouchableOpacity>
