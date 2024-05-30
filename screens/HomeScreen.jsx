@@ -14,7 +14,7 @@ const HomeScreen = () => {
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [products, setProducts] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState('Todos los productos');
+  const [currentCategory, setCurrentCategory] = useState('Todos');
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -40,9 +40,18 @@ const HomeScreen = () => {
         }
       }));
       setProducts(productsWithVendors);
-      setFilteredProducts(productsWithVendors); // Inicializa con todos los productos
+      applyCategoryFilter(productsWithVendors, currentCategory); // Apply category filter
     } catch (error) {
       console.error("Error fetching products:", error);
+    }
+  };
+
+  const applyCategoryFilter = (products, category) => {
+    if (category === 'Todos') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(product => product.categoria === category);
+      setFilteredProducts(filtered);
     }
   };
 
@@ -53,7 +62,7 @@ const HomeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
-    }, [])
+    }, [currentCategory]) // Add currentCategory as dependency
   );
 
   useEffect(() => {
@@ -121,14 +130,8 @@ const HomeScreen = () => {
   };
 
   const filterByCategory = (category) => {
-    if (category === 'Todos') {
-      setFilteredProducts(products);
-      setCurrentCategory('Todos los productos');
-    } else {
-      const filtered = products.filter(product => product.categoria === category);
-      setFilteredProducts(filtered);
-      setCurrentCategory(category);
-    }
+    setCurrentCategory(category);
+    applyCategoryFilter(products, category);
   };
 
   return (
@@ -207,7 +210,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </ScrollView>
 
-          <Text style={styles.allProductsText}>{currentCategory}</Text>
+          <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
         </View>
 
         <FlatList
