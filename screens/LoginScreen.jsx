@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
 import Checkbox from 'expo-checkbox';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { auth, db } from '../services/firebaseConfig'; // Asegúrate de importar auth y db correctamente
+import { auth, db } from '../services/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = ({ navigation }) => {
   const [isChecked, setChecked] = useState(false);
   const [expediente, setExpediente] = useState('');
   const [contraseña, setContraseña] = useState('');
+
+  useEffect(() => {
+    // Cargar los valores guardados al montar el componente
+    const loadStoredValues = async () => {
+      try {
+        const storedExpediente = await AsyncStorage.getItem('expediente');
+        const storedContraseña = await AsyncStorage.getItem('contraseña');
+        const storedIsChecked = await AsyncStorage.getItem('isChecked');
+
+        if (storedExpediente) setExpediente(storedExpediente);
+        if (storedContraseña) setContraseña(storedContraseña);
+        if (storedIsChecked) setChecked(storedIsChecked === 'true');
+      } catch (error) {
+        console.error("Error loading stored values:", error);
+      }
+    };
+
+    loadStoredValues();
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -30,6 +50,17 @@ const LoginScreen = ({ navigation }) => {
           return;
         }
 
+        // Guardar los valores si el checkbox está marcado
+        if (isChecked) {
+          await AsyncStorage.setItem('expediente', expediente);
+          await AsyncStorage.setItem('contraseña', contraseña);
+          await AsyncStorage.setItem('isChecked', 'true');
+        } else {
+          await AsyncStorage.removeItem('expediente');
+          await AsyncStorage.removeItem('contraseña');
+          await AsyncStorage.setItem('isChecked', 'false');
+        }
+
         navigation.navigate('Home');
       } else {
         Alert.alert('Error', 'Expediente no encontrado');
@@ -37,6 +68,32 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       Alert.alert('Error', 'Usuario y/o contraseña incorrectos');
       console.error("Error al iniciar sesión:", error);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!expediente) {
+      Alert.alert('Error', 'Por favor, introduce tu expediente.');
+      return;
+    }
+
+    try {
+      // Buscar al usuario por expediente en Firestore
+      const usersRef = collection(db, 'usuarios');
+      const q = query(usersRef, where('expediente', '==', Number(expediente)));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userEmail = userDoc.data().correo;
+
+        await sendPasswordResetEmail(auth, userEmail);
+        Alert.alert('Éxito', 'Se ha enviado un correo para restablecer su contraseña.');
+      } else {
+        Alert.alert('Error', 'Expediente no encontrado');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo enviar el correo para restablecer la contraseña');
+      console.error("Error al enviar el correo de restablecimiento de contraseña:", error);
     }
   };
 
@@ -68,7 +125,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.checkboxContainer}>
           <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setChecked} />
           <Text style={styles.checkboxLabel}>Recordarme</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <TouchableOpacity onPress={handleForgotPassword}>
             <Text style={styles.forgotPasswordText}>Contraseña olvidada?</Text>
           </TouchableOpacity>
         </View>

@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import BackButton from '../components/BackButton';
+
 
 const SearchResults = ({ route }) => {
   const searchQuery = route?.params?.searchQuery || '';
@@ -44,7 +46,7 @@ const SearchResults = ({ route }) => {
       <View style={styles.item}>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <Text style={styles.name}>{item.nombre}</Text>
-        <Text style={styles.price}>{item.precio}</Text>
+        <Text style={styles.price}>${item.precio}.00</Text>
       </View>
     </TouchableOpacity>
   );
@@ -53,9 +55,7 @@ const SearchResults = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-left" size={22} color="#030A8C" />
-          </TouchableOpacity>
+        <BackButton/>
           <TextInput
             ref={searchInputRef}
             style={styles.searchInput}
