@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -13,6 +13,8 @@ const HomeScreen = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [products, setProducts] = useState([]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState('Todos los productos');
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -38,6 +40,7 @@ const HomeScreen = () => {
         }
       }));
       setProducts(productsWithVendors);
+      setFilteredProducts(productsWithVendors); // Inicializa con todos los productos
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -52,6 +55,20 @@ const HomeScreen = () => {
       fetchProducts();
     }, [])
   );
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const advertisements = [
     'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
@@ -91,7 +108,6 @@ const HomeScreen = () => {
           })
         }
       >
-        
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -104,66 +120,113 @@ const HomeScreen = () => {
     );
   };
 
+  const filterByCategory = (category) => {
+    if (category === 'Todos') {
+      setFilteredProducts(products);
+      setCurrentCategory('Todos los productos');
+    } else {
+      const filtered = products.filter(product => product.categoria === category);
+      setFilteredProducts(filtered);
+      setCurrentCategory(category);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <SearchBar />
-      <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
-        <Animated.Image
-          source={{ uri: advertisements[currentAdIndex] }}
-          style={styles.adImage}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
-        <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
-      </TouchableOpacity>
-      <View style={styles.iconContainer}>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
-            <Image source={require('../assets/frituras.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Frituras</Text>
+      <ScrollView style={styles.ScrollViewMain}>
+        <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
+          <Animated.Image
+            source={{ uri: advertisements[currentAdIndex] }}
+            style={styles.adImage}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
+          <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
+        </TouchableOpacity>
+
+        <View style={styles.categoryContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconScrollView}>
+            <TouchableOpacity onPress={() => filterByCategory('Todos')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#030A8C' }]}>
+                <Icon name="th" size={24} color="white" />
+              </View>
+              <Text style={styles.iconText}>Todos</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Comida')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#dfe164' }]}>
+                <Image source={require('../assets/comida.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Comida</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Bebidas')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#f5a623' }]}>
+                <Image source={require('../assets/bebidas.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Bebidas</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Frituras')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
+                <Image source={require('../assets/frituras.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Frituras</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Postres')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#f496e5' }]}>
+                <Image source={require('../assets/postres.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Postres</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Dulces')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#5fe8bf' }]}>
+                <Image source={require('../assets/dulces.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Dulces</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Dispositivos')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#8e44ad' }]}>
+                <Image source={require('../assets/dispositivos.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Dispositivos</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => filterByCategory('Otros')} style={styles.iconWrapper}>
+              <View style={[styles.iconCircle, { backgroundColor: '#aa9e9e' }]}>
+                <Image source={require('../assets/otros.png')} style={styles.iconImage} />
+              </View>
+              <Text style={styles.iconText}>Otros</Text>
+            </TouchableOpacity>
+          </ScrollView>
+
+          <Text style={styles.allProductsText}>{currentCategory}</Text>
         </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#5fe8bf' }]}>
-            <Image source={require('../assets/dulces.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dulces</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#dfe164' }]}>
-            <Image source={require('../assets/comida.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Comida</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#f496e5' }]}>
-            <Image source={require('../assets/postres.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Postres</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#aa9e9e' }]}>
-            <Image source={require('../assets/dispositivos.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dispositivos</Text>
-        </View>
-      </View>
-      <View style={styles.containerProduccts}>
-        <Text style={styles.allProductsText}>Todos los productos</Text>
+
         <FlatList
-          data={products}
+          data={filteredProducts}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
           contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
         />
-      </View>
-      <BottomMenuBar isHomeScreen={true}/>
-    </View>
+      </ScrollView>
+      {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  ScrollViewMain:{
+    marginBottom: 45,
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -243,21 +306,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     alignItems: 'center',
   },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
   iconImage: {
     width: 40,
     height: 40,
@@ -333,10 +381,46 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
   },
+
+  // Estilos de categorySearch
+
   searchResultContainer: {
     flexGrow: 1,
     paddingBottom: 20,
     zIndex: 1,
+  },
+  categoryContainer: {
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  searchResultContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    zIndex: 1,
+  },
+  iconScrollView: {
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  iconWrapper: {
+    paddingTop: 8,
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 
