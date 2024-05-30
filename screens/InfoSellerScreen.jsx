@@ -90,7 +90,7 @@ const InfoSeller = ({ route, navigation }) => {
       </View>
       <Text style={styles.sellerName}>{seller.nombre}</Text>
       <Text style={styles.sellerInfo}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque ipsum non sapien dignissim, in dignissim ligula aliquam. Nullam scelerisque ipsum non sapien dignissim.
+        {seller.descripcionUsuario || 'Sin descripción disponible.'}
       </Text>
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>

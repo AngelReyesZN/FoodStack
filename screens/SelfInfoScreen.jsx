@@ -99,7 +99,7 @@ const SelfInfoScreen = ({ navigation }) => {
       </View>
       <Text style={styles.userName}>{user.nombre}</Text>
       <Text style={styles.userInfo}>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque ipsum non sapien dignissim, in dignissim ligula aliquam. Nullam scelerisque ipsum non sapien dignissim.
+        {user.descripcionUsuario || 'Sin descripción disponible.'}
       </Text>
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginLeft: 30,
     marginTop: 20,
+    marginBottom: 15,
     fontWeight: 'bold',
   },
   noProductsText: {

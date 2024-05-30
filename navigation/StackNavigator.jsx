@@ -50,21 +50,7 @@ function MyScreens() {
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
-        options={({ navigation }) => ({
-          headerTitle: () => (
-            <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
-              <Image
-                source={LogoImage}
-                style={{ width: 35, height: 35, marginRight:5, marginStart: 30 }}
-              />
-              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center',fontWeight: 'bold', alignItems: 'center'}}>Changarrito FIF</Text>
-            </View>
-          ),
-          headerStyle: {
-            backgroundColor: 'white',
-          },
-          headerTintColor: '#030A8C',
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name='Verify'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, SafeAreaView, ScrollView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
-import { getAuth } from 'firebase/auth';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { getDocs, query, collection, where, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '../services/firebaseConfig';
@@ -14,6 +14,8 @@ const PersonalDataScreen = ({ route, navigation }) => {
     const [isEditingPhone, setIsEditingPhone] = useState(false);
     const [newPhone, setNewPhone] = useState('');
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [newDescription, setNewDescription] = useState('');
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -28,7 +30,9 @@ const PersonalDataScreen = ({ route, navigation }) => {
                         const userData = userDoc.data();
                         setUser({ ...userData, id: userDoc.id });
                         setNewPhone(userData.telefono);
-                    } else {
+                        setNewDescription(userData.descripcionUsuario || '');
+                    }
+                    else {
                         console.error('No se encontró el usuario con el correo:', currentUser.email);
                     }
                 } catch (error) {
@@ -67,9 +71,17 @@ const PersonalDataScreen = ({ route, navigation }) => {
     };
 
     const handleSave = () => {
+        const updatedData = {};
         if (isEditingPhone) {
-            updateUser(user.id, { telefono: newPhone });
+            updatedData.telefono = newPhone;
             setIsEditingPhone(false);
+        }
+        if (isEditingDescription) {
+            updatedData.descripcionUsuario = newDescription;
+            setIsEditingDescription(false);
+        }
+        if (Object.keys(updatedData).length > 0) {
+            updateUser(user.id, updatedData);
         }
     };
 
@@ -78,8 +90,20 @@ const PersonalDataScreen = ({ route, navigation }) => {
         setIsEditingPhone(false);
     };
 
-    const handleChangePassword = () => {
-        Alert.alert('Solicitud de cambio de contraseña', 'Haz solicitado el cambio de tu contraseña.');
+    const handleChangePassword = async () => {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            try {
+                await sendPasswordResetEmail(auth, currentUser.email);
+                Alert.alert('Éxito', 'Se ha enviado un enlace para restablecer la contraseña a tu correo electrónico.');
+            } catch (error) {
+                console.error('Error al enviar el correo de restablecimiento de contraseña:', error);
+                Alert.alert('Error', 'Hubo un problema al enviar el correo de restablecimiento de contraseña.');
+            }
+        } else {
+            Alert.alert('Error', 'No se ha encontrado el usuario.');
+        }
     };
 
     const handleChangePhoto = async () => {
@@ -151,11 +175,27 @@ const PersonalDataScreen = ({ route, navigation }) => {
                             <Text style={styles.changeText}>Cambiar teléfono</Text>
                         </TouchableOpacity>
 
+                        <Text style={styles.label}>Descripción</Text>
+                        {isEditingDescription ? (
+                            <TextInput
+                                style={[styles.input, styles.descripcionInput]}
+                                value={newDescription}
+                                onChangeText={setNewDescription}
+                                multiline
+                                numberOfLines={4}
+                            />
+                        ) : (
+                            <Text style={[styles.userInfo, { color: '#8c8c8c' }]}>{user.descripcionUsuario}</Text>
+                        )}
+                        <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingDescription(true)}>
+                            <Text style={styles.changeText}>Cambiar descripción</Text>
+                        </TouchableOpacity>
+
                         <TouchableOpacity style={styles.changePassButton} onPress={handleChangePassword}>
                             <Text style={styles.textCahngeP}>Cambiar Contraseña</Text>
                         </TouchableOpacity>
 
-                        {isEditingPhone && (
+                        {(isEditingPhone || isEditingDescription) && (
                             <View style={styles.buttonContainer}>
                                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                                     <Text style={styles.saveButtonText}>Guardar cambios</Text>
@@ -237,7 +277,6 @@ const styles = StyleSheet.create({
     },
     changeText: {
         color: '#030A8C',
-        marginBottom: 25,
     },
     input: {
         borderBottomWidth: 1,
@@ -284,6 +323,10 @@ const styles = StyleSheet.create({
     textCahngeP: {
         color: '#fff',
         fontSize: 15,
+    },
+    descripcionInput: {
+        width: '100%',
+        height: 100,
     },
 });
 
