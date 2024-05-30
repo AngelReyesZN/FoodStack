@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { UserContext } from '../context/UserContext';
+// import { UserContext } from '../context/UserContext';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 
 const FavoritesScreen = () => {
-  const { favorites, removeFromFavorites } = useContext(UserContext);
+  // const { favorites, removeFromFavorites } = useContext(UserContext);
 
   const renderItem = ({ item }) => (
     <View style={styles.productItem}>
