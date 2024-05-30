@@ -144,14 +144,14 @@ const HomeScreen = () => {
               <FlatList
                 horizontal
                 data={[
-                  { key: 'Todos', color: '#030A8C', icon: 'th' },
+                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png')  },
                   { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
-                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/bebidas.png') },
+                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/refresco.png') },
                   { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
                   { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
                   { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
                   { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
-                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/otros.png') },
+                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/mas.png') },
                 ]}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
