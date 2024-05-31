@@ -167,6 +167,11 @@ const ProductScreen = ({ route }) => {
             />
           </TouchableOpacity>
         </View>
+        <View style={styles.separatorReviews} />
+        <View style={styles.containerDescription}>
+          <Text style={styles.TextDescription}>Descripción</Text>
+        <Text style={styles.description}>{product.descripcion}</Text>
+        </View>
         <View style={styles.reviewsGeneral}>
 
           <View style={styles.separatorReviews} />
@@ -469,6 +474,21 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 20,
   },
+  containerDescription: {
+    paddingLeft: 30,
+    paddingRight: 30,
+  },
+  TextDescription: {
+    fontSize: 25,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'justify',
+  },
 });
+
 
 export default ProductScreen;
