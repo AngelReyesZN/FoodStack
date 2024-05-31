@@ -7,8 +7,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
 import StarRating from '../components/StarRating'; // Importar el componente StarRating
-import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
 const ProductScreen = ({ route }) => {
   const { productId, isFavorite: initialIsFavorite } = route.params;
@@ -42,29 +42,45 @@ const ProductScreen = ({ route }) => {
   }, [productId]);
 
   useEffect(() => {
-    // Cargar las reseñas desde AsyncStorage cuando el componente se monta
     const loadReviews = async () => {
       try {
-        const storedReviews = await AsyncStorage.getItem(`reviews_${productId}`);
-        if (storedReviews) {
-          const parsedReviews = JSON.parse(storedReviews);
-          setReviews(parsedReviews);
-          calculateAverageRating(parsedReviews);
-        }
+        const reviewsRef = collection(db, 'resenas');
+        const productRef = doc(db, `productos/${productId}`);
+        const q = query(reviewsRef, where('productoRef', '==', productRef));
+        const reviewsSnapshot = await getDocs(q);
+        const loadedReviews = await Promise.all(reviewsSnapshot.docs.map(async reviewDoc => {
+          const reviewData = reviewDoc.data();
+          
+          // Convertir usuarioRef a una referencia de documento
+          const userDocRef = doc(db, reviewData.usuarioRef.path ? reviewData.usuarioRef.path : reviewData.usuarioRef);
+          
+          const userDoc = await getDoc(userDocRef);
+          const userData = userDoc.exists() ? userDoc.data() : {};
+          
+          return {
+            ...reviewData,
+            fechaResena: reviewData.fechaResena ? reviewData.fechaResena.toDate() : null,
+            usuario: userData
+          };
+        }));
+        setReviews(loadedReviews);
+        console.log(loadedReviews);
+        calculateAverageRating(loadedReviews);
       } catch (error) {
         console.error('Error loading reviews:', error);
       }
     };
-
+  
     loadReviews();
   }, [productId]);
+  
 
   const calculateAverageRating = (reviews) => {
     if (reviews.length === 0) {
       setAverageRating(0);
       return;
     }
-    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const totalRating = reviews.reduce((sum, review) => sum + review.calificacionResena, 0);
     setAverageRating(totalRating / reviews.length);
   };
 
@@ -101,7 +117,7 @@ const ProductScreen = ({ route }) => {
 
   const addReview = async () => {
     if (review.trim() && rating > 0) {
-      const newReview = { review, rating, date: new Date().toLocaleDateString() };
+      const newReview = { review, calificacionResena: rating, fechaResena: new Date() };
       const updatedReviews = [...reviews, newReview];
       setReviews(updatedReviews);
       setReview('');
@@ -170,12 +186,10 @@ const ProductScreen = ({ route }) => {
         <View style={styles.separatorReviews} />
         <View style={styles.containerDescription}>
           <Text style={styles.TextDescription}>Descripción</Text>
-        <Text style={styles.description}>{product.descripcion}</Text>
+          <Text style={styles.description}>{product.descripcion}</Text>
         </View>
         <View style={styles.reviewsGeneral}>
-
           <View style={styles.separatorReviews} />
-
           <Text style={styles.reviewCount}>{reviews.length} Reseñas</Text>
           <View style={styles.fixedStars}>
             {Array.from({ length: 5 }, (_, index) => (
@@ -206,25 +220,32 @@ const ProductScreen = ({ route }) => {
             </TouchableOpacity>
           </View>
         </View>
-
         <View style={styles.separator} />
         <View style={styles.reviewsList}>
-          {reviews.map((rev, index) => (
-            <View key={index} style={styles.reviewItem}>
-              <View style={styles.reviewHeader}>
-                <StarRating
-                  maxStars={5}
-                  rating={rev.rating}
-                  onStarPress={() => { }}
-                  starSize={15} // Tamaño de las estrellas más pequeño
-                />
-                <Text style={styles.reviewDate}>{rev.date}</Text>
-              </View>
-              <Text style={styles.reviewText}>{rev.review}</Text>
-              <View style={styles.commentSeparator} />
-            </View>
-          ))}
-        </View>
+  {reviews.map((rev, index) => (
+    <View key={index} style={styles.reviewItem}>
+      <View style={styles.userHeader}>
+        <Image source={{ uri: rev.usuario.foto }} style={styles.userImage} />
+        <Text style={styles.userName}>{rev.usuario.nombre}</Text>
+      </View>
+      <View style={styles.reviewHeader}>
+        <StarRating
+          maxStars={5}
+          rating={rev.calificacionResena}
+          onStarPress={() => { }}
+          starSize={15} // Tamaño de las estrellas más pequeño
+        />
+        <Text style={styles.reviewDate}>
+          {rev.fechaResena ? rev.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
+        </Text>
+      </View>
+      <Text style={styles.reviewText}>{rev.comentario}</Text>
+      <View style={styles.commentSeparator} />
+    </View>
+  ))}
+</View>
+
+
         <View style={styles.bottomPadding} />
       </ScrollView>
       <BottomMenuBar />
@@ -466,7 +487,7 @@ const styles = StyleSheet.create({
   commentSeparator: {
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
-    marginVertical: 10,
+    marginTop:30,
   },
   reviewText: {
     fontSize: 18,
@@ -488,7 +509,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'justify',
   },
-});
 
+  // Estilos reviewList
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#666',
+  },
+});
 
 export default ProductScreen;
