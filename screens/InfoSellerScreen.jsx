@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
     marginLeft: 30,
     marginTop: 20,
     fontWeight: 'bold',
+    marginBottom: 15,
   },
   noProductsText: {
     fontSize: 16,
