@@ -44,7 +44,7 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
     <View style={styles.container}>
       <View style={styles.containerAddButton}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('AddProduct')}>
-          <Image source={require('../assets/iconsButtonBar/addButton.png')} style={styles.addButton} />
+          <Image source={require('../assets/iconsButtonBar/addbutton2.png')} style={styles.addButton} />
         </TouchableOpacity>
       </View>
       <View style={styles.menuIconsContainer}>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     height: 19,
   },
   addButton: {
-    width: 100,
+    width: 70,
     height: 70,
   },
   containerAddButton: {

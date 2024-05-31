@@ -42,24 +42,14 @@ const InfoSeller = ({ route, navigation }) => {
     fetchSellerProducts();
   }, [sellerId]);
 
-  const toggleFavorite = (productId) => {
-    if (favorites.includes(productId)) {
-      setFavorites(favorites.filter(id => id !== productId));
-    } else {
-      setFavorites([...favorites, productId]);
-    }
-  };
+  
 
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.includes(item.id);
     return (
       <TouchableOpacity
         style={styles.productItem}
         onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
       >
-        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item.id)}>
-          <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
-        </TouchableOpacity>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

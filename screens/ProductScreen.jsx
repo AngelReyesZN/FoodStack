@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
 import StarRating from '../components/StarRating';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, query, where, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 const ProductScreen = ({ route }) => {
   const { productId, isFavorite: initialIsFavorite } = route.params;
@@ -32,6 +32,16 @@ const ProductScreen = ({ route }) => {
           const vendorDoc = await getDoc(productData.vendedorRef);
           const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
           setProduct({ ...productData, vendedor: vendorData });
+
+          // Verificar si el producto es favorito
+          const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            const userDoc = userSnapshot.docs[0];
+            const favRefs = userDoc.data().favoritos || [];
+            const isFav = favRefs.some(ref => ref.id === productId);
+            setIsFavorite(isFav);
+          }
         } else {
           console.error("Producto no encontrado");
         }
@@ -91,8 +101,29 @@ const ProductScreen = ({ route }) => {
     setQuantity(quantity + 1);
   };
 
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+  const toggleFavorite = async () => {
+    try {
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+      if (!userSnapshot.empty) {
+        const userDocRef = userSnapshot.docs[0].ref;
+
+        if (isFavorite) {
+          await updateDoc(userDocRef, {
+            favoritos: arrayRemove(doc(db, 'productos', productId))
+          });
+        } else {
+          await updateDoc(userDocRef, {
+            favoritos: arrayUnion(doc(db, 'productos', productId))
+          });
+        }
+        setIsFavorite(!isFavorite);
+      } else {
+        console.error('Usuario no encontrado');
+      }
+    } catch (error) {
+      console.error('Error al actualizar favoritos:', error);
+    }
   };
 
   const navigateToSellerInfo = () => {
@@ -120,7 +151,6 @@ const ProductScreen = ({ route }) => {
         if (!userSnapshot.empty) {
           const userRef = userSnapshot.docs[0].ref;
           
-          // Obtener el tamaño actual de la colección 'resenas'
           const reviewsSnapshot = await getDocs(collection(db, 'resenas'));
           const newReviewId = `resena${reviewsSnapshot.size + 1}`;
 
@@ -132,7 +162,6 @@ const ProductScreen = ({ route }) => {
             usuarioRef: userRef
           };
 
-          // Agregar la nueva reseña con el ID específico
           await setDoc(doc(db, 'resenas', newReviewId), newReview);
           setReviews([...reviews, { ...newReview, usuario: userSnapshot.docs[0].data() }]);
           setReview('');
@@ -183,7 +212,10 @@ const ProductScreen = ({ route }) => {
             <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
           </TouchableOpacity>
           <View style={styles.sellerInfoContainer}>
+          <TouchableOpacity onPress={navigateToSellerInfo}>
             <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
+          </TouchableOpacity>
+
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>4.5</Text>
               <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />
@@ -192,17 +224,17 @@ const ProductScreen = ({ route }) => {
         </View>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={decreaseQuantity}>
-            <Image source={require('../assets/rscMenu/BotonMenos.png')} style={styles.buttonIcon} />
+            <Image source={require('../assets/rscMenu/disminuir.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
           <Text style={styles.quantity}>{quantity}</Text>
           <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
-            <Image source={require('../assets/rscMenu/BotonMas.png')} style={styles.buttonIcon} />
+            <Image source={require('../assets/rscMenu/aumentar.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
           <Text style={styles.price}>${product.precio}.00</Text>
         </View>
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.imageButton} onPress={handleWhatsApp}>
-            <Image source={require('../assets/rscMenu/BotonImagen.png')} style={styles.imageButtonIcon} />
+            <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.imageButtonIcon} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
             <Icon
@@ -282,6 +314,7 @@ const ProductScreen = ({ route }) => {
     </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

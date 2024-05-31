@@ -1,24 +1,66 @@
-import React, { useContext, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { db, auth } from '../services/firebaseConfig';
+import { doc, getDoc, getDocs, query, where, collection, updateDoc, arrayRemove } from 'firebase/firestore';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 
 const FavoritesScreen = () => {
-  const { favorites, removeFromFavorites } = useState();
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+        const userSnapshot = await getDocs(userQuery);
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          const favRefs = userDoc.data().favoritos || [];
+          const favs = await Promise.all(favRefs.map(async (ref) => {
+            const productDoc = await getDoc(ref);
+            return { id: ref.id, ...productDoc.data() };
+          }));
+          setFavorites(favs);
+        }
+      } catch (error) {
+        console.error('Error al cargar favoritos:', error);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
 
   const renderItem = ({ item }) => (
     <View style={styles.productItem}>
       <Image source={{ uri: item.imagen }} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.nombre}</Text>
-        <Text style={styles.productPrice}>{item.precio}</Text>
+        <Text style={styles.productPrice}>${item.precio}.00</Text>
       </View>
       <TouchableOpacity onPress={() => removeFromFavorites(item.id)}>
         <Text style={styles.removeButton}>Eliminar</Text>
       </TouchableOpacity>
     </View>
   );
+
+  const removeFromFavorites = async (productId) => {
+    try {
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+      if (!userSnapshot.empty) {
+        const userDocRef = userSnapshot.docs[0].ref;
+        await updateDoc(userDocRef, {
+          favoritos: arrayRemove(doc(db, 'productos', productId))
+        });
+        setFavorites(favorites.filter(fav => fav.id !== productId));
+      } else {
+        console.error('Usuario no encontrado');
+      }
+    } catch (error) {
+      console.error('Error al eliminar de favoritos:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -37,7 +79,7 @@ const FavoritesScreen = () => {
           contentContainerStyle={styles.productList}
         />
       )}
-      <BottomMenuBar isMenuScreen = {true}/>
+      <BottomMenuBar isMenuScreen={true} />
     </View>
   );
 };
