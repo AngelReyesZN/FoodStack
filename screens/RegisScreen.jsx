@@ -16,6 +16,7 @@ const RegisScreen = ({ navigation }) => {
   const [confirmarContrasena, setConfirmarContrasena] = useState('');
   const [image, setImage] = useState(null);
   const [correo, setCorreo] = useState('');
+  const [descripcionUsuario, setDescripcionUsuario] = useState('');
 
   const [errors, setErrors] = useState({});
 
@@ -77,6 +78,7 @@ const RegisScreen = ({ navigation }) => {
     validatePasswordLength(contrasena, 'contrasena');
     validateField('confirmarContrasena', confirmarContrasena);
     validatePasswordLength(confirmarContrasena, 'confirmarContrasena');
+    validateField('descripcionUsuario', descripcionUsuario);
 
     // Verificar si hay errores
     if (Object.keys(errors).length > 0) {
@@ -132,6 +134,7 @@ const RegisScreen = ({ navigation }) => {
         contrasena: contrasena,
         foto: imageUrl,
         correo: correo,
+        descripcionUsuario: descripcionUsuario,
       });
 
       Alert.alert('Registro exitoso', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
@@ -239,6 +242,20 @@ const RegisScreen = ({ navigation }) => {
             secureTextEntry
           />
           {errors.confirmarContrasena && <Text style={styles.errorText}>{errors.confirmarContrasena}</Text>}
+
+          <Text style={styles.label}>Descripción</Text>
+          <TextInput
+            value={descripcionUsuario}
+            onChangeText={text => {
+              setDescripcionUsuario(text);
+              validateField('descripcionUsuario', text);
+            }}
+            style={[styles.input, styles.descripcionInput]} // Añadir un estilo adicional
+            multiline
+            numberOfLines={4}
+          />
+          {errors.descripcionUsuario && <Text style={styles.errorText}>{errors.descripcionUsuario}</Text>}
+
 
           <View style={styles.buttonContainer}>
             <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
@@ -417,6 +434,11 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontSize: 12,
   },
+  descripcionInput: {
+    width: '90%', // Ajustar el ancho de la descripción
+    height: 80, // Ajustar la altura según sea necesario
+  },
+  
 });
 
 export default RegisScreen;

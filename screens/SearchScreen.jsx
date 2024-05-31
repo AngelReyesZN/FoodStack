@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: 'white',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
@@ -99,10 +98,6 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
-  backButton: {
-    marginRight: 10,
-    paddingTop: 10,
-  },
   searchInput: {
     height: 30,
     borderWidth: 1,
@@ -110,7 +105,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 5,
     borderColor: 'white',
-    marginTop: 10,
     flex: 1,
   },
   productImage: {

@@ -17,16 +17,17 @@ import ProductScreen from '../screens/ProductScreen.jsx';
 import SuccessfulScreen from '../screens/SuccessfulScreen';
 import PersonalDataScreen from '../screens/PersonalDataScreen';
 import FavoritesScreen from '../screens/FavoritesScreen';
-import HistoryScreen from '../screens/HistoryScreen';
-import MyReviewsScreen from '../screens/MyReviewsScreen';
-import CardsScreen from '../screens/CardsScreen';
-import MyProductsScreen from '../screens/MyProductsScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
 import LoadProductScreen from '../screens/LoadProductScreen';
-import EditProductScreen from '../screens/EditProductScreen';
-import InfoSellerScreen from '../screens/InfoSellerScreen';
-import PurchaseScreen from '../screens/PurchaseScreen';
-import SellScreen from '../screens/SellScreen';
+import InfoSellerScreen from '../screens/InfoSellerScreen.jsx';
+import HistoryScreen from '../screens/HistoryScreen.jsx';
+import MyReviewsScreen from '../screens/MyReviewsScreen.jsx';
+import CardsScreen from '../screens/CardsScreen.jsx';
+import NotificationsScreen from '../screens/NotificationsScreen.jsx';
+import MyProductsScreen from '../screens/MyProductsScreen.jsx';
+import PurchaseScreen from '../screens/PurchaseScreen.jsx';
+import SellScreen from '../screens/SellScreen.jsx';
+import EditProductScreen from '../screens/EditProductScreen.jsx';
+import SelfInfoScreen from '../screens/SelfInfoScreen';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
@@ -59,9 +60,9 @@ function MyScreens() {
             <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
               <Image
                 source={LogoImage}
-                style={{ width: 35, height: 35, marginRight: 5, marginStart: 30 }}
+                style={{ width: 35, height: 35, marginRight:5, marginStart: 30 }}
               />
-              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center', fontWeight: 'bold', alignItems: 'center' }}>Changarrito FIF</Text>
+              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center',fontWeight: 'bold', alignItems: 'center'}}>Changarrito FIF</Text>
             </View>
           ),
           headerStyle: {
@@ -111,8 +112,14 @@ function MyScreens() {
         component={AddProductsScreen}
         options={{ headerShown: false }}
       />
-
-      {/* Navegacion del MenuScreen */}
+      
+      
+        {/* Navegacion del MenuScreen */}
+        <Stack.Screen 
+        name="SelfInfoScreen" 
+        component={SelfInfoScreen} 
+        options={{ headerShown: false }}
+        />
       
       <Stack.Screen
         name="PersonalInfo"
@@ -177,7 +184,6 @@ function MyScreens() {
         component={EditProductScreen}
         options={{ headerShown: false }}
       />
-
 
     </Stack.Navigator>
   );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
@@ -77,6 +77,7 @@ const MyProductsScreen = ({ navigation }) => {
           <BackButton />
           <Text style={styles.title}>Mis productos</Text>
         </View>
+        <ActivityIndicator size="large" color="#030A8C" />
         <Text style={styles.loadingText}>Cargando productos...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </View>
@@ -96,7 +97,7 @@ const MyProductsScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.productList}
         numColumns={2}
-        key={2}
+        ListFooterComponent={<View style={{ height: 60 }} />} // Añade un margen inferior adicional
       />
       <BottomMenuBar isMenuScreen={true} />
     </View>
