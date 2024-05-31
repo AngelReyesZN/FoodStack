@@ -183,7 +183,9 @@ const ProductScreen = ({ route }) => {
             <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
           </TouchableOpacity>
           <View style={styles.sellerInfoContainer}>
+            <TouchableOpacity onPress={navigateToSellerInfo}>
             <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
+            </TouchableOpacity>
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>4.5</Text>
               <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />
