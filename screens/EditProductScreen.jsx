@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, query, where, getDocs,collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import { agregarNotificacion } from '../services/notifications'; // Importar la función
 
 const EditProductScreen = ({ route, navigation }) => {
   const { productId } = route.params;
@@ -58,9 +59,24 @@ const EditProductScreen = ({ route, navigation }) => {
     };
   }, []);
 
+  const getUserDocRef = async (email) => {
+    const q = query(collection(db, 'usuarios'), where('correo', '==', email));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].ref;
+    } else {
+      throw new Error('No se encontró el usuario');
+    }
+  };
+
   const handleSave = async () => {
     try {
-      await updateDoc(doc(db, 'productos', productId), {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const userDocRef = await getUserDocRef(user.email);
+
+      const productDocRef = doc(db, 'productos', productId);
+      await updateDoc(productDocRef, {
         nombre,
         precio: parseFloat(precio),
         cantidad: parseInt(cantidad, 10),
@@ -68,22 +84,37 @@ const EditProductScreen = ({ route, navigation }) => {
         categoria,
         imagen,
       });
+
+      // Agregar notificación para el usuario
+      await agregarNotificacion(userDocRef, 'Has modificado tu producto exitosamente');
+
       Alert.alert('Éxito', 'Producto modificado exitosamente.');
       navigation.goBack();
     } catch (error) {
       console.error('Error al actualizar el producto:', error);
+      Alert.alert('Error', 'Hubo un problema al guardar los cambios.');
     }
   };
 
   const handleDelete = async () => {
     try {
-      await updateDoc(doc(db, 'productos', productId), {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const userDocRef = await getUserDocRef(user.email);
+
+      const productDocRef = doc(db, 'productos', productId);
+      await updateDoc(productDocRef, {
         statusView: false,
       });
+
+      // Agregar notificación para el usuario
+      await agregarNotificacion(userDocRef, 'Producto eliminado');
+
       Alert.alert('Éxito', 'Producto eliminado exitosamente.');
       navigation.goBack();
     } catch (error) {
       console.error('Error al eliminar el producto:', error);
+      Alert.alert('Error', 'Hubo un problema al eliminar el producto.');
     }
   };
 

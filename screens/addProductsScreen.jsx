@@ -9,6 +9,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { onAuthStateChanged } from 'firebase/auth';
+import { agregarNotificacion } from '../services/notifications'; // Importar la función
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -114,6 +115,9 @@ const AddProductsScreen = ({ navigation }) => {
 
         // Agregar el nuevo producto a Firestore
         await setDoc(doc(db, 'productos', newProductId), newProduct);
+
+        // Agregar notificación para el usuario
+        await agregarNotificacion(userDocRef, 'Has publicado un producto con éxito');
 
         // Navegar a la pantalla de productos cargados
         navigation.navigate('LoadProduct');

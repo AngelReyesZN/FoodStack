@@ -9,6 +9,7 @@ import BackButton from '../components/BackButton.jsx';
 import StarRating from '../components/StarRating';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { agregarNotificacion } from '../services/notifications'; // Importa la función
 
 const ProductScreen = ({ route }) => {
   const { productId, isFavorite: initialIsFavorite } = route.params;
@@ -33,7 +34,6 @@ const ProductScreen = ({ route }) => {
           const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
           setProduct({ ...productData, vendedor: vendorData });
 
-          // Verificar si el producto es favorito
           const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
           const userSnapshot = await getDocs(userQuery);
           if (!userSnapshot.empty) {
@@ -118,6 +118,7 @@ const ProductScreen = ({ route }) => {
           });
         }
         setIsFavorite(!isFavorite);
+        // await agregarNotificacion(userDocRef, isFavorite ? 'Producto eliminado de favoritos' : 'Producto añadido a favoritos');
       } else {
         console.error('Usuario no encontrado');
       }
@@ -130,7 +131,7 @@ const ProductScreen = ({ route }) => {
     navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
   };
 
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     const phoneNumber = product.vendedor?.telefono;
     if (phoneNumber) {
       const url = `whatsapp://send?phone=${phoneNumber}`;
@@ -140,6 +141,12 @@ const ProductScreen = ({ route }) => {
         });
     } else {
       Alert.alert('Error', 'Número de teléfono no disponible.');
+    }
+    const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+    const userSnapshot = await getDocs(userQuery);
+    if (!userSnapshot.empty) {
+      const userDocRef = userSnapshot.docs[0].ref;
+      await agregarNotificacion(userDocRef, 'Te comuniscaste con un vendedor');
     }
   };
 
@@ -167,6 +174,7 @@ const ProductScreen = ({ route }) => {
           setReview('');
           setRating(0);
           calculateAverageRating([...reviews, { ...newReview, usuario: userSnapshot.docs[0].data() }]);
+          await agregarNotificacion(userRef, 'Añadiste una reseña');
         } else {
           console.error('Usuario no encontrado');
         }
@@ -314,7 +322,6 @@ const ProductScreen = ({ route }) => {
     </KeyboardAvoidingView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
