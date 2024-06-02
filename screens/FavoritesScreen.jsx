@@ -5,9 +5,11 @@ import { doc, getDoc, getDocs, query, where, collection, updateDoc, arrayRemove 
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import { useNavigation } from '@react-navigation/native'; // Importa useNavigation
 
 const FavoritesScreen = () => {
   const [favorites, setFavorites] = useState([]);
+  const navigation = useNavigation(); // Usa useNavigation para obtener el objeto de navegación
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -32,7 +34,7 @@ const FavoritesScreen = () => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={styles.productItem}>
+    <TouchableOpacity style={styles.productItem} onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}>
       <Image source={{ uri: item.imagen }} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.nombre}</Text>
@@ -41,7 +43,7 @@ const FavoritesScreen = () => {
       <TouchableOpacity onPress={() => removeFromFavorites(item.id)}>
         <Text style={styles.removeButton}>Eliminar</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   const removeFromFavorites = async (productId) => {
@@ -91,9 +93,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-        fontWeight: 'bold',
-        color: '#030A8C',
-        marginLeft: 10,
+    fontWeight: 'bold',
+    color: '#030A8C',
+    marginLeft: 10,
   },
   noFavoritesText: {
     fontSize: 16,
@@ -136,8 +138,8 @@ const styles = StyleSheet.create({
   removeButton: {
     color: 'red',
     fontSize: 16,
-    marginLeft: 'auto', // Esto empuja el botón de eliminar al extremo derecho
-    paddingRight: 10
+    marginLeft: 'auto',
+    paddingRight: 10,
   },
   headerContainer: {
     flexDirection: 'row',
