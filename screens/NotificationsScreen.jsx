@@ -73,6 +73,20 @@ const NotificationsScreen = () => {
     }
   };
 
+  const limpiarNotificaciones = async () => {
+    try {
+      const batch = db.batch();
+      notificaciones.forEach((notificacion) => {
+        const notificacionRef = doc(db, 'notificaciones', notificacion.id);
+        batch.delete(notificacionRef);
+      });
+      await batch.commit();
+      setNotificaciones([]);
+    } catch (error) {
+      console.error('Error al limpiar las notificaciones:', error);
+    }
+  };
+
   const renderItem = ({ item }) => {
     const fecha = item.fecha.toDate();
     const hora = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -98,6 +112,9 @@ const NotificationsScreen = () => {
         <BackButton />
         <Text style={styles.title}>Notificaciones</Text>
       </View>
+      <TouchableOpacity style={styles.clearButton} onPress={limpiarNotificaciones}>
+        <Text style={styles.clearButtonText}>Limpiar notificaciones</Text>
+      </TouchableOpacity>
       <FlatList
         data={notificaciones}
         renderItem={renderItem}
@@ -125,6 +142,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 10,
+  },
+  clearButton: {
+    alignSelf: 'flex-end',
+    marginRight: 20,
+    marginBottom: 10,
+  },
+  clearButtonText: {
+    color: '#030A8C',
+    fontSize: 14,
   },
   notificacionList: {
     padding: 10,

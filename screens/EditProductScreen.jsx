@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, Alert, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, updateDoc, query, where, getDocs,collection } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, query, where, getDocs, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 import { db } from '../services/firebaseConfig';
@@ -10,6 +10,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
+import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
 
 const EditProductScreen = ({ route, navigation }) => {
   const { productId } = route.params;
@@ -22,6 +23,7 @@ const EditProductScreen = ({ route, navigation }) => {
   const [imagen, setImagen] = useState('');
   const [uploading, setUploading] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -70,6 +72,11 @@ const EditProductScreen = ({ route, navigation }) => {
   };
 
   const handleSave = async () => {
+    if (!nombre || !precio || !cantidad || !descripcion || !categoria) {
+      setError('Por favor, complete todos los campos.');
+      return;
+    }
+
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -92,7 +99,7 @@ const EditProductScreen = ({ route, navigation }) => {
       navigation.goBack();
     } catch (error) {
       console.error('Error al actualizar el producto:', error);
-      Alert.alert('Error', 'Hubo un problema al guardar los cambios.');
+      setError('Hubo un problema al guardar los cambios.');
     }
   };
 
@@ -114,7 +121,7 @@ const EditProductScreen = ({ route, navigation }) => {
       navigation.goBack();
     } catch (error) {
       console.error('Error al eliminar el producto:', error);
-      Alert.alert('Error', 'Hubo un problema al eliminar el producto.');
+      setError('Hubo un problema al eliminar el producto.');
     }
   };
 
@@ -174,6 +181,12 @@ const EditProductScreen = ({ route, navigation }) => {
         <BackButton />
         <Text style={styles.title}>Editar producto</Text>
       </View>
+      {error && (
+        <ErrorAlert
+          message={error}
+          onClose={() => setError('')}
+        />
+      )}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Nombre del producto</Text>

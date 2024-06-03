@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
@@ -10,6 +10,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { onAuthStateChanged } from 'firebase/auth';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
+import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -21,6 +22,7 @@ const AddProductsScreen = ({ navigation }) => {
   const [userDocId, setUserDocId] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -63,7 +65,7 @@ const AddProductsScreen = ({ navigation }) => {
   const handleChooseImage = async () => {
     let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert('Permission to access camera roll is required!');
+      setError('Permission to access camera roll is required!');
       return;
     }
 
@@ -123,10 +125,10 @@ const AddProductsScreen = ({ navigation }) => {
         navigation.navigate('LoadProduct');
       } catch (error) {
         console.error("Error al agregar el producto:", error);
-        Alert.alert("Error", "Hubo un problema al agregar el producto.");
+        setError("Hubo un problema al agregar el producto.");
       }
     } else {
-      Alert.alert('Por favor completa todos los campos');
+      setError('Por favor completa todos los campos');
     }
   };
 
@@ -140,6 +142,12 @@ const AddProductsScreen = ({ navigation }) => {
         <BackButton />
         <Text style={styles.title}>Publicar Producto</Text>
       </View>
+      {error && (
+        <ErrorAlert
+          message={error}
+          onClose={() => setError('')}
+        />
+      )}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Nombre del Producto</Text>
@@ -203,7 +211,7 @@ const AddProductsScreen = ({ navigation }) => {
               <Image source={{ uri: productImage }} style={styles.imagePreview} />
             ) : (
               <>
-                <Image source={require('../assets/rscMenu/addImage.png')} style={styles.imagePlaceholder} />
+                <Image source={require('../assets/rscMenu/imagen.png')} style={styles.imagePlaceholder} />
               </>
             )}
           </TouchableOpacity>
