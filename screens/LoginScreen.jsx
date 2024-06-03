@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../services/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ErrorAlert from '../components/ErrorAlert'; // Importa el componente de alerta personalizado
 
 const LoginScreen = ({ navigation }) => {
   const [isChecked, setChecked] = useState(false);
   const [expediente, setExpediente] = useState('');
   const [contraseña, setContraseña] = useState('');
+  const [error, setError] = useState(''); // Estado para el mensaje de error
 
   useEffect(() => {
-    // Cargar los valores guardados al montar el componente
     const loadStoredValues = async () => {
       try {
         const storedExpediente = await AsyncStorage.getItem('expediente');
@@ -32,7 +33,6 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      // Buscar al usuario por expediente en Firestore
       const usersRef = collection(db, 'usuarios');
       const q = query(usersRef, where('expediente', '==', Number(expediente)));
       const querySnapshot = await getDocs(q);
@@ -40,17 +40,14 @@ const LoginScreen = ({ navigation }) => {
         const userDoc = querySnapshot.docs[0];
         const userEmail = userDoc.data().correo;
 
-        // Iniciar sesión con el correo electrónico y la contraseña
         const userCredential = await signInWithEmailAndPassword(auth, userEmail, contraseña);
         const user = userCredential.user;
 
-        // Verificar si el correo está verificado
         if (!user.emailVerified) {
-          Alert.alert('Error', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+          setError('Por favor, verifica tu correo electrónico antes de iniciar sesión.');
           return;
         }
 
-        // Guardar los valores si el checkbox está marcado
         if (isChecked) {
           await AsyncStorage.setItem('expediente', expediente);
           await AsyncStorage.setItem('contraseña', contraseña);
@@ -63,22 +60,21 @@ const LoginScreen = ({ navigation }) => {
 
         navigation.navigate('Home');
       } else {
-        Alert.alert('Error', 'Expediente no encontrado');
+        setError('Expediente no encontrado');
       }
     } catch (error) {
-      Alert.alert('Error', 'Usuario y/o contraseña incorrectos');
+      setError('Usuario y/o contraseña incorrectos');
       console.error("Error al iniciar sesión:", error);
     }
   };
 
   const handleForgotPassword = async () => {
     if (!expediente) {
-      Alert.alert('Error', 'Por favor, introduce tu expediente.');
+      setError('Por favor, introduce tu expediente.');
       return;
     }
 
     try {
-      // Buscar al usuario por expediente en Firestore
       const usersRef = collection(db, 'usuarios');
       const q = query(usersRef, where('expediente', '==', Number(expediente)));
       const querySnapshot = await getDocs(q);
@@ -89,10 +85,10 @@ const LoginScreen = ({ navigation }) => {
         await sendPasswordResetEmail(auth, userEmail);
         Alert.alert('Éxito', 'Se ha enviado un correo para restablecer su contraseña.');
       } else {
-        Alert.alert('Error', 'Expediente no encontrado');
+        setError('Expediente no encontrado');
       }
     } catch (error) {
-      Alert.alert('Error', 'No se pudo enviar el correo para restablecer la contraseña');
+      setError('No se pudo enviar el correo para restablecer la contraseña');
       console.error("Error al enviar el correo de restablecimiento de contraseña:", error);
     }
   };
@@ -101,13 +97,19 @@ const LoginScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/Logo.png')} // Cambia esto por la ruta real de tu logo
+          source={require('../assets/Logo.png')}
           style={styles.logo}
         />
       </View>
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Bienvenido</Text>
         <Text style={styles.subtitle}>Introduce tus datos debajo</Text>
+        {error && (
+        <ErrorAlert
+          message={error}
+          onClose={() => setError('')}
+        />
+      )}
         <Text style={styles.labelUser}>Expediente</Text>
         <TextInput
           style={styles.inputField}

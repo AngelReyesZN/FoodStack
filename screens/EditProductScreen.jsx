@@ -242,7 +242,7 @@ const EditProductScreen = ({ route, navigation }) => {
               <Text style={styles.noImageText}>No hay imagen</Text>
             )}
             <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
-              <Image source={require('../assets/iconEdit.png')} style={styles.iconImage} />
+              <Image source={require('../assets/edit.png')} style={styles.iconImage} />
             </TouchableOpacity>
             {uploading && <Text style={styles.uploadingText}>Subiendo imagen...</Text>}
           </View>

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { db, auth, storage } from '../services/firebaseConfig'; // Asegúrate de tener configurado tu archivo de configuración de Firebase
+import { db, auth, storage } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
+import ErrorAlert from '../components/ErrorAlert';
 
 const RegisScreen = ({ navigation }) => {
   const [expediente, setExpediente] = useState('');
@@ -17,7 +18,7 @@ const RegisScreen = ({ navigation }) => {
   const [image, setImage] = useState(null);
   const [correo, setCorreo] = useState('');
   const [descripcionUsuario, setDescripcionUsuario] = useState('');
-
+  const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
 
   const handlePickImage = async () => {
@@ -82,17 +83,17 @@ const RegisScreen = ({ navigation }) => {
 
     // Verificar si hay errores
     if (Object.keys(errors).length > 0) {
-      Alert.alert('Error', 'Por favor, completa todos los campos correctamente');
+      setError('Por favor, completa todos los campos correctamente');
       return;
     }
 
     if (contrasena !== confirmarContrasena) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
     if (telefono.length !== 10) {
-      Alert.alert('Error', 'El número de teléfono debe tener 10 dígitos');
+      setError('El número de teléfono debe tener 10 dígitos');
       return;
     }
 
@@ -103,7 +104,7 @@ const RegisScreen = ({ navigation }) => {
       const expedienteSnapshot = await getDocs(expedienteQuery);
 
       if (!expedienteSnapshot.empty) {
-        Alert.alert('Error', 'El expediente ya existe');
+        setError('El expediente ya existe');
         return;
       }
 
@@ -124,7 +125,6 @@ const RegisScreen = ({ navigation }) => {
       const usersSnapshot = await getDocs(usersCollectionRef);
       const newUserId = `user${usersSnapshot.size + 1}`;
 
-      // Agregar +52 al número de teléfono
       const telefonoConPrefijo = `52${telefono}`;
 
       await setDoc(doc(db, 'usuarios', newUserId), {
@@ -137,11 +137,11 @@ const RegisScreen = ({ navigation }) => {
         descripcionUsuario: descripcionUsuario,
       });
 
-      Alert.alert('Registro exitoso', 'Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+      setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
       navigation.navigate('Login');
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
-      Alert.alert("Error", "Hubo un problema al registrar el usuario.");
+      setError("Hubo un problema al registrar el usuario.");
     }
   };
 
@@ -154,6 +154,12 @@ const RegisScreen = ({ navigation }) => {
           <Text style={styles.title}>Registro</Text>
         </View>
         <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
+        {error && (
+          <ErrorAlert
+            message={error}
+            onClose={() => setError('')}
+          />
+        )}
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent}>
           <TouchableOpacity onPress={handlePickImage}>
             <View style={styles.imagePicker}>
@@ -438,7 +444,6 @@ const styles = StyleSheet.create({
     width: '90%', // Ajustar el ancho de la descripción
     height: 80, // Ajustar la altura según sea necesario
   },
-  
 });
 
 export default RegisScreen;

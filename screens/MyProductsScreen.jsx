@@ -57,7 +57,7 @@ const MyProductsScreen = ({ navigation }) => {
         style={styles.editIcon}
         onPress={() => navigation.navigate('EditProduct', { productId: item.id })}
       >
-        <Image source={require('../assets/iconEdit.png')} style={styles.iconImage} />
+          <Image source={require('../assets/edit.png')} style={styles.iconImage} />
       </TouchableOpacity>
       <View style={styles.productInfoContainer}>
         <View style={styles.productInfoRow}>
