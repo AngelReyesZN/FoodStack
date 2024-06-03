@@ -123,7 +123,7 @@ const LoginScreen = ({ navigation }) => {
           secureTextEntry={true}
         />
         <View style={styles.checkboxContainer}>
-          <Checkbox style={styles.checkbox} value={isChecked} onValueChange={setChecked} />
+          <Checkbox  color="#030A8C" style={styles.checkbox} value={isChecked} onValueChange={setChecked} />
           <Text style={styles.checkboxLabel}>Recordarme</Text>
           <TouchableOpacity onPress={handleForgotPassword}>
             <Text style={styles.forgotPasswordText}>Contraseña olvidada?</Text>

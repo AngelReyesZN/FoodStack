@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, query, where, onSnapshot, doc, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { useFocusEffect } from '@react-navigation/native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const NotificationsScreen = () => {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -17,14 +19,11 @@ const NotificationsScreen = () => {
 
         if (!userSnapshot.empty) {
           const userDocRef = userSnapshot.docs[0].ref;
-          // console.log('Usuario Ref:', userDocRef.path);
 
           const q = query(collection(db, 'notificaciones'), where('usuarioRef', '==', userDocRef));
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const loadedNotificaciones = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // console.log('Notificaciones obtenidas:', loadedNotificaciones);
-            // Ordenar notificaciones por fecha en orden descendente
             loadedNotificaciones.sort((a, b) => b.fecha.toDate() - a.fecha.toDate());
             setNotificaciones(loadedNotificaciones);
           });
@@ -40,6 +39,29 @@ const NotificationsScreen = () => {
 
     fetchUserNotifications();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const markAllAsRead = async () => {
+        try {
+          const unreadNotifications = notificaciones.filter(notificacion => !notificacion.leida);
+
+          for (const notificacion of unreadNotifications) {
+            const notificacionRef = doc(db, 'notificaciones', notificacion.id);
+            await updateDoc(notificacionRef, { leida: true });
+          }
+        } catch (error) {
+          console.error('Error al marcar las notificaciones como leídas:', error);
+        }
+      };
+
+      return () => {
+        if (notificaciones.length > 0) {
+          markAllAsRead();
+        }
+      };
+    }, [notificaciones])
+  );
 
   const marcarComoLeida = async (id) => {
     try {
@@ -57,13 +79,13 @@ const NotificationsScreen = () => {
     const fechaResumida = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
     return (
-      <View style={[styles.notificacion, item.leida && styles.notificacionLeida]}>
+      <View style={[styles.notificacion, item.leida ? styles.notificacionLeida : styles.notificacionNoLeida]}>
         <View style={styles.notificacionContent}>
           <Text style={styles.mensaje}>{item.mensaje}</Text>
           <Text style={styles.fechaHora}>{fechaResumida} {hora}</Text>
         </View>
         <TouchableOpacity style={styles.marcarComoLeidaButton} onPress={() => marcarComoLeida(item.id)}>
-          <Text style={styles.marcarComoLeidaText}>Marcar como leída</Text>
+          <Text style={styles.marcarComoLeidaText}><Icon name="times" size={11} color="#fff" /></Text>
         </TouchableOpacity>
       </View>
     );
@@ -106,11 +128,11 @@ const styles = StyleSheet.create({
   },
   notificacionList: {
     padding: 10,
+    paddingBottom: 80, // Agrega espacio adicional al final de la lista
   },
   notificacion: {
     padding: 15,
     borderRadius: 10,
-    backgroundColor: '#fff',
     marginBottom: 10,
     marginHorizontal: 10,
     flexDirection: 'row',
@@ -124,6 +146,9 @@ const styles = StyleSheet.create({
   },
   notificacionLeida: {
     backgroundColor: '#e0e0e0',
+  },
+  notificacionNoLeida: {
+    backgroundColor: '#fff',
   },
   notificacionContent: {
     flex: 1,

@@ -1,0 +1,377 @@
+import React, { useState } from 'react';
+import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
+import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { db, auth } from '../services/firebaseConfig';
+import { useRoute } from '@react-navigation/native';
+import { agregarNotificacion } from '../services/notifications'; // Importa la función
+import TopBar from '../components/TopBar';
+import BackButton from '../components/BackButton';
+import BottomMenuBar from '../components/BottomMenuBar';
+import clock from '../assets/rscMenu/reloj.png';
+import cash from '../assets/rscMenu/cash.png';
+import card from '../assets/rscMenu/card.png';
+import ErrorAlert from '../components/ErrorAlert';
+
+const OrderScreen = ({ navigation }) => {
+  const route = useRoute();
+  const { product, quantity } = route.params;
+
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showError, setShowError] = useState(false);
+
+  const handlePaymentMethod = (method, image) => {
+    setPaymentMethod(method);
+    setSelectedImage(image);
+    setModalVisible(false);
+  };
+
+  /* const handleOrder = () => {
+    if (!paymentMethod) {
+      setShowError(true);
+      return;
+    }
+    navigation.navigate('LoadOrder');
+  }; pantalla tu pedido esta en camino descartada por el momento por la redireccion a whatsapp*/
+
+  const handleWhatsApp = async () => {
+    const phoneNumber = product.vendedor?.telefono;
+    if (phoneNumber) {
+      const url = `whatsapp://send?phone=${phoneNumber}`;
+      Linking.openURL(url)
+        .catch(() => {
+          Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
+        });
+    } else {
+      Alert.alert('Error', 'Número de teléfono no disponible.');
+    }
+    const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+    const userSnapshot = await getDocs(userQuery);
+    if (!userSnapshot.empty) {
+      const userDocRef = userSnapshot.docs[0].ref;
+      await agregarNotificacion(userDocRef, 'Te comuniscaste con un vendedor');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <TopBar />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerContainer}>
+          <BackButton style={styles.backButton} />
+          <Text style={styles.title}>Tu Orden</Text>
+          <View style={styles.placeholder} />
+        </View>
+        <View style={styles.totalContainer}>
+          <Text style={styles.totalLabel}>Total</Text>
+        </View>
+        <View style={styles.productRow}>
+          <View style={styles.quantityBox}>
+            <Text style={styles.quantityText}>{quantity}</Text>
+          </View>
+          <Text style={styles.productText}>{product.nombre}</Text>
+          <Text style={styles.quantityText1}>({quantity}) </Text>
+          <Text style={styles.priceText}>${product.precio.toFixed(2)}</Text>
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.containerTotal}>
+          <Text style={styles.TotalText}>Total a pagar</Text>
+          <Text style={styles.sumaTotal}>${(product.precio * quantity).toFixed(2)}</Text>
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.containerEntrega}>
+          <Text style={styles.entrega}>Tiempo de entrega</Text>
+          <Image source={clock} style={styles.imageClock} />
+        </View>
+        <View style={styles.estimatedTimeContainer}>
+          <Text style={styles.estimatedTimeText}>
+            Tiempo de entrega estimado de <Text style={styles.blueText}>15min</Text>
+          </Text>
+        </View>
+        <View style={styles.separator} />
+        <View style={styles.methodOfPaymentContainer}>
+          <Text style={styles.methodOfPaymentText}>Método de pago</Text>
+        </View>
+        <View style={styles.pickerContainer}>
+          <TouchableOpacity
+            style={styles.pickerButton}
+            onPress={() => setModalVisible(true)}
+          >
+            {selectedImage && <Image source={selectedImage} style={styles.icon} />}
+            <Text style={styles.pickerButtonText}>
+              {paymentMethod || 'Selecciona un método de pago'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={() => handlePaymentMethod('Efectivo', cash)}
+              >
+                <Image source={cash} style={styles.icon} />
+                <Text style={styles.optionText}>Efectivo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
+              >
+                <Image source={card} style={styles.icon} />
+                <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        {showError && (
+            <ErrorAlert
+              message="Por favor completa todos los campos"
+              onClose={() => setShowError(false)}
+            />
+          )}
+        <View style={styles.separator} />
+        <View style={styles.instructionsContainer}>
+          <Text style={styles.instructionsText}>Instrucciones</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+          />
+          <Text style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.blueButton} onPress={handleWhatsApp}>
+            <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.buttonImage} />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+      <BottomMenuBar />
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100, // Ajusta el padding inferior según sea necesario
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 10,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 0,
+  },
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  placeholder: {
+    width: 50,
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    marginTop: 10,
+  },
+  totalLabel: {
+    fontSize: 21,
+    fontWeight: 'bold',
+  },
+  productRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    marginTop: 20,
+  },
+  quantityBox: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#D3D3D3',
+    justifyContent: 'center',
+    borderRadius: 10,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  quantityText: {
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  quantityText1: {
+    color: 'gray',
+    paddingBottom: 2,
+    fontSize: 19,
+  },
+  productText: {
+    flex: 1,
+    paddingLeft: 10,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  priceText: {
+    fontSize: 20,
+    color: '#030A8C',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#D3D3D3',
+    marginHorizontal: 25,
+    marginTop: 20,
+  },
+  containerTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    marginTop: 20,
+  },
+  TotalText: {
+    flex: 1,
+    paddingLeft: 10,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  sumaTotal: {
+    fontSize: 20,
+    color: '#030A8C',
+    fontWeight: 'bold',
+  },
+  containerEntrega: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    marginTop: 20,
+  },
+  entrega: {
+    marginLeft: 10,
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  imageClock: {
+    marginTop: 5,
+    marginLeft: 5,
+    width: 24,
+    height: 24,
+  },
+  estimatedTimeContainer: {
+    paddingHorizontal: 35,
+    marginTop: 18,
+  },
+  estimatedTimeText: {
+    fontSize: 18,
+  },
+  blueText: {
+    color: '#030A8C',
+    fontWeight: 'bold',
+  },
+  methodOfPaymentContainer: {
+    paddingHorizontal: 35,
+    marginTop: 10,
+  },
+  methodOfPaymentText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  pickerContainer: {
+    paddingTop: 8,
+    paddingHorizontal: 35,
+    marginBottom: 10,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  pickerButtonText: {
+    paddingLeft: 10,
+    fontSize: 19,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+  optionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    marginBottom: 10,
+  },
+  icon: {
+    width: 30,
+    height: 30,
+    marginHorizontal: 8,
+  },
+  optionText: {
+    fontSize: 19,
+  },
+  instructionsContainer: {
+    paddingHorizontal: 35,
+    marginTop: 10,
+  },
+  instructionsText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  inputContainer: {
+    paddingHorizontal: 35,
+    marginTop: 10,
+  },
+  input: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+    width: '70%',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 5,
+  },
+  buttonContainer: {
+    paddingHorizontal: 35,
+    marginTop: 20,
+    paddingBottom: 20, // Añade un padding inferior para que no se amontone con el BottomMenuBar
+  },
+  blueButton: {
+    backgroundColor: '#030A8C',
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  buttonImage: {
+    width: 24,
+    height: 24,
+  },
+});
+
+export default OrderScreen;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, Alert, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -130,25 +129,10 @@ const ProductScreen = ({ route }) => {
   const navigateToSellerInfo = () => {
     navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
   };
+  const navigateToOrderScreen = () => {
+    navigation.navigate('Order', { product: { ...product, precio: Number(product.precio) }, quantity });
+};
 
-  const handleWhatsApp = async () => {
-    const phoneNumber = product.vendedor?.telefono;
-    if (phoneNumber) {
-      const url = `whatsapp://send?phone=${phoneNumber}`;
-      Linking.openURL(url)
-        .catch(() => {
-          Alert.alert('Error', 'No se pudo abrir WhatsApp. Asegúrate de que esté instalado.');
-        });
-    } else {
-      Alert.alert('Error', 'Número de teléfono no disponible.');
-    }
-    const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
-    const userSnapshot = await getDocs(userQuery);
-    if (!userSnapshot.empty) {
-      const userDocRef = userSnapshot.docs[0].ref;
-      await agregarNotificacion(userDocRef, 'Te comuniscaste con un vendedor');
-    }
-  };
 
   const addReview = async () => {
     if (review.trim() && rating > 0) {
@@ -158,6 +142,7 @@ const ProductScreen = ({ route }) => {
         if (!userSnapshot.empty) {
           const userRef = userSnapshot.docs[0].ref;
           
+          // Obtener el tamaño actual de la colección 'resenas'
           const reviewsSnapshot = await getDocs(collection(db, 'resenas'));
           const newReviewId = `resena${reviewsSnapshot.size + 1}`;
 
@@ -169,6 +154,7 @@ const ProductScreen = ({ route }) => {
             usuarioRef: userRef
           };
 
+          // Agregar la nueva reseña con el ID específico
           await setDoc(doc(db, 'resenas', newReviewId), newReview);
           setReviews([...reviews, { ...newReview, usuario: userSnapshot.docs[0].data() }]);
           setReview('');
@@ -241,9 +227,9 @@ const ProductScreen = ({ route }) => {
           <Text style={styles.price}>${product.precio}.00</Text>
         </View>
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.imageButton} onPress={handleWhatsApp}>
-            <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.imageButtonIcon} />
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
+                        <Text style={styles.OrderText}>Ordenar</Text>
+                    </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
             <Icon
               name={isFavorite ? 'heart' : 'heart-o'}
@@ -394,7 +380,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     marginVertical: 10,
-    paddingLeft: 30,
+    paddingLeft: 20,
   },
   button: {
     width: 50,
@@ -599,6 +585,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  OrderText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 17,
+},
 });
 
 export default ProductScreen;

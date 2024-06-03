@@ -108,7 +108,7 @@ const EditProductScreen = ({ route, navigation }) => {
       });
 
       // Agregar notificación para el usuario
-      await agregarNotificacion(userDocRef, 'Producto eliminado');
+      await agregarNotificacion(userDocRef, 'Has eliminado tu producto exitosamente');
 
       Alert.alert('Éxito', 'Producto eliminado exitosamente.');
       navigation.goBack();

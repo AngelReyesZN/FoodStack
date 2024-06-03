@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import { agregarNotificacion } from '../services/notifications'; // Importar la función
 
 const PersonalDataScreen = ({ route, navigation }) => {
     const [user, setUser] = useState(null);
@@ -31,8 +32,7 @@ const PersonalDataScreen = ({ route, navigation }) => {
                         setUser({ ...userData, id: userDoc.id });
                         setNewPhone(userData.telefono);
                         setNewDescription(userData.descripcionUsuario || '');
-                    }
-                    else {
+                    } else {
                         console.error('No se encontró el usuario con el correo:', currentUser.email);
                     }
                 } catch (error) {
@@ -63,6 +63,10 @@ const PersonalDataScreen = ({ route, navigation }) => {
             const userRef = doc(db, 'usuarios', userId);
             await updateDoc(userRef, updatedData);
             setUser((prevUser) => ({ ...prevUser, ...updatedData }));
+
+            // Agregar notificación para el usuario
+            await agregarNotificacion(userRef, 'Tu información ha sido actualizada exitosamente');
+
             Alert.alert('Exitoso', 'La información ha sido actualizada.');
         } catch (error) {
             console.error('Error updating user data:', error);
@@ -90,21 +94,6 @@ const PersonalDataScreen = ({ route, navigation }) => {
         setIsEditingPhone(false);
     };
 
-    const handleChangePassword = async () => {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            try {
-                await sendPasswordResetEmail(auth, currentUser.email);
-                Alert.alert('Éxito', 'Se ha enviado un enlace para restablecer la contraseña a tu correo electrónico.');
-            } catch (error) {
-                console.error('Error al enviar el correo de restablecimiento de contraseña:', error);
-                Alert.alert('Error', 'Hubo un problema al enviar el correo de restablecimiento de contraseña.');
-            }
-        } else {
-            Alert.alert('Error', 'No se ha encontrado el usuario.');
-        }
-    };
 
     const handleChangePhoto = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -189,10 +178,6 @@ const PersonalDataScreen = ({ route, navigation }) => {
                         )}
                         <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingDescription(true)}>
                             <Text style={styles.changeText}>Cambiar descripción</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.changePassButton} onPress={handleChangePassword}>
-                            <Text style={styles.textCahngeP}>Cambiar Contraseña</Text>
                         </TouchableOpacity>
 
                         {(isEditingPhone || isEditingDescription) && (

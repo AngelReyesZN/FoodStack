@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import LoginScreen from '../screens/LoginScreen';
-import StackScreen from '../screens/StackScreen';
 import LoadScreen from '../screens/LoadScreen';
 import RegisScreen from '../screens/RegisScreen';
 import VerifyScreen from '../screens/VerifyScreen';
@@ -28,6 +27,8 @@ import PurchaseScreen from '../screens/PurchaseScreen.jsx';
 import SellScreen from '../screens/SellScreen.jsx';
 import EditProductScreen from '../screens/EditProductScreen.jsx';
 import SelfInfoScreen from '../screens/SelfInfoScreen';
+import OrderScreen from '../screens/OrderScreen.jsx';
+import LoadOrderScreen from '../screens/LoadOrderScreen.jsx';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
@@ -84,6 +85,17 @@ function MyScreens() {
       <Stack.Screen
         name="InfoSeller"
         component={InfoSellerScreen}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="Order"
+        component={OrderScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="LoadOrder"
+        component={LoadOrderScreen}
         options={{ headerShown: false }}
       />
 

@@ -3,9 +3,8 @@ import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } 
 import { useNavigation } from '@react-navigation/native';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import BackButton from '../components/BackButton';
-
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SearchResults = ({ route }) => {
   const searchQuery = route?.params?.searchQuery || '';
@@ -55,7 +54,7 @@ const SearchResults = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-        <BackButton/>
+          <BackButton/>
           <TextInput
             ref={searchInputRef}
             style={styles.searchInput}
@@ -64,6 +63,11 @@ const SearchResults = ({ route }) => {
             onChangeText={setSearchText}
             autoFocus={true}
           />
+          {searchText.length > 0 && (
+            <TouchableOpacity style={styles.clearButton} onPress={() => setSearchText('')}>
+              <Icon name="times-circle" size={20} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {filteredProducts.length > 0 ? (
@@ -106,6 +110,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: 'white',
     flex: 1,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 10,
   },
   productImage: {
     width: 55,

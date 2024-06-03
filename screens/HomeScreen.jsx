@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -98,6 +98,11 @@ const HomeScreen = () => {
     return () => clearInterval(intervalId);
   }, [currentAdIndex]);
 
+  const handleLinkPress = () => {
+    Linking.openURL('https://www.facebook.com/fifuaq');
+  };
+
+
   const renderItem = ({ item }) => {
     return (
       <TouchableOpacity
@@ -136,15 +141,14 @@ const HomeScreen = () => {
                 style={styles.adImage}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
+            <TouchableOpacity onPress={handleLinkPress} style={styles.linkContainer}>
               <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
             </TouchableOpacity>
-
             <View style={styles.categoryContainer}>
               <FlatList
                 horizontal
                 data={[
-                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png')  },
+                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png') },
                   { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
                   { key: 'Bebidas', color: '#f5a623', icon: require('../assets/refresco.png') },
                   { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
@@ -184,7 +188,7 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  ScrollViewMain:{
+  ScrollViewMain: {
     marginBottom: 45,
   },
   container: {
@@ -274,14 +278,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 12,
   },
-  containerProduccts:{
+  containerProduccts: {
     flex: 1,
     margin: 20,
   },
   allProductsText: {
     fontSize: 20,
     marginLeft: 10,
-    marginBottom:  5,
+    marginBottom: 5,
     fontWeight: 'bold',
     marginTop: 15,
   },
@@ -297,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
-      width: 4, 
+      width: 4,
       height: 2,
     },
     shadowOpacity: 0.25,
