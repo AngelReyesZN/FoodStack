@@ -115,7 +115,7 @@ const HomeScreen = () => {
         style={styles.productItem}
         onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
       >
-        <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
+        <Image source={{ uri: item.imagen }} style={styles.productImage} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.productName}>{item.nombre}</Text>
@@ -318,12 +318,13 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: .5,
     borderColor: 'rgba(0, 0, 0, 0.1)',
+    paddingTop: 8
   },
   productImage: {
-    width: 80,
+    width: '100%',
     height: 80,
+    resizeMode: 'contain',
     borderRadius: 10,
-    margin: 10,
   },
   productInfo: {
     flex: 1,

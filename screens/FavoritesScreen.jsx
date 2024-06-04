@@ -78,8 +78,8 @@ const FavoritesScreen = () => {
           data={favorites}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
-          contentContainerStyle={styles.productList}
-        />
+          contentContainerStyle={[styles.productList, { paddingBottom: 100 }]} // Increase paddingBottom
+          />
       )}
       <BottomMenuBar isMenuScreen={true} />
     </View>
@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingBottom: 20,
+    paddingTop: 20,
   },
   productItem: {
     flexDirection: 'row',
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
   productImage: {
     width: 80,
     height: 80,
+    resizeMode: 'contain',
     borderRadius: 10,
     marginRight: 10,
   },
