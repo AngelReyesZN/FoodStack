@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking  } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -15,6 +15,7 @@ const HomeScreen = () => {
   const [products, setProducts] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [currentCategory, setCurrentCategory] = useState('Todos');
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -102,6 +103,11 @@ const HomeScreen = () => {
     Linking.openURL('https://www.facebook.com/fifuaq');
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    setRefreshing(false);
+  }, []);
 
   const renderItem = ({ item }) => {
     return (
@@ -181,6 +187,9 @@ const HomeScreen = () => {
         keyExtractor={item => item.id.toString()}
         numColumns={2}
         contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
       {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
     </KeyboardAvoidingView>
