@@ -54,7 +54,7 @@ const InfoSeller = ({ route, navigation }) => {
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>Precio: ${item.precio}.00</Text>
+            <Text style={styles.productPrice}>${item.precio}.00</Text>
           </View>
           <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
         </View>
@@ -208,23 +208,26 @@ const styles = StyleSheet.create({
   productItem: {
     flex: 1,
     justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     margin: 5,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
-      width: 0,
+      width: 4,
       height: 2,
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    borderWidth: .5,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    paddingTop: 8
   },
   productImage: {
-    width: 80,
+    width: '100%',
     height: 80,
+    resizeMode: 'contain',
     borderRadius: 10,
-    marginTop: 5,
   },
   productInfo: {
     flex: 1,
