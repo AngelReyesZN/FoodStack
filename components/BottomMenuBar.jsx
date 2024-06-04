@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingLeft: 25,
     paddingBottom: 45,
     elevation: 10,
   },

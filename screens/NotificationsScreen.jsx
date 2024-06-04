@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, query, where, onSnapshot, doc, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDocs, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
@@ -75,7 +75,7 @@ const NotificationsScreen = () => {
 
   const limpiarNotificaciones = async () => {
     try {
-      const batch = db.batch();
+      const batch = writeBatch(db);
       notificaciones.forEach((notificacion) => {
         const notificacionRef = doc(db, 'notificaciones', notificacion.id);
         batch.delete(notificacionRef);

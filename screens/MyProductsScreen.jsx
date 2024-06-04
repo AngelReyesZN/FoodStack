@@ -137,12 +137,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     position: 'relative',
+    paddingTop: 30
   },
   productImage: {
-    width: 80,
+    width: '100%',
     height: 80,
+    resizeMode: 'contain',
     borderRadius: 10,
-    marginBottom: 10,
   },
   productInfoContainer: {
     width: '100%',
@@ -155,17 +156,21 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   productName: {
-    fontSize: 16,
+    flex: 1,
+    fontSize: 15,
     fontWeight: 'bold',
+    textAlign: 'left',
   },
   productPrice: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: 'bold',
     color: '#030A8C',
+    textAlign: 'right',
   },
   productUnits: {
     fontSize: 14,
-    color: '#8c8c8c',
+    marginTop: 5,
+    color: '#666',
   },
   loadingText: {
     fontSize: 18,
