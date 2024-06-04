@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, updateDoc, query, where, getDocs, collection } from 'firebase/firestore';
