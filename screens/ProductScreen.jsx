@@ -209,7 +209,13 @@ const ProductScreen = ({ route }) => {
           </TouchableOpacity>
           <View style={styles.sellerInfoContainer}>
           <TouchableOpacity onPress={navigateToSellerInfo}>
-            <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
+              <Text
+                style={styles.sellerName}
+                numberOfLines={1} // Limits the text to one line
+                ellipsizeMode="tail" // Adds "..." at the end if the text exceeds the width
+              >
+                {product.vendedor?.nombre || 'Vendedor desconocido'}
+              </Text>
           </TouchableOpacity>
 
             <View style={styles.ratingContainer}>
@@ -310,16 +316,19 @@ const styles = StyleSheet.create({
   sellerInfoContainer: {
     flexDirection: 'row',
     flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sellerName: {
     fontSize: 20,
     textDecorationLine: 'underline',
     flexShrink: 1,
+    maxWidth: '90%',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 40,
+    marginRight: 40,
   },
   ratingText: {
     fontSize: 20,
