@@ -24,6 +24,7 @@ const OrderScreen = ({ navigation }) => {
   const [showError, setShowError] = useState(false);
   const [statusCard, setStatusCard] = useState(false);
   const [tarjeta, setTarjeta] = useState(null);
+  const [instructions, setInstructions] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -81,11 +82,15 @@ const OrderScreen = ({ navigation }) => {
       await agregarNotificacion(userDocRef, 'Te comunicaste con un vendedor');
     }
   };
-  
 
   const handleConfirmPurchase = async () => {
     if (!paymentMethod) {
       setShowError(true);
+      return;
+    }
+
+    if (quantity <= 0 || quantity > product.cantidad) {
+      Alert.alert('Error', 'La cantidad debe ser mayor a 0 y no puede exceder la disponibilidad.');
       return;
     }
 
@@ -113,6 +118,7 @@ const OrderScreen = ({ navigation }) => {
           compradorRef: compradorRef,
           fecha: new Date(),
           totalPagado: totalPagado, // Añadir el total pagado
+          instrucciones: instructions, // Añadir las instrucciones
         });
 
         // Actualizar la cantidad de producto
@@ -135,6 +141,11 @@ Número de cuenta: ${tarjeta.numCuenta}
 Titular: ${tarjeta.titular}`;
         }
 
+        if (instructions.trim() !== '') {
+          clipboardContent += `
+Instrucciones: ${instructions}`;
+        }
+
         // Copiar al portapapeles
         await Clipboard.setStringAsync(clipboardContent);
 
@@ -148,6 +159,7 @@ Titular: ${tarjeta.titular}`;
             },
           ]
         );
+        navigation.goBack();
       } else {
         Alert.alert('Error', 'No se pudo encontrar el comprador o el producto.');
       }
@@ -253,6 +265,8 @@ Titular: ${tarjeta.titular}`;
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
+            value={instructions}
+            onChangeText={setInstructions}
           />
           <Text style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</Text>
         </View>
@@ -465,21 +479,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 5,
-  },
-  buttonContainer: {
-    paddingHorizontal: 35,
-    marginTop: 20,
-    paddingBottom: 20, // Añade un padding inferior para que no se amontone con el BottomMenuBar
-  },
-  blueButton: {
-    backgroundColor: '#030A8C',
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 10,
-  },
-  buttonImage: {
-    width: 24,
-    height: 24,
   },
   confirmButtonContainer: {
     paddingHorizontal: 35,
