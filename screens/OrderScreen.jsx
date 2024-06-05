@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, Platform, ScrollView, Alert, Linking, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore';
+import * as Clipboard from 'expo-clipboard';
 import { db, auth } from '../services/firebaseConfig';
 import { useRoute } from '@react-navigation/native';
-import { agregarNotificacion } from '../services/notifications'; // Importa la función
+import { agregarNotificacion } from '../services/notifications';
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 import BottomMenuBar from '../components/BottomMenuBar';
@@ -14,26 +15,69 @@ import ErrorAlert from '../components/ErrorAlert';
 
 const OrderScreen = ({ navigation }) => {
   const route = useRoute();
-  const { product, quantity } = route.params;
+  const { productId, quantity } = route.params;
 
+  const [product, setProduct] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [statusCard, setStatusCard] = useState(false);
+  const [tarjeta, setTarjeta] = useState(null);
+  const [instructions, setInstructions] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  const handlePaymentMethod = (method, image) => {
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const productDoc = await getDoc(doc(db, 'productos', productId));
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          const vendorDoc = await getDoc(productData.vendedorRef);
+          const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
+          setProduct({ ...productData, vendedor: vendorData, id: productDoc.id });
+
+          // Set the statusCard
+          setStatusCard(vendorData.statusCard);
+        } else {
+          console.error("Producto no encontrado");
+        }
+      } catch (error) {
+        console.error("Error al cargar el producto:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const handlePaymentMethod = async (method, image) => {
     setPaymentMethod(method);
     setSelectedImage(image);
     setModalVisible(false);
-  };
 
-  /* const handleOrder = () => {
-    if (!paymentMethod) {
-      setShowError(true);
-      return;
+    if (method === 'Tarjeta de crédito/débito') {
+      const userQuery = query(collection(db, 'tarjetas'), where('usuarioRef', '==', product.vendedorRef));
+      const userSnapshot = await getDocs(userQuery);
+      if (!userSnapshot.empty) {
+        const tarjetaData = userSnapshot.docs[0].data();
+        setTarjeta(tarjetaData);
+      }
     }
-    navigation.navigate('LoadOrder');
-  }; pantalla tu pedido esta en camino descartada por el momento por la redireccion a whatsapp*/
+  };
 
   const handleWhatsApp = async () => {
     const phoneNumber = product.vendedor?.telefono;
@@ -50,12 +94,105 @@ const OrderScreen = ({ navigation }) => {
     const userSnapshot = await getDocs(userQuery);
     if (!userSnapshot.empty) {
       const userDocRef = userSnapshot.docs[0].ref;
-      await agregarNotificacion(userDocRef, 'Te comuniscaste con un vendedor');
+      await agregarNotificacion(userDocRef, 'Te comunicaste con un vendedor');
     }
   };
 
+  const handleConfirmPurchase = async () => {
+    if (!paymentMethod) {
+      setShowError(true);
+      return;
+    }
+
+    if (quantity <= 0 || quantity > product.cantidad) {
+      Alert.alert('Error', 'La cantidad debe ser mayor a 0 y no puede exceder la disponibilidad.');
+      return;
+    }
+
+    try {
+      // Obtener la referencia del comprador
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+      let compradorRef = null;
+      if (!userSnapshot.empty) {
+        compradorRef = userSnapshot.docs[0].ref;
+      }
+
+      if (compradorRef && product) {
+        // Calcular el total pagado
+        const totalPagado = product.precio * quantity;
+
+        const productoRef = doc(db, 'productos', product.id);
+
+        // Agregar la orden
+        const orderRef = await addDoc(collection(db, 'ordenes'), {
+          productoRef: productoRef,
+          vendedorRef: product.vendedorRef,
+          cantidad: quantity,
+          metodoPago: paymentMethod,
+          compradorRef: compradorRef,
+          fecha: new Date(),
+          totalPagado: totalPagado, // Añadir el total pagado
+          instrucciones: instructions, // Añadir las instrucciones
+        });
+
+        // Actualizar la cantidad de producto
+        const nuevaCantidad = product.cantidad - quantity;
+        await updateDoc(productoRef, { cantidad: nuevaCantidad });
+
+        // Preparar la información para copiar al portapapeles
+        let clipboardContent = `Compra confirmada:
+Producto: ${product.nombre}
+Cantidad: ${quantity}
+Vendedor: ${product.vendedor.nombre}
+Total: $${totalPagado}.00
+Método de pago: ${paymentMethod}`;
+
+        if (paymentMethod === 'Tarjeta de crédito/débito') {
+          clipboardContent += `
+Datos de la tarjeta:
+Banco: ${tarjeta.banco}
+Número de cuenta: ${tarjeta.numCuenta}
+Titular: ${tarjeta.titular}`;
+        }
+
+        if (instructions.trim() !== '') {
+          clipboardContent += `
+Instrucciones: ${instructions}`;
+        }
+
+        // Copiar al portapapeles
+        await Clipboard.setStringAsync(clipboardContent);
+
+        Alert.alert(
+          'Compra confirmada',
+          'Tu orden ha sido registrada exitosamente. Comunícate con el vendedor.',
+          [
+            {
+              text: 'OK',
+              onPress: handleWhatsApp,
+            },
+          ]
+        );
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'No se pudo encontrar el comprador o el producto.');
+      }
+    } catch (error) {
+      console.error('Error confirmando la compra:', error);
+      Alert.alert('Error', 'No se pudo confirmar la compra. Inténtalo de nuevo.');
+    }
+  };
+
+  if (!product) {
+    return <Text>Cargando...</Text>;
+  }
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <TopBar />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerContainer}>
@@ -121,22 +258,24 @@ const OrderScreen = ({ navigation }) => {
                 <Image source={cash} style={styles.icon} />
                 <Text style={styles.optionText}>Efectivo</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
-              >
-                <Image source={card} style={styles.icon} />
-                <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
-              </TouchableOpacity>
+              {statusCard && (
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
+                >
+                  <Image source={card} style={styles.icon} />
+                  <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </Modal>
         {showError && (
-            <ErrorAlert
-              message="Por favor completa todos los campos"
-              onClose={() => setShowError(false)}
-            />
-          )}
+          <ErrorAlert
+            message="Por favor completa todos los campos"
+            onClose={() => setShowError(false)}
+          />
+        )}
         <View style={styles.separator} />
         <View style={styles.instructionsContainer}>
           <Text style={styles.instructionsText}>Instrucciones</Text>
@@ -144,17 +283,19 @@ const OrderScreen = ({ navigation }) => {
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
+            value={instructions}
+            onChangeText={setInstructions}
           />
           <Text style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</Text>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.blueButton} onPress={handleWhatsApp}>
-            <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.buttonImage} />
+        <View style={styles.confirmButtonContainer}>
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase}>
+            <Text style={styles.confirmButtonText}>Confirmar Compra</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <BottomMenuBar />
-    </View>
+      {!keyboardVisible && <BottomMenuBar />}
+    </KeyboardAvoidingView>
   );
 };
 
@@ -357,20 +498,21 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 5,
   },
-  buttonContainer: {
+  confirmButtonContainer: {
     paddingHorizontal: 35,
     marginTop: 20,
-    paddingBottom: 20, // Añade un padding inferior para que no se amontone con el BottomMenuBar
+    marginBottom: 20, // Añade un margen inferior para que no se amontone con el BottomMenuBar
   },
-  blueButton: {
+  confirmButton: {
     backgroundColor: '#030A8C',
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 10,
   },
-  buttonImage: {
-    width: 24,
-    height: 24,
+  confirmButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

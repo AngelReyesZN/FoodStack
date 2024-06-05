@@ -48,12 +48,11 @@ const HomeScreen = () => {
   };
 
   const applyCategoryFilter = (products, category) => {
-    if (category === 'Todos') {
-      setFilteredProducts(products);
-    } else {
-      const filtered = products.filter(product => product.categoria === category);
-      setFilteredProducts(filtered);
+    let filtered = products.filter(product => product.cantidad > 0 && product.statusView === true);
+    if (category !== 'Todos') {
+      filtered = filtered.filter(product => product.categoria === category);
     }
+    setFilteredProducts(filtered);
   };
 
   useEffect(() => {
@@ -110,6 +109,10 @@ const HomeScreen = () => {
   }, []);
 
   const renderItem = ({ item }) => {
+    if (item.cantidad <= 0 || !item.statusView) {
+      return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
+    }
+
     return (
       <TouchableOpacity
         style={styles.productItem}

@@ -12,6 +12,9 @@ const SelfInfoScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [userProducts, setUserProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [userRating, setUserRating] = useState('-');
+  const [timeInApp, setTimeInApp] = useState('');
+  const [timeMeasure, setTimeMeasure] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -25,6 +28,28 @@ const SelfInfoScreen = ({ navigation }) => {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             setUser({ ...userData, id: userDoc.id });
+
+            // Calculate time in app
+            const registrationDate = userData.registroFecha.toDate();
+            const now = new Date();
+            const timeDiff = now - registrationDate;
+            const daysInApp = timeDiff / (1000 * 60 * 60 * 24);
+
+            let timeDisplay, timeMeasure;
+            if (daysInApp < 31) {
+              timeDisplay = `${Math.floor(daysInApp)}`;
+              timeMeasure = 'días';
+            } else if (daysInApp < 365) {
+              const monthsInApp = (daysInApp / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
+              timeDisplay = `${monthsInApp}`;
+              timeMeasure = 'meses';
+            } else {
+              const yearsInApp = (daysInApp / 365).toFixed(1);
+              timeDisplay = `${yearsInApp}`;
+              timeMeasure = 'años';
+            }
+            setTimeInApp(timeDisplay);
+            setTimeMeasure(timeMeasure);
 
             // Fetch user products after setting user data
             fetchUserProducts(userDoc.id);
@@ -43,6 +68,17 @@ const SelfInfoScreen = ({ navigation }) => {
         const querySnapshot = await getDocs(q);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setUserProducts(products);
+
+        const productRefs = products.map(product => doc(db, 'productos', product.id));
+        const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setUserRating((totalRating / ratings.length).toFixed(1));
+        }
       } catch (error) {
         console.error('Error al cargar los productos del usuario:', error);
       }
@@ -51,8 +87,6 @@ const SelfInfoScreen = ({ navigation }) => {
     fetchUserData();
   }, []);
 
- 
-
   const renderItem = ({ item }) => {
     const isFavorite = favorites.includes(item.id);
     return (
@@ -60,7 +94,6 @@ const SelfInfoScreen = ({ navigation }) => {
         style={styles.productItem}
         onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
       >
-      
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -96,14 +129,14 @@ const SelfInfoScreen = ({ navigation }) => {
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>4.5</Text>
+            <Text style={styles.ratingText}>{userRating}</Text>
             <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
           </View>
           <Text style={styles.detailLabel}>Calificación</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>12</Text>
-          <Text style={styles.detailLabel}>Meses</Text>
+          <Text style={styles.monthsText}>{timeInApp}</Text>
+          <Text style={styles.detailLabel}>{timeMeasure}</Text>
         </View>
       </View>
       <Text style={styles.allProductsText}>Productos</Text>

@@ -25,7 +25,9 @@ const SearchResults = ({ route }) => {
     const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const filtered = products.filter(product =>
-      product.nombre.toLowerCase().includes(lowerText)
+      product.nombre.toLowerCase().includes(lowerText) &&
+      product.cantidad > 0 &&
+      product.statusView === true
     );
 
     setFilteredProducts(filtered);

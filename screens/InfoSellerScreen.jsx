@@ -11,14 +11,39 @@ const InfoSeller = ({ route, navigation }) => {
   const { sellerId } = route.params;
   const [seller, setSeller] = useState(null);
   const [sellerProducts, setSellerProducts] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [sellerRating, setSellerRating] = useState('-');
+  const [timeInApp, setTimeInApp] = useState('');
+  const [timeMeasure, setTimeMeasure] = useState('');
 
   useEffect(() => {
     const fetchSellerData = async () => {
       try {
         const sellerDoc = await getDoc(doc(db, 'usuarios', sellerId));
         if (sellerDoc.exists()) {
-          setSeller(sellerDoc.data());
+          const sellerData = sellerDoc.data();
+          setSeller(sellerData);
+
+          // Calculate time in app
+          const registroFecha = sellerData.registroFecha.toDate();
+          const currentDate = new Date();
+          const diffTime = Math.abs(currentDate - registroFecha);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          let timeDisplay, timeMeasure;
+          if (diffDays < 31) {
+            timeDisplay = `${Math.floor(diffDays)}`;
+            timeMeasure = 'días';
+          } else if (diffDays < 365) {
+            const monthsInApp = (diffDays / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
+            timeDisplay = `${monthsInApp}`;
+            timeMeasure = 'meses';
+          } else {
+            const yearsInApp = (diffDays / 365).toFixed(1);
+            timeDisplay = `${yearsInApp}`;
+            timeMeasure = 'años';
+          }
+          setTimeInApp(timeDisplay);
+          setTimeMeasure(timeMeasure);
         } else {
           console.error("Vendedor no encontrado");
         }
@@ -31,8 +56,23 @@ const InfoSeller = ({ route, navigation }) => {
       try {
         const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', sellerId)));
         const querySnapshot = await getDocs(q);
-        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const products = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(product => product.statusView && product.cantidad > 0);
         setSellerProducts(products);
+
+        const productIds = products.map(product => product.id);
+        const reviewsRef = collection(db, 'resenas');
+        const reviewsQuery = query(reviewsRef, where('productoRef', 'in', productIds.map(id => doc(db, 'productos', id))));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setSellerRating((totalRating / ratings.length).toFixed(1));
+        }
       } catch (error) {
         console.error("Error al cargar los productos del vendedor:", error);
       }
@@ -42,13 +82,11 @@ const InfoSeller = ({ route, navigation }) => {
     fetchSellerProducts();
   }, [sellerId]);
 
-  
-
   const renderItem = ({ item }) => {
     return (
       <TouchableOpacity
         style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
+        onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite: false })}
       >
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
@@ -85,14 +123,14 @@ const InfoSeller = ({ route, navigation }) => {
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>4.5</Text>
+            <Text style={styles.ratingText}>{sellerRating}</Text>
             <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
           </View>
           <Text style={styles.detailLabel}>Calificación</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>12</Text>
-          <Text style={styles.detailLabel}>Meses</Text>
+          <Text style={styles.monthsText}>{timeInApp}</Text>
+          <Text style={styles.detailLabel}>{timeMeasure}</Text>
         </View>
       </View>
       <Text style={styles.allProductsText}>Productos</Text>
