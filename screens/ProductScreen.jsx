@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import BackButton from '../components/BackButton.jsx';
-import StarRating from '../components/StarRating';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { agregarNotificacion } from '../services/notifications';
@@ -120,7 +119,6 @@ const ProductScreen = ({ route }) => {
           });
         }
         setIsFavorite(!isFavorite);
-        // await agregarNotificacion(userDocRef, isFavorite ? 'Producto eliminado de favoritos' : 'Producto añadido a favoritos');
       } else {
         console.error('Usuario no encontrado');
       }
@@ -132,9 +130,25 @@ const ProductScreen = ({ route }) => {
   const navigateToSellerInfo = () => {
     navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
   };
-  const navigateToOrderScreen = () => {
+
+  const navigateToOrderScreen = async () => {
+    if (product.cantidad === 0 || !product.statusView) {
+      Alert.alert('Producto no disponible', 'Este producto no está disponible actualmente.');
+      return;
+    }
+
+    const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+    const userSnapshot = await getDocs(userQuery);
+    if (!userSnapshot.empty) {
+      const userDoc = userSnapshot.docs[0];
+      if (userDoc.id === product.vendedorRef.id) {
+        Alert.alert('No permitido', 'No puedes comprar tu propio producto.');
+        return;
+      }
+    }
+
     navigation.navigate('Order', { productId: productId, quantity });
-};
+  };
 
   const addReview = async () => {
     if (review.trim() && rating > 0) {

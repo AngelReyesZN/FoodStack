@@ -56,7 +56,9 @@ const InfoSeller = ({ route, navigation }) => {
       try {
         const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', sellerId)));
         const querySnapshot = await getDocs(q);
-        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const products = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(product => product.statusView && product.cantidad > 0);
         setSellerProducts(products);
 
         const productIds = products.map(product => product.id);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, Platform, ScrollView, Alert, Linking, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore';
 import * as Clipboard from 'expo-clipboard';
 import { db, auth } from '../services/firebaseConfig';
@@ -25,6 +25,7 @@ const OrderScreen = ({ navigation }) => {
   const [statusCard, setStatusCard] = useState(false);
   const [tarjeta, setTarjeta] = useState(null);
   const [instructions, setInstructions] = useState('');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -48,6 +49,20 @@ const OrderScreen = ({ navigation }) => {
 
     fetchProduct();
   }, [productId]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const handlePaymentMethod = async (method, image) => {
     setPaymentMethod(method);
@@ -174,7 +189,10 @@ Instrucciones: ${instructions}`;
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <TopBar />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerContainer}>
@@ -276,8 +294,8 @@ Instrucciones: ${instructions}`;
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <BottomMenuBar />
-    </View>
+      {!keyboardVisible && <BottomMenuBar />}
+    </KeyboardAvoidingView>
   );
 };
 
