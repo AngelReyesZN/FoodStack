@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
-import { collection, query, where, getDocs, doc, getDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore';
+import * as Clipboard from 'expo-clipboard';
 import { db, auth } from '../services/firebaseConfig';
 import { useRoute } from '@react-navigation/native';
 import { agregarNotificacion } from '../services/notifications';
@@ -22,6 +23,7 @@ const OrderScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showError, setShowError] = useState(false);
   const [statusCard, setStatusCard] = useState(false);
+  const [tarjeta, setTarjeta] = useState(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -32,9 +34,9 @@ const OrderScreen = ({ navigation }) => {
           const vendorDoc = await getDoc(productData.vendedorRef);
           const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
           setProduct({ ...productData, vendedor: vendorData, id: productDoc.id });
-          
+
           // Set the statusCard
-          setStatusCard(productData.vendedorRef.statusCard);
+          setStatusCard(vendorData.statusCard);
         } else {
           console.error("Producto no encontrado");
         }
@@ -46,10 +48,19 @@ const OrderScreen = ({ navigation }) => {
     fetchProduct();
   }, [productId]);
 
-  const handlePaymentMethod = (method, image) => {
+  const handlePaymentMethod = async (method, image) => {
     setPaymentMethod(method);
     setSelectedImage(image);
     setModalVisible(false);
+
+    if (method === 'Tarjeta de crédito/débito') {
+      const userQuery = query(collection(db, 'tarjetas'), where('usuarioRef', '==', product.vendedorRef));
+      const userSnapshot = await getDocs(userQuery);
+      if (!userSnapshot.empty) {
+        const tarjetaData = userSnapshot.docs[0].data();
+        setTarjeta(tarjetaData);
+      }
+    }
   };
 
   const handleWhatsApp = async () => {
@@ -70,13 +81,14 @@ const OrderScreen = ({ navigation }) => {
       await agregarNotificacion(userDocRef, 'Te comunicaste con un vendedor');
     }
   };
+  
 
   const handleConfirmPurchase = async () => {
     if (!paymentMethod) {
       setShowError(true);
       return;
     }
-  
+
     try {
       // Obtener la referencia del comprador
       const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
@@ -85,13 +97,14 @@ const OrderScreen = ({ navigation }) => {
       if (!userSnapshot.empty) {
         compradorRef = userSnapshot.docs[0].ref;
       }
-  
+
       if (compradorRef && product) {
         // Calcular el total pagado
         const totalPagado = product.precio * quantity;
 
         const productoRef = doc(db, 'productos', product.id);
-  
+
+        // Agregar la orden
         const orderRef = await addDoc(collection(db, 'ordenes'), {
           productoRef: productoRef,
           vendedorRef: product.vendedorRef,
@@ -101,8 +114,40 @@ const OrderScreen = ({ navigation }) => {
           fecha: new Date(),
           totalPagado: totalPagado, // Añadir el total pagado
         });
-        Alert.alert('Compra confirmada', 'Tu orden ha sido registrada exitosamente.');
-        navigation.goBack();
+
+        // Actualizar la cantidad de producto
+        const nuevaCantidad = product.cantidad - quantity;
+        await updateDoc(productoRef, { cantidad: nuevaCantidad });
+
+        // Preparar la información para copiar al portapapeles
+        let clipboardContent = `Compra confirmada:
+Producto: ${product.nombre}
+Cantidad: ${quantity}
+Vendedor: ${product.vendedor.nombre}
+Total: $${totalPagado}.00
+Método de pago: ${paymentMethod}`;
+
+        if (paymentMethod === 'Tarjeta de crédito/débito') {
+          clipboardContent += `
+Datos de la tarjeta:
+Banco: ${tarjeta.banco}
+Número de cuenta: ${tarjeta.numCuenta}
+Titular: ${tarjeta.titular}`;
+        }
+
+        // Copiar al portapapeles
+        await Clipboard.setStringAsync(clipboardContent);
+
+        Alert.alert(
+          'Compra confirmada',
+          'Tu orden ha sido registrada exitosamente. Comunícate con el vendedor.',
+          [
+            {
+              text: 'OK',
+              onPress: handleWhatsApp,
+            },
+          ]
+        );
       } else {
         Alert.alert('Error', 'No se pudo encontrar el comprador o el producto.');
       }
@@ -115,10 +160,6 @@ const OrderScreen = ({ navigation }) => {
   if (!product) {
     return <Text>Cargando...</Text>;
   }
-
-  const navigateToLoadOrderScreen = () => {
-    navigation.navigate('LoadOrder');
-};
 
   return (
     <View style={styles.container}>
@@ -214,11 +255,6 @@ const OrderScreen = ({ navigation }) => {
             style={styles.input}
           />
           <Text style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.blueButton} onPress={handleWhatsApp}>
-            <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.buttonImage} />
-          </TouchableOpacity>
         </View>
         <View style={styles.confirmButtonContainer}>
           <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase}>
