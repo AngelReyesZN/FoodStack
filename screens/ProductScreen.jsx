@@ -133,7 +133,7 @@ const ProductScreen = ({ route }) => {
     navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
   };
   const navigateToOrderScreen = () => {
-    navigation.navigate('Order', { product: { ...product, precio: Number(product.precio) }, quantity });
+    navigation.navigate('Order', { productId: productId, quantity });
 };
 
   const addReview = async () => {
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textDecorationLine: 'underline',
     flexShrink: 1,
-    maxWidth: '90%',
+    maxWidth: '80%',
   },
   ratingContainer: {
     flexDirection: 'row',

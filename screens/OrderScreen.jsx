@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, addDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebaseConfig';
 import { useRoute } from '@react-navigation/native';
 import { agregarNotificacion } from '../services/notifications';
@@ -14,8 +14,9 @@ import ErrorAlert from '../components/ErrorAlert';
 
 const OrderScreen = ({ navigation }) => {
   const route = useRoute();
-  const { product, quantity } = route.params;
+  const { productId, quantity } = route.params;
 
+  const [product, setProduct] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,20 +24,27 @@ const OrderScreen = ({ navigation }) => {
   const [statusCard, setStatusCard] = useState(false);
 
   useEffect(() => {
-    const fetchVendorStatusCard = async () => {
+    const fetchProduct = async () => {
       try {
-        const vendorDoc = await getDoc(product.vendedorRef);
-        if (vendorDoc.exists()) {
-          const vendorData = vendorDoc.data();
-          setStatusCard(vendorData.statusCard);
+        const productDoc = await getDoc(doc(db, 'productos', productId));
+        if (productDoc.exists()) {
+          const productData = productDoc.data();
+          const vendorDoc = await getDoc(productData.vendedorRef);
+          const vendorData = vendorDoc.exists() ? vendorDoc.data() : null;
+          setProduct({ ...productData, vendedor: vendorData, id: productDoc.id });
+          
+          // Set the statusCard
+          setStatusCard(productData.vendedorRef.statusCard);
+        } else {
+          console.error("Producto no encontrado");
         }
       } catch (error) {
-        console.error('Error fetching vendor status card:', error);
+        console.error("Error al cargar el producto:", error);
       }
     };
 
-    fetchVendorStatusCard();
-  }, [product]);
+    fetchProduct();
+  }, [productId]);
 
   const handlePaymentMethod = (method, image) => {
     setPaymentMethod(method);
@@ -62,6 +70,55 @@ const OrderScreen = ({ navigation }) => {
       await agregarNotificacion(userDocRef, 'Te comunicaste con un vendedor');
     }
   };
+
+  const handleConfirmPurchase = async () => {
+    if (!paymentMethod) {
+      setShowError(true);
+      return;
+    }
+  
+    try {
+      // Obtener la referencia del comprador
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+      let compradorRef = null;
+      if (!userSnapshot.empty) {
+        compradorRef = userSnapshot.docs[0].ref;
+      }
+  
+      if (compradorRef && product) {
+        // Calcular el total pagado
+        const totalPagado = product.precio * quantity;
+
+        const productoRef = doc(db, 'productos', product.id);
+  
+        const orderRef = await addDoc(collection(db, 'ordenes'), {
+          productoRef: productoRef,
+          vendedorRef: product.vendedorRef,
+          cantidad: quantity,
+          metodoPago: paymentMethod,
+          compradorRef: compradorRef,
+          fecha: new Date(),
+          totalPagado: totalPagado, // Añadir el total pagado
+        });
+        Alert.alert('Compra confirmada', 'Tu orden ha sido registrada exitosamente.');
+        navigation.goBack();
+      } else {
+        Alert.alert('Error', 'No se pudo encontrar el comprador o el producto.');
+      }
+    } catch (error) {
+      console.error('Error confirmando la compra:', error);
+      Alert.alert('Error', 'No se pudo confirmar la compra. Inténtalo de nuevo.');
+    }
+  };
+
+  if (!product) {
+    return <Text>Cargando...</Text>;
+  }
+
+  const navigateToLoadOrderScreen = () => {
+    navigation.navigate('LoadOrder');
+};
 
   return (
     <View style={styles.container}>
@@ -161,6 +218,11 @@ const OrderScreen = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.blueButton} onPress={handleWhatsApp}>
             <Image source={require('../assets/rscMenu/whatsapp.png')} style={styles.buttonImage} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.confirmButtonContainer}>
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase, navigateToLoadOrderScreen}>
+            <Text style={styles.confirmButtonText}>Confirmar Compra</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -382,6 +444,22 @@ const styles = StyleSheet.create({
   buttonImage: {
     width: 24,
     height: 24,
+  },
+  confirmButtonContainer: {
+    paddingHorizontal: 35,
+    marginTop: 20,
+    marginBottom: 20, // Añade un margen inferior para que no se amontone con el BottomMenuBar
+  },
+  confirmButton: {
+    backgroundColor: '#030A8C',
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  confirmButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
