@@ -113,6 +113,8 @@ function MyScreens() {
       <Stack.Screen
         name="Chats"
         component={ChatScreen}
+        options={{ headerShown: false }}
+
       />
       <Stack.Screen
         name="Menu"
