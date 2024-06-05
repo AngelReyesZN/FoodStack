@@ -221,7 +221,7 @@ const OrderScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.confirmButtonContainer}>
-          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase, navigateToLoadOrderScreen}>
+          <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase}>
             <Text style={styles.confirmButtonText}>Confirmar Compra</Text>
           </TouchableOpacity>
         </View>

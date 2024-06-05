@@ -12,8 +12,8 @@ export default function LoadScreen({ navigation }) {
       duration: 1200, // Duración
       useNativeDriver: true,
     }).start(() => {
-      // Navegar a la pantalla de inicio de sesión después de que la animación haya terminado
-      navigation.navigate('Home');
+      // Navegar de regreso a la pantalla anterior después de que la animación haya terminado
+      navigation.goBack();
     });
   }, []);
 
@@ -25,7 +25,7 @@ export default function LoadScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Animated.Image source={Logo} style={[styles.logo, { transform: [{ scale }] }]} />
-      <Text style={styles.text}>¡Tu pedido esta en camino!</Text>
+      <Text style={styles.text}>¡Tu pedido está en camino!</Text>
     </View>
   );
 }
@@ -48,6 +48,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignItems: 'center',
     color: '#fff',
-    
   },
 });
