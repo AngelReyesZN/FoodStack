@@ -16,23 +16,23 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
     }
   }, [isMenuScreen, isFocused]);
 
-  const [homeIcon, setHomeIcon] = useState(require('../assets/iconsButtonBar/homeIcon.png'));
+  const [homeIcon, setHomeIcon] = useState(require('../assets/iconsButtonBar/home.png'));
 
   useEffect(() => {
     if (isHomeScreen && isFocused) {
-      setHomeIcon(require('../assets/iconsButtonBar/homeIconBlue.png'));
+      setHomeIcon(require('../assets/iconsButtonBar/home2.png'));
     } else {
-      setHomeIcon(require('../assets/iconsButtonBar/homeIcon.png'));
+      setHomeIcon(require('../assets/iconsButtonBar/home.png'));
     }
   }, [isHomeScreen, isFocused]);
 
-  const [chatIcon, setChatIcon] = useState(require('../assets/iconsButtonBar/chatIcon.png'));
+  const [chatIcon, setChatIcon] = useState(require('../assets/iconsButtonBar/comentarios2.png'));
 
   useEffect(() => {
     if (isChatScreen && isFocused) {
-      setChatIcon(require('../assets/iconsButtonBar/chatIconBlue.png'));
+      setChatIcon(require('../assets/iconsButtonBar/comentarios.png'));
     } else {
-      setChatIcon(require('../assets/iconsButtonBar/chatIcon.png'));
+      setChatIcon(require('../assets/iconsButtonBar/comentarios2.png'));
     }
   }, [isChatScreen, isFocused]);
 
@@ -52,7 +52,7 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
           <Image source={homeIcon} style={styles.iconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainerSearch} onPress={() => navigateToScreen('Search')}>
-          <Image source={require('../assets/iconsButtonBar/searchIcon.png')} style={styles.iconImage} />
+          <Image source={require('../assets/iconsButtonBar/busqueda2.png')} style={styles.iconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Chats')}>
           <Image source={chatIcon} style={styles.iconImage} />

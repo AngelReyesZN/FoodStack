@@ -81,9 +81,9 @@ const HomeScreen = () => {
   }, []);
 
   const advertisements = [
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/438759407_862392059238883_8850205864236275089_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=McCt6l--9HgQ7kNvgH1qcXH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYCqyLRWCIQrGX4eQPBJCJKy7p8R1qq4rPhufFOwtL1b6A&oe=66484ADF',
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/440322875_865818908896198_3144556912844658936_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_ohc=J41NSersfGIQ7kNvgErPmKq&_nc_ht=scontent.fqro1-1.fna&oh=00_AYCftfKAcc_QuQUs1nOEjrL9mEVSQQ0UU38n6Pa4MvGCLQ&oe=664872CF',
+    require('../assets/CAMPANA_1.jpg'),
+    require('../assets/sac.jpg'),
+    require('../assets/prope.png')
   ];
 
   const handleSearch = (text) => {
@@ -142,8 +142,8 @@ const HomeScreen = () => {
         ListHeaderComponent={
           <>
             <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
-              <Animated.Image
-                source={{ uri: advertisements[currentAdIndex] }}
+              <Image
+                source={advertisements[currentAdIndex]}
                 style={styles.adImage}
               />
             </TouchableOpacity>
@@ -400,3 +400,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
