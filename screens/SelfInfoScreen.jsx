@@ -12,6 +12,7 @@ const SelfInfoScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [userProducts, setUserProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
+  const [userRating, setUserRating] = useState('-');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -43,6 +44,17 @@ const SelfInfoScreen = ({ navigation }) => {
         const querySnapshot = await getDocs(q);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setUserProducts(products);
+
+        const productRefs = products.map(product => doc(db, 'productos', product.id));
+        const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setUserRating((totalRating / ratings.length).toFixed(1));
+        }
       } catch (error) {
         console.error('Error al cargar los productos del usuario:', error);
       }
@@ -51,8 +63,6 @@ const SelfInfoScreen = ({ navigation }) => {
     fetchUserData();
   }, []);
 
- 
-
   const renderItem = ({ item }) => {
     const isFavorite = favorites.includes(item.id);
     return (
@@ -60,7 +70,6 @@ const SelfInfoScreen = ({ navigation }) => {
         style={styles.productItem}
         onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
       >
-      
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -96,7 +105,7 @@ const SelfInfoScreen = ({ navigation }) => {
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>4.5</Text>
+            <Text style={styles.ratingText}>{userRating}</Text>
             <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
           </View>
           <Text style={styles.detailLabel}>Calificación</Text>

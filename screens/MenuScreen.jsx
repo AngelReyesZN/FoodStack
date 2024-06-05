@@ -3,10 +3,9 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView, Saf
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import { getAuth, signOut } from 'firebase/auth';
-import { getDocs, query, collection, where, onSnapshot } from 'firebase/firestore';
+import { getDocs, query, collection, where, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
 
 const options = [
   { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/campana.png'), screen: 'Notifications' },
@@ -21,6 +20,7 @@ const options = [
 const MenuScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userRating, setUserRating] = useState('-');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -34,6 +34,7 @@ const MenuScreen = ({ navigation }) => {
             const userDoc = querySnapshot.docs[0];
             setUserData(userDoc.data());
             fetchUnreadNotifications(userDoc.ref);
+            fetchUserRating(userDoc.id);
           } else {
             console.error('No se encontró el usuario con el correo:', user.email);
           }
@@ -49,6 +50,27 @@ const MenuScreen = ({ navigation }) => {
         setUnreadNotifications(querySnapshot.size);
       });
       return () => unsubscribe();
+    };
+
+    const fetchUserRating = async (userId) => {
+      try {
+        const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', userId)));
+        const querySnapshot = await getDocs(q);
+        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const productRefs = products.map(product => doc(db, 'productos', product.id));
+        const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setUserRating((totalRating / ratings.length).toFixed(1));
+        }
+      } catch (error) {
+        console.error('Error fetching user rating:', error);
+      }
     };
 
     fetchUserData();
@@ -109,7 +131,7 @@ const MenuScreen = ({ navigation }) => {
             <View style={styles.userInfo}>
               <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">{userData.nombre}</Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.userRating}>4.5 </Text>
+                <Text style={styles.userRating}>{userRating} </Text>
                 <Icon name="star" size={17} color="#030A8C" />
               </View>
             </View>

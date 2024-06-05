@@ -11,7 +11,7 @@ const InfoSeller = ({ route, navigation }) => {
   const { sellerId } = route.params;
   const [seller, setSeller] = useState(null);
   const [sellerProducts, setSellerProducts] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [sellerRating, setSellerRating] = useState('-');
 
   useEffect(() => {
     const fetchSellerData = async () => {
@@ -33,6 +33,19 @@ const InfoSeller = ({ route, navigation }) => {
         const querySnapshot = await getDocs(q);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setSellerProducts(products);
+
+        const productIds = products.map(product => product.id);
+        const reviewsRef = collection(db, 'resenas');
+        const reviewsQuery = query(reviewsRef, where('productoRef', 'in', productIds.map(id => doc(db, 'productos', id))));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setSellerRating((totalRating / ratings.length).toFixed(1));
+        }
       } catch (error) {
         console.error("Error al cargar los productos del vendedor:", error);
       }
@@ -41,8 +54,6 @@ const InfoSeller = ({ route, navigation }) => {
     fetchSellerData();
     fetchSellerProducts();
   }, [sellerId]);
-
-  
 
   const renderItem = ({ item }) => {
     return (
@@ -85,7 +96,7 @@ const InfoSeller = ({ route, navigation }) => {
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>4.5</Text>
+            <Text style={styles.ratingText}>{sellerRating}</Text>
             <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
           </View>
           <Text style={styles.detailLabel}>Calificación</Text>

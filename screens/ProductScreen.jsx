@@ -84,11 +84,11 @@ const ProductScreen = ({ route }) => {
 
   const calculateAverageRating = (reviews) => {
     if (reviews.length === 0) {
-      setAverageRating(0);
+      setAverageRating("-");
       return;
     }
     const totalRating = reviews.reduce((sum, review) => sum + review.calificacionResena, 0);
-    setAverageRating(totalRating / reviews.length);
+    setAverageRating((totalRating / reviews.length).toFixed(1));
   };
 
   const decreaseQuantity = () => {
@@ -213,7 +213,7 @@ const ProductScreen = ({ route }) => {
           </TouchableOpacity>
 
             <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>4.5</Text>
+              <Text style={styles.ratingText}>{averageRating}</Text>
               <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />
             </View>
           </View>
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 17,
-},
+  },
 });
 
 export default ProductScreen;
