@@ -64,7 +64,7 @@ const ProductScreen = ({ route }) => {
           const userDocRef = doc(db, reviewData.usuarioRef.path ? reviewData.usuarioRef.path : reviewData.usuarioRef);
           const userDoc = await getDoc(userDocRef);
           const userData = userDoc.exists() ? userDoc.data() : {};
-          
+
           return {
             ...reviewData,
             fechaResena: reviewData.fechaResena ? reviewData.fechaResena.toDate() : null,
@@ -131,7 +131,7 @@ const ProductScreen = ({ route }) => {
   };
   const navigateToOrderScreen = () => {
     navigation.navigate('Order', { product: { ...product, precio: Number(product.precio) }, quantity });
-};
+  };
 
 
   const addReview = async () => {
@@ -141,7 +141,7 @@ const ProductScreen = ({ route }) => {
         const userSnapshot = await getDocs(userQuery);
         if (!userSnapshot.empty) {
           const userRef = userSnapshot.docs[0].ref;
-          
+
           // Obtener el tamaño actual de la colección 'resenas'
           const reviewsSnapshot = await getDocs(collection(db, 'resenas'));
           const newReviewId = `resena${reviewsSnapshot.size + 1}`;
@@ -189,7 +189,7 @@ const ProductScreen = ({ route }) => {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={[styles.container, { paddingBottom: keyboardVisible ? 0 : 20 }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
@@ -206,9 +206,15 @@ const ProductScreen = ({ route }) => {
             <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
           </TouchableOpacity>
           <View style={styles.sellerInfoContainer}>
-          <TouchableOpacity onPress={navigateToSellerInfo}>
-            <Text style={styles.sellerName}>{product.vendedor?.nombre || 'Vendedor desconocido'}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={navigateToSellerInfo}>
+              <Text
+                style={styles.sellerName}
+                numberOfLines={1} // Limits the text to one line
+                ellipsizeMode="tail" // Adds "..." at the end if the text exceeds the width
+              >
+                {product.vendedor?.nombre || 'Vendedor desconocido'}
+              </Text>
+            </TouchableOpacity>
 
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>4.5</Text>
@@ -227,9 +233,9 @@ const ProductScreen = ({ route }) => {
           <Text style={styles.price}>${product.precio}.00</Text>
         </View>
         <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
-                        <Text style={styles.OrderText}>Ordenar</Text>
-                    </TouchableOpacity>
+          <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
+            <Text style={styles.OrderText}>Ordenar</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
             <Icon
               name={isFavorite ? 'heart' : 'heart-o'}
@@ -290,7 +296,7 @@ const ProductScreen = ({ route }) => {
                 <StarRating
                   maxStars={5}
                   rating={rev.calificacionResena}
-                  onStarPress={() => {}}
+                  onStarPress={() => { }}
                   starSize={15}
                 />
                 <Text style={styles.reviewDate}>
@@ -357,16 +363,19 @@ const styles = StyleSheet.create({
   sellerInfoContainer: {
     flexDirection: 'row',
     flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   sellerName: {
     fontSize: 20,
     textDecorationLine: 'underline',
     flexShrink: 1,
+    maxWidth: '75%',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 40,
+    marginRight: 40,
   },
   ratingText: {
     fontSize: 20,
@@ -589,7 +598,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 17,
-},
+  },
 });
 
 export default ProductScreen;
