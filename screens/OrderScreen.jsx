@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, ScrollView, Alert, Linking } from 'react-native';
-import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebaseConfig';
 import { useRoute } from '@react-navigation/native';
-import { agregarNotificacion } from '../services/notifications'; // Importa la función
+import { agregarNotificacion } from '../services/notifications';
 import TopBar from '../components/TopBar';
 import BackButton from '../components/BackButton';
 import BottomMenuBar from '../components/BottomMenuBar';
@@ -20,20 +20,29 @@ const OrderScreen = ({ navigation }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [statusCard, setStatusCard] = useState(false);
+
+  useEffect(() => {
+    const fetchVendorStatusCard = async () => {
+      try {
+        const vendorDoc = await getDoc(product.vendedorRef);
+        if (vendorDoc.exists()) {
+          const vendorData = vendorDoc.data();
+          setStatusCard(vendorData.statusCard);
+        }
+      } catch (error) {
+        console.error('Error fetching vendor status card:', error);
+      }
+    };
+
+    fetchVendorStatusCard();
+  }, [product]);
 
   const handlePaymentMethod = (method, image) => {
     setPaymentMethod(method);
     setSelectedImage(image);
     setModalVisible(false);
   };
-
-  /* const handleOrder = () => {
-    if (!paymentMethod) {
-      setShowError(true);
-      return;
-    }
-    navigation.navigate('LoadOrder');
-  }; pantalla tu pedido esta en camino descartada por el momento por la redireccion a whatsapp*/
 
   const handleWhatsApp = async () => {
     const phoneNumber = product.vendedor?.telefono;
@@ -50,7 +59,7 @@ const OrderScreen = ({ navigation }) => {
     const userSnapshot = await getDocs(userQuery);
     if (!userSnapshot.empty) {
       const userDocRef = userSnapshot.docs[0].ref;
-      await agregarNotificacion(userDocRef, 'Te comuniscaste con un vendedor');
+      await agregarNotificacion(userDocRef, 'Te comunicaste con un vendedor');
     }
   };
 
@@ -121,22 +130,24 @@ const OrderScreen = ({ navigation }) => {
                 <Image source={cash} style={styles.icon} />
                 <Text style={styles.optionText}>Efectivo</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
-              >
-                <Image source={card} style={styles.icon} />
-                <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
-              </TouchableOpacity>
+              {statusCard && (
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
+                >
+                  <Image source={card} style={styles.icon} />
+                  <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </Modal>
         {showError && (
-            <ErrorAlert
-              message="Por favor completa todos los campos"
-              onClose={() => setShowError(false)}
-            />
-          )}
+          <ErrorAlert
+            message="Por favor completa todos los campos"
+            onClose={() => setShowError(false)}
+          />
+        )}
         <View style={styles.separator} />
         <View style={styles.instructionsContainer}>
           <Text style={styles.instructionsText}>Instrucciones</Text>

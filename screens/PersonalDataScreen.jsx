@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, KeyboardAvoidingView, Keyboard, Platform } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView, KeyboardAvoidingView, Keyboard, Platform, Switch } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -9,7 +9,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { agregarNotificacion } from '../services/notifications';
-import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
+import ErrorAlert from '../components/ErrorAlert';
 
 const PersonalDataScreen = ({ route, navigation }) => {
   const [user, setUser] = useState(null);
@@ -19,6 +19,7 @@ const PersonalDataScreen = ({ route, navigation }) => {
   const [newDescription, setNewDescription] = useState('');
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [error, setError] = useState('');
+  const [statusCard, setStatusCard] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -34,6 +35,7 @@ const PersonalDataScreen = ({ route, navigation }) => {
             setUser({ ...userData, id: userDoc.id });
             setNewPhone(userData.telefono);
             setNewDescription(userData.descripcionUsuario || '');
+            setStatusCard(userData.statusCard || false);
           } else {
             console.error('No se encontró el usuario con el correo:', currentUser.email);
           }
@@ -89,6 +91,7 @@ const PersonalDataScreen = ({ route, navigation }) => {
       updatedData.descripcionUsuario = newDescription;
       setIsEditingDescription(false);
     }
+    updatedData.statusCard = statusCard;
     if (Object.keys(updatedData).length > 0) {
       updateUser(user.id, updatedData);
     }
@@ -97,6 +100,9 @@ const PersonalDataScreen = ({ route, navigation }) => {
   const handleCancel = () => {
     setNewPhone(user?.telefono);
     setIsEditingPhone(false);
+    setNewDescription(user?.descripcionUsuario || '');
+    setIsEditingDescription(false);
+    setStatusCard(user?.statusCard || false);
   };
 
   const handleChangePhoto = async () => {
@@ -121,6 +127,21 @@ const PersonalDataScreen = ({ route, navigation }) => {
 
       updateUser(user.id, { foto: newPhotoUrl });
     }
+  };
+
+  const handleStatusCardChange = async (value) => {
+    if (value) {
+      // Verificar si el usuario tiene una tarjeta registrada
+      const tarjetasRef = collection(db, 'tarjetas');
+      const q = query(tarjetasRef, where('usuarioRef', '==', doc(db, 'usuarios', user.id)));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        Alert.alert('Error', 'Debe ingresar una tarjeta antes de activar esta opción.');
+        return;
+      }
+    }
+    setStatusCard(value);
   };
 
   if (!user) {
@@ -183,9 +204,19 @@ const PersonalDataScreen = ({ route, navigation }) => {
             <TouchableOpacity style={styles.changeButton} onPress={() => setIsEditingDescription(true)}>
               <Text style={styles.changeText}>Cambiar descripción</Text>
             </TouchableOpacity>
-            {(isEditingPhone || isEditingDescription) && (
+
+            <View style={styles.switchContainer}>
+              <Text style={styles.label}>Aceptar transferencias</Text>
+              <Switch
+                value={statusCard}
+                onValueChange={handleStatusCardChange}
+                trackColor={{ false: '#767577', true: '#030A8C' }}
+                thumbColor={statusCard ? '#030A8C' : '#f4f3f4'}
+              />
+            </View>
+
+            {(isEditingPhone || isEditingDescription || statusCard !== user.statusCard) && (
               <View style={styles.buttonContainer}>
-                
                 <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                   <Text style={styles.saveButtonText}>Guardar cambios</Text>
                 </TouchableOpacity>
@@ -195,11 +226,11 @@ const PersonalDataScreen = ({ route, navigation }) => {
               </View>
             )}
             {error && (
-            <ErrorAlert
-              message={error}
-              onClose={() => setError('')}
-            />
-          )}
+              <ErrorAlert
+                message={error}
+                onClose={() => setError('')}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
@@ -256,16 +287,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   label: {
-    marginTop: 20,
     fontSize: 20,
     color: '#000',
     alignSelf: 'flex-start',
-    marginBottom: 5,
   },
   userInfo: {
     fontSize: 16,
     marginBottom: 10,
     alignSelf: 'flex-start',
+    color: '#8c8c8c',
   },
   changeButton: {
     alignSelf: 'flex-end',
@@ -310,6 +340,13 @@ const styles = StyleSheet.create({
   descripcionInput: {
     width: '100%',
     height: 100,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 20,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, Alert, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -8,7 +8,8 @@ import BackButton from '../components/BackButton.jsx';
 import StarRating from '../components/StarRating';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { agregarNotificacion } from '../services/notifications'; // Importa la función
+import { agregarNotificacion } from '../services/notifications';
+import ReviewsSection from '../components/ReviewsSection';
 
 const ProductScreen = ({ route }) => {
   const { productId, isFavorite: initialIsFavorite } = route.params;
@@ -97,7 +98,9 @@ const ProductScreen = ({ route }) => {
   };
 
   const increaseQuantity = () => {
-    setQuantity(quantity + 1);
+    if (quantity < product.cantidad) {
+      setQuantity(quantity + 1);
+    }
   };
 
   const toggleFavorite = async () => {
@@ -132,7 +135,6 @@ const ProductScreen = ({ route }) => {
   const navigateToOrderScreen = () => {
     navigation.navigate('Order', { product: { ...product, precio: Number(product.precio) }, quantity });
 };
-
 
   const addReview = async () => {
     if (review.trim() && rating > 0) {
@@ -244,65 +246,16 @@ const ProductScreen = ({ route }) => {
           <Text style={styles.TextDescription}>Descripción</Text>
           <Text style={styles.description}>{product.descripcion}</Text>
         </View>
-        <View style={styles.reviewsGeneral}>
-          <View style={styles.separatorReviews} />
-          <Text style={styles.reviewCount}>{reviews.length} Reseñas</Text>
-          <View style={styles.fixedStars}>
-            {Array.from({ length: 5 }, (_, index) => (
-              <Icon key={index} name="star" size={30} color={index < averageRating ? "#030A8C" : "#ccc"} style={styles.starIcon} />
-            ))}
-          </View>
-        </View>
-        <View style={styles.reviewContainer}>
-          <Text style={styles.reviewLabel}>Tu reseña</Text>
-          <TextInput
-            style={styles.reviewInput}
-            value={review}
-            onChangeText={setReview}
-            multiline
-            textAlignVertical="top"
-          />
-        </View>
-        <Text style={styles.generalRatingLabel}>Tu calificación</Text>
-        <View style={styles.ratingAndButtonContainer}>
-          <View style={styles.starsAndButton}>
-            <View style={{ marginLeft: 30 }}>
-              <StarRating
-                maxStars={5}
-                rating={rating}
-                onStarPress={(rating) => setRating(rating)}
-              />
-            </View>
-            <TouchableOpacity style={styles.publishButton} onPress={addReview}>
-              <Text style={styles.publishButtonText}>Publicar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.separator} />
-        <View style={styles.reviewsList}>
-          {reviews.map((rev, index) => (
-            <View key={index} style={styles.reviewItem}>
-              <View style={styles.userHeader}>
-                <Image source={{ uri: rev.usuario.foto }} style={styles.userImage} />
-                <Text style={styles.userName}>{rev.usuario.nombre}</Text>
-              </View>
-              <View style={styles.reviewHeader}>
-                <StarRating
-                  maxStars={5}
-                  rating={rev.calificacionResena}
-                  onStarPress={() => {}}
-                  starSize={15}
-                />
-                <Text style={styles.reviewDate}>
-                  {rev.fechaResena ? rev.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
-                </Text>
-              </View>
-              <Text style={styles.reviewText}>{rev.comentario}</Text>
-              <View style={styles.commentSeparator} />
-            </View>
-          ))}
-        </View>
-        <View style={styles.bottomPadding} />
+        <ReviewsSection
+          reviews={reviews}
+          review={review}
+          setReview={setReview}
+          rating={rating}
+          setRating={setRating}
+          addReview={addReview}
+          averageRating={averageRating}
+          keyboardVisible={keyboardVisible}
+        />
       </ScrollView>
       {!keyboardVisible && <BottomMenuBar />}
     </KeyboardAvoidingView>
@@ -439,118 +392,12 @@ const styles = StyleSheet.create({
   favoriteIcon: {
     margin: 3,
   },
-  reviewCount: {
-    fontSize: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  fixedStars: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  generalRatingLabel: {
-    fontSize: 18,
-    marginLeft: 30,
-    textAlign: 'justify',
-    marginBottom: 5,
-  },
-  ratingAndButtonContainer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  starsAndButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  publishButton: {
-    backgroundColor: '#030A8C',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    marginLeft: 40,
-  },
-  publishButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  separator: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginVertical: 10,
-    marginHorizontal: 30,
-  },
   separatorReviews: {
     marginTop: 30,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     marginVertical: 10,
     marginHorizontal: 30,
-  },
-  starRating: {
-    marginBottom: 10,
-  },
-  starRatingReview: {
-    marginTop: 5,
-  },
-  reviewContainer: {
-    padding: 5,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    marginVertical: 10,
-    marginHorizontal: 20,
-  },
-  reviewLabel: {
-    fontSize: 18,
-    paddingBottom: 10,
-  },
-  reviewInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingHorizontal: 8,
-    height: 110,
-    borderRadius: 5,
-    marginBottom: 10,
-    textAlignVertical: 'top',
-  },
-  reviewsList: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-  },
-  reviewItem: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    borderColor: '#ddd',
-  },
-  reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#666',
-  },
-  bottomPadding: {
-    height: 80,
-  },
-  commentSeparator: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginTop: 30,
-  },
-  reviewText: {
-    fontSize: 18,
-    paddingLeft: 5,
-    color: '#333',
-    lineHeight: 20,
   },
   containerDescription: {
     paddingLeft: 30,
@@ -565,25 +412,6 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     textAlign: 'justify',
-  },
-  userHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  userImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#666',
   },
   OrderText: {
     color: 'white',

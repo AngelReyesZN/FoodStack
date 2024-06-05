@@ -135,6 +135,7 @@ const RegisScreen = ({ navigation }) => {
         foto: imageUrl,
         correo: correo,
         descripcionUsuario: descripcionUsuario,
+        statusCard: false,
       });
 
       setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
