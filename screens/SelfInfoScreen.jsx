@@ -13,6 +13,8 @@ const SelfInfoScreen = ({ navigation }) => {
   const [userProducts, setUserProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [userRating, setUserRating] = useState('-');
+  const [timeInApp, setTimeInApp] = useState('');
+  const [timeMeasure, setTimeMeasure] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -26,6 +28,28 @@ const SelfInfoScreen = ({ navigation }) => {
             const userDoc = querySnapshot.docs[0];
             const userData = userDoc.data();
             setUser({ ...userData, id: userDoc.id });
+
+            // Calculate time in app
+            const registrationDate = userData.registroFecha.toDate();
+            const now = new Date();
+            const timeDiff = now - registrationDate;
+            const daysInApp = timeDiff / (1000 * 60 * 60 * 24);
+
+            let timeDisplay, timeMeasure;
+            if (daysInApp < 31) {
+              timeDisplay = `${Math.floor(daysInApp)}`;
+              timeMeasure = 'días';
+            } else if (daysInApp < 365) {
+              const monthsInApp = (daysInApp / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
+              timeDisplay = `${monthsInApp}`;
+              timeMeasure = 'meses';
+            } else {
+              const yearsInApp = (daysInApp / 365).toFixed(1);
+              timeDisplay = `${yearsInApp}`;
+              timeMeasure = 'años';
+            }
+            setTimeInApp(timeDisplay);
+            setTimeMeasure(timeMeasure);
 
             // Fetch user products after setting user data
             fetchUserProducts(userDoc.id);
@@ -111,8 +135,8 @@ const SelfInfoScreen = ({ navigation }) => {
           <Text style={styles.detailLabel}>Calificación</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>12</Text>
-          <Text style={styles.detailLabel}>Meses</Text>
+          <Text style={styles.monthsText}>{timeInApp}</Text>
+          <Text style={styles.detailLabel}>{timeMeasure}</Text>
         </View>
       </View>
       <Text style={styles.allProductsText}>Productos</Text>

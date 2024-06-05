@@ -12,13 +12,38 @@ const InfoSeller = ({ route, navigation }) => {
   const [seller, setSeller] = useState(null);
   const [sellerProducts, setSellerProducts] = useState([]);
   const [sellerRating, setSellerRating] = useState('-');
+  const [timeInApp, setTimeInApp] = useState('');
+  const [timeMeasure, setTimeMeasure] = useState('');
 
   useEffect(() => {
     const fetchSellerData = async () => {
       try {
         const sellerDoc = await getDoc(doc(db, 'usuarios', sellerId));
         if (sellerDoc.exists()) {
-          setSeller(sellerDoc.data());
+          const sellerData = sellerDoc.data();
+          setSeller(sellerData);
+
+          // Calculate time in app
+          const registroFecha = sellerData.registroFecha.toDate();
+          const currentDate = new Date();
+          const diffTime = Math.abs(currentDate - registroFecha);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          let timeDisplay, timeMeasure;
+          if (diffDays < 31) {
+            timeDisplay = `${Math.floor(diffDays)}`;
+            timeMeasure = 'días';
+          } else if (diffDays < 365) {
+            const monthsInApp = (diffDays / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
+            timeDisplay = `${monthsInApp}`;
+            timeMeasure = 'meses';
+          } else {
+            const yearsInApp = (diffDays / 365).toFixed(1);
+            timeDisplay = `${yearsInApp}`;
+            timeMeasure = 'años';
+          }
+          setTimeInApp(timeDisplay);
+          setTimeMeasure(timeMeasure);
         } else {
           console.error("Vendedor no encontrado");
         }
@@ -59,7 +84,7 @@ const InfoSeller = ({ route, navigation }) => {
     return (
       <TouchableOpacity
         style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
+        onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite: false })}
       >
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
@@ -102,8 +127,8 @@ const InfoSeller = ({ route, navigation }) => {
           <Text style={styles.detailLabel}>Calificación</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>12</Text>
-          <Text style={styles.detailLabel}>Meses</Text>
+          <Text style={styles.monthsText}>{timeInApp}</Text>
+          <Text style={styles.detailLabel}>{timeMeasure}</Text>
         </View>
       </View>
       <Text style={styles.allProductsText}>Productos</Text>
