@@ -62,7 +62,7 @@ const HomeScreen = () => {
   useFocusEffect(
     useCallback(() => {
       fetchProducts();
-    }, [currentCategory]) // Add currentCategory as dependency
+    }, []) // Fetch products when the screen is focused
   );
 
   useEffect(() => {
@@ -105,8 +105,9 @@ const HomeScreen = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchProducts();
+    applyCategoryFilter(products, currentCategory); // Ensure the category filter is applied after refreshing
     setRefreshing(false);
-  }, []);
+  }, [currentCategory]);
 
   const renderItem = ({ item }) => {
     if (item.cantidad <= 0 || !item.statusView) {
@@ -403,4 +404,3 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
-
