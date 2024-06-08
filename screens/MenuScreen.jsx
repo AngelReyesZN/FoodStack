@@ -1,22 +1,80 @@
-import React, { useContext } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, BackHandler, ScrollView, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import { UserContext } from '../context/UserContext';
+import { getAuth, signOut } from 'firebase/auth';
+import { getDocs, query, collection, where, onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const options = [
-  { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/notificationIcon.png') },
-  { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/favIcon.png') },
-  { id: '3', label: 'Historial', icon: require('../assets/rscMenu/historyIcon.png') },
-  { id: '4', label: 'Mis productos', icon: require('../assets/rscMenu/productsIcon.png') },
-  { id: '5', label: 'Mis reseñas', icon: require('../assets/rscMenu/reviewsIcon.png') },
-  { id: '6', label: 'Información personal', icon: require('../assets/rscMenu/userIcon.png') },
-  { id: '7', label: 'Tarjetas', icon: require('../assets/rscMenu/cardsIcon.png') },
+  { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/campana.png'), screen: 'Notifications' },
+  { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/corazon.png'), screen: 'Favorites' },
+  { id: '3', label: 'Historial', icon: require('../assets/rscMenu/tiempo-adelante.png'), screen: 'History' },
+  { id: '4', label: 'Mis productos', icon: require('../assets/rscMenu/producto.png'), screen: 'MyProducts' },
+  { id: '5', label: 'Mis reseñas', icon: require('../assets/rscMenu/review.png'), screen: 'MyReviews' },
+  { id: '6', label: 'Información personal', icon: require('../assets/rscMenu/user.png'), screen: 'PersonalInfo' },
+  { id: '7', label: 'Tarjetas', icon: require('../assets/rscMenu/tarjeta.png'), screen: 'Cards' },
 ];
 
 const MenuScreen = ({ navigation }) => {
-  const { user, setUser } = useContext(UserContext);
-  
+  const [userData, setUserData] = useState(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userRating, setUserRating] = useState('-');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          const q = query(collection(db, 'usuarios'), where('correo', '==', user.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            setUserData(userDoc.data());
+            fetchUnreadNotifications(userDoc.ref);
+            fetchUserRating(userDoc.id);
+          } else {
+            console.error('No se encontró el usuario con el correo:', user.email);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+
+    const fetchUnreadNotifications = (userDocRef) => {
+      const q = query(collection(db, 'notificaciones'), where('usuarioRef', '==', userDocRef), where('leida', '==', false));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        setUnreadNotifications(querySnapshot.size);
+      });
+      return () => unsubscribe();
+    };
+
+    const fetchUserRating = async (userId) => {
+      try {
+        const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', userId)));
+        const querySnapshot = await getDocs(q);
+        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const productRefs = products.map(product => doc(db, 'productos', product.id));
+        const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+        const ratings = reviews.map(review => review.calificacionResena);
+
+        if (ratings.length > 0) {
+          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+          setUserRating((totalRating / ratings.length).toFixed(1));
+        }
+      } catch (error) {
+        console.error('Error fetching user rating:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -26,9 +84,12 @@ const MenuScreen = ({ navigation }) => {
         { text: 'Cancelar', style: 'cancel' },
         {
           text: 'Sí', onPress: () => {
-            setUser(null);
-            navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
-            BackHandler.exitApp(); // Cerrar la aplicación
+            const auth = getAuth();
+            signOut(auth).then(() => {
+              navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
+            }).catch((error) => {
+              console.error('Error al cerrar sesión:', error);
+            });
           }
         },
       ],
@@ -37,19 +98,23 @@ const MenuScreen = ({ navigation }) => {
   };
 
   const handleOptionPress = (option) => {
-    if (option.id === '2') {
-      navigation.navigate('Favorites'); // Navega a la pantalla de Favoritos
-    } else if (option.id === '6') {
-      navigation.navigate('PersonalInfo', { label: option.label, userId: user.id });
+    navigation.navigate(option.screen, { label: option.label });
+  };
+
+  const navigateToUserInfo = () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      navigation.navigate('SelfInfoScreen', { userId: user.uid });
     }
   };
 
-  if (!user) {
+  if (!userData) {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <TopBar />
         <Text style={styles.menuTitle}>Menú</Text>
-        <Text style={styles.noUserText}>No hay usuario autenticado</Text>
+        <Text style={styles.loadingText}>Cargando datos del usuario...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </SafeAreaView>
     );
@@ -61,13 +126,13 @@ const MenuScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.contentContainer}>
           <Text style={styles.menuTitle}>Menú</Text>
-          <TouchableOpacity style={styles.userContainer}>
-            <Image source={user.foto} style={styles.userPhoto} />
+          <TouchableOpacity style={styles.userContainer} onPress={navigateToUserInfo}>
+            <Image source={{ uri: userData.foto }} style={styles.userPhoto} />
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{user.nombre}</Text>
+              <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">{userData.nombre}</Text>
               <View style={styles.ratingContainer}>
-                <Text style={styles.userRating}>{user.calificacion}</Text>
-                <Image source={require('../assets/rscMenu/starCalification.png')} style={styles.starIcon} />
+                <Text style={styles.userRating}>{userRating} </Text>
+                <Icon name="star" size={17} color="#030A8C" />
               </View>
             </View>
           </TouchableOpacity>
@@ -76,6 +141,11 @@ const MenuScreen = ({ navigation }) => {
               <TouchableOpacity key={option.id} style={styles.optionButton} onPress={() => handleOptionPress(option)}>
                 <Image source={option.icon} style={styles.optionIcon} />
                 <Text style={styles.optionText}>{option.label}</Text>
+                {option.id === '1' && unreadNotifications > 0 && (
+                  <View style={styles.notificationBadge}>
+                    <Text style={styles.notificationBadgeText}>{unreadNotifications}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -125,38 +195,41 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
   },
   userPhoto: {
-    width: 40,
-    height: 40,
-    borderRadius: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   userInfo: {
     marginLeft: 10,
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   userName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#030A8C',
-    paddingLeft: 15,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 5,
   },
   starIcon: {
-    width: 25,
-    height: 25,
-    marginLeft: 10,
+    width: 20,
+    height: 20,
+    marginLeft: 5,
   },
   userRating: {
-    fontSize: 25,
+    fontSize: 18,
   },
   noUserText: {
     fontSize: 18,
     color: 'red',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#666',
     textAlign: 'center',
     marginVertical: 20,
   },
@@ -186,6 +259,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 18,
     color: 'black',
+    flex: 1,
   },
   logoutButton: {
     backgroundColor: '#030A8C',
@@ -204,6 +278,20 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: 'white',
     fontSize: 15,
+  },
+  notificationBadge: {
+    backgroundColor: 'red',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    marginLeft: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notificationBadgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

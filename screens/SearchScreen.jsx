@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import products from '../data/products';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
+import BackButton from '../components/BackButton';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const SearchResults = ({ route }) => {
@@ -11,10 +13,23 @@ const SearchResults = ({ route }) => {
   const searchInputRef = useRef(null);
   const navigation = useNavigation();
 
-  const handleSearch = (text) => {
+  const handleSearch = async (text) => {
+    if (text.trim() === '') {
+      setFilteredProducts([]);
+      return;
+    }
+
+    const lowerText = text.toLowerCase();
+    const productsQuery = query(collection(db, 'productos'));
+    const querySnapshot = await getDocs(productsQuery);
+    const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     const filtered = products.filter(product =>
-      product.nombre.toLowerCase().includes(text.toLowerCase())
+      product.nombre.toLowerCase().includes(lowerText) &&
+      product.cantidad > 0 &&
+      product.statusView === true
     );
+
     setFilteredProducts(filtered);
   };
 
@@ -27,12 +42,12 @@ const SearchResults = ({ route }) => {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('ProductScreen', { product: item })}
+      onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
     >
       <View style={styles.item}>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <Text style={styles.name}>{item.nombre}</Text>
-        <Text style={styles.price}>{item.precio}</Text>
+        <Text style={styles.price}>${item.precio}.00</Text>
       </View>
     </TouchableOpacity>
   );
@@ -41,9 +56,7 @@ const SearchResults = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Icon name="arrow-left" size={22} color="#030A8C" />
-          </TouchableOpacity>
+          <BackButton/>
           <TextInput
             ref={searchInputRef}
             style={styles.searchInput}
@@ -52,6 +65,11 @@ const SearchResults = ({ route }) => {
             onChangeText={setSearchText}
             autoFocus={true}
           />
+          {searchText.length > 0 && (
+            <TouchableOpacity style={styles.clearButton} onPress={() => setSearchText('')}>
+              <Icon name="times-circle" size={20} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       {filteredProducts.length > 0 ? (
@@ -78,7 +96,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: 'white',
     paddingVertical: 10,
-    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
@@ -87,10 +104,6 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
-  backButton: {
-    marginRight: 10,
-    paddingTop: 10,
-  },
   searchInput: {
     height: 30,
     borderWidth: 1,
@@ -98,8 +111,11 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 5,
     borderColor: 'white',
-    marginTop: 10,
     flex: 1,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: 10,
   },
   productImage: {
     width: 55,

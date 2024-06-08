@@ -1,23 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import products from '../data/products'; // Importa tus datos de productos
-import LogoImage from '../assets/Logo.png';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { getDocuments } from '../services/firestore';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [currentAdIndex, setCurrentAdIndex] = useState(0); // Índice de la imagen actual
-  const [favorites, setFavorites] = useState([]); // Estado para manejar los productos favoritos
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [products, setProducts] = useState([]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState('Todos');
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
+  const fetchProducts = async () => {
+    try {
+      const productsList = await getDocuments('productos');
+      const productsWithVendors = await Promise.all(productsList.map(async (product) => {
+        if (product.vendedorRef && typeof product.vendedorRef === 'object' && 'path' in product.vendedorRef) {
+          try {
+            const vendorDoc = await getDoc(doc(db, product.vendedorRef.path));
+            if (vendorDoc.exists()) {
+              return { ...product, vendedor: vendorDoc.data() };
+            } else {
+              console.error("Vendor document not found for reference:", product.vendedorRef.path);
+              return { ...product, vendedor: null };
+            }
+          } catch (error) {
+            console.error("Error fetching vendor data:", error);
+            return { ...product, vendedor: null };
+          }
+        } else {
+          console.error("Invalid vendor reference:", product.vendedorRef);
+          return { ...product, vendedor: null };
+        }
+      }));
+      setProducts(productsWithVendors);
+      applyCategoryFilter(productsWithVendors, currentCategory); // Apply category filter
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
+  const applyCategoryFilter = (products, category) => {
+    let filtered = products.filter(product => product.cantidad > 0 && product.statusView === true);
+    if (category !== 'Todos') {
+      filtered = filtered.filter(product => product.categoria === category);
+    }
+    setFilteredProducts(filtered);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, []) // Fetch products when the screen is focused
+  );
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
   const advertisements = [
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/431924625_834945361983553_7341690926487425115_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=5f2048&_nc_ohc=hjbwOULZqmcQ7kNvgHNp4uH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYA8xfn9Pst5WweY6yDIsLMJxpjgDcC12wYDVrpJM4edHg&oe=66485A21',
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/438759407_862392059238883_8850205864236275089_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=5f2048&_nc_ohc=McCt6l--9HgQ7kNvgH1qcXH&_nc_ht=scontent.fqro1-1.fna&oh=00_AYCqyLRWCIQrGX4eQPBJCJKy7p8R1qq4rPhufFOwtL1b6A&oe=66484ADF',
-    'https://scontent.fqro1-1.fna.fbcdn.net/v/t39.30808-6/440322875_865818908896198_3144556912844658936_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_ohc=J41NSersfGIQ7kNvgErPmKq&_nc_ht=scontent.fqro1-1.fna&oh=00_AYCftfKAcc_QuQUs1nOEjrL9mEVSQQ0UU38n6Pa4MvGCLQ&oe=664872CF',
+    require('../assets/CAMPANA_1.jpg'),
+    require('../assets/sac.jpg'),
+    require('../assets/prope.png')
   ];
 
   const handleSearch = (text) => {
@@ -25,117 +90,120 @@ const HomeScreen = () => {
   };
 
   const nextAd = () => {
-    // Incrementa el índice de la imagen actual y vuelve al principio si llega al final
     setCurrentAdIndex(currentAdIndex === advertisements.length - 1 ? 0 : currentAdIndex + 1);
   };
 
   useEffect(() => {
-    // Configura un intervalo para cambiar automáticamente de anuncio cada 5 segundos
     const intervalId = setInterval(nextAd, 5000);
-    return () => clearInterval(intervalId); // Limpia el intervalo cuando el componente se desmonta
-  }, [currentAdIndex]); // Ejecuta el efecto cuando cambia el índice del anuncio actual
+    return () => clearInterval(intervalId);
+  }, [currentAdIndex]);
 
-  const toggleFavorite = (productId) => {
-    if (favorites.includes(productId)) {
-      setFavorites(favorites.filter(id => id !== productId));
-    } else {
-      setFavorites([...favorites, productId]);
-    }
+  const handleLinkPress = () => {
+    Linking.openURL('https://www.facebook.com/fifuaq');
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    applyCategoryFilter(products, currentCategory); // Ensure the category filter is applied after refreshing
+    setRefreshing(false);
+  }, [currentCategory]);
 
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.includes(item.id);
+    if (item.cantidad <= 0 || !item.statusView) {
+      return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
+    }
+
     return (
       <TouchableOpacity
         style={styles.productItem}
-        onPress={() =>
-          navigation.navigate('ProductScreen', {
-            product: item,
-            isFavorite: favorites.includes(item.id), // Pasar el estado de favorito
-          })
-        }      
-        >
-        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item.id)}>
-          <Icon name={isFavorite ? 'heart' : 'heart-o'} size={20} color={isFavorite ? 'red' : '#030A8C'} />
-        </TouchableOpacity>
-        <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
+        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
+      >
+        <Image source={{ uri: item.imagen }} style={styles.productImage} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>Precio: {item.precio}</Text>
+            <Text style={styles.productPrice}>${item.precio}.00</Text>
           </View>
-          <Text style={styles.productUnits}>Unidades: {item.unidades}</Text>
+          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
+  const filterByCategory = (category) => {
+    setCurrentCategory(category);
+    applyCategoryFilter(products, category);
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Barra de búsqueda */}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <SearchBar />
-      {/* Contenedor de anuncios */}
-      <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
-        <Animated.Image
-          source={{ uri: advertisements[currentAdIndex] }}
-          style={styles.adImage}
-        />
-      </TouchableOpacity>
-      {/* Texto con enlace */}
-      <TouchableOpacity onPress={() => alert("¡Te llevaremos a todos los anuncios aquí!")} style={styles.linkContainer}>
-        <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
-      </TouchableOpacity>
-      {/* Iconos */}
-      <View style={styles.iconContainer}>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#e82d2d' }]}>
-            <Image source={require('../assets/frituras.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Frituras</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#5fe8bf' }]}>
-            <Image source={require('../assets/dulces.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dulces</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#dfe164' }]}>
-            <Image source={require('../assets/comida.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Comida</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#f496e5' }]}>
-            <Image source={require('../assets/postres.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Postres</Text>
-        </View>
-        <View style={styles.iconWrapper}>
-          <View style={[styles.iconCircle, { backgroundColor: '#aa9e9e' }]}>
-            <Image source={require('../assets/dispositivos.png')} style={styles.iconImage} />
-          </View>
-          <Text style={styles.iconText}>Dispositivos</Text>
-        </View>
-      </View>
-      {/* Texto "Todos los productos" */}
-      <Text style={styles.allProductsText}>Todos los productos</Text>
-      {/* Catálogo de productos */}
       <FlatList
-        data={products}
+        ListHeaderComponent={
+          <>
+            <TouchableOpacity onPress={nextAd} style={styles.adContainer}>
+              <Image
+                source={advertisements[currentAdIndex]}
+                style={styles.adImage}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleLinkPress} style={styles.linkContainer}>
+              <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
+            </TouchableOpacity>
+            <View style={styles.categoryContainer}>
+              <FlatList
+                horizontal
+                data={[
+                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png') },
+                  { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
+                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/refresco.png') },
+                  { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
+                  { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
+                  { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
+                  { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
+                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/mas.png') },
+                ]}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
+                    <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+                      {typeof item.icon === 'string' ? (
+                        <Icon name={item.icon} size={24} color="white" />
+                      ) : (
+                        <Image source={item.icon} style={styles.iconImage} />
+                      )}
+                    </View>
+                    <Text style={styles.iconText}>{item.key}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={item => item.key}
+                showsHorizontalScrollIndicator={false}
+              />
+              <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
+            </View>
+          </>
+        }
+        data={filteredProducts}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         numColumns={2}
-        contentContainerStyle={styles.productList}
+        contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
-      {/* Agregar la barra de menú al final */}
-      <BottomMenuBar isHomeScreen={true}/>
-    </View>
+      {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  ScrollViewMain: {
+    marginBottom: 45,
+  },
   container: {
     flex: 1,
     backgroundColor: 'white',
@@ -204,7 +272,7 @@ const styles = StyleSheet.create({
     width: 225,
     borderRadius: 20,
     borderColor: '#ccc',
-    elevation: 30, // Efecto de elevación
+    elevation: 30,
   },
   iconContainer: {
     flexDirection: 'row',
@@ -214,6 +282,109 @@ const styles = StyleSheet.create({
   iconWrapper: {
     paddingTop: 8,
     alignItems: 'center',
+  },
+  iconImage: {
+    width: 40,
+    height: 40,
+  },
+  iconText: {
+    marginTop: 5,
+    fontSize: 12,
+  },
+  containerProduccts: {
+    flex: 1,
+    margin: 20,
+  },
+  allProductsText: {
+    fontSize: 20,
+    marginLeft: 10,
+    marginBottom: 5,
+    fontWeight: 'bold',
+    marginTop: 15,
+  },
+  productList: {
+    paddingHorizontal: 10,
+    paddingBottom: 100,
+  },
+  productItem: {
+    flex: 1,
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    margin: 5,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 4,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: .5,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    paddingTop: 8
+  },
+  productImage: {
+    width: '100%',
+    height: 80,
+    resizeMode: 'contain',
+    borderRadius: 10,
+  },
+  productInfo: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  productName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: 'bold',
+    marginLeft: 2,
+    textAlign: 'left',
+  },
+  productPrice: {
+    marginRight: 10,
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#030A8C',
+    textAlign: 'right',
+  },
+  productUnits: {
+    fontSize: 14,
+    marginTop: 5,
+    marginLeft: 2,
+    marginBottom: 5,
+    color: '#666',
+  },
+  favoriteIcon: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+
+  // Estilos de categorySearch
+
+  searchResultContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    zIndex: 1,
+  },
+  categoryContainer: {
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  searchResultContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
+    zIndex: 1,
+  },
+  iconScrollView: {
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  iconWrapper: {
+    paddingTop: 8,
+    alignItems: 'center',
+    marginHorizontal: 10,
   },
   iconCircle: {
     width: 60,
@@ -229,79 +400,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  iconImage: {
-    width: 40,
-    height: 40,
-  },
-  iconText: {
-    marginTop: 5,
-    fontSize: 12,
-  },
-  allProductsText: {
-    fontSize: 20,
-    marginLeft: 10,
-    marginTop: 20,
-    fontWeight: 'bold',
-  },
-  productList: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-  },
-  productItem: {
-    flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#f5f5f5',
-    margin: 5,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  productImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    marginTop: 5,
-  },
-  productInfo: {
-    flex: 1,
-    marginLeft: 5,
-  },
-  productName: {
-    flex: 1, // Para ocupar todo el espacio disponible en la fila
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginLeft: 2,
-    textAlign: 'left', // Alinear el texto a la izquierda
-  },
-  productPrice: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginRight: 3,
-    color: '#030A8C', // Cambiar el color a azul
-    textAlign: 'right', // Alinear el texto a la derecha
-  },
-  productUnits: {
-    fontSize: 12,
-    marginLeft: 2,
-    marginBottom: 3,
-    color: '#666',
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  searchResultContainer: {
-    flexGrow: 1,
-    paddingBottom: 20,
-    zIndex: 1, // Asegura que los resultados de la búsqueda estén por encima de todo
   },
 });
 

@@ -19,15 +19,23 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/Logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.angelzn.ChangarroApp",
+      "label": "ChangarritoFIF"
+
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "789d9091-1340-4689-af3e-df29950ee98b"
+      }
+    }
   }
 }
