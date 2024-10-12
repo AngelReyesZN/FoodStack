@@ -30,7 +30,6 @@ const AddProductsScreen = ({ navigation }) => {
         setUserEmail(user.email);
         fetchUserDocId(user.email);
       } else {
-        // Handle user not signed in
       }
     });
 
