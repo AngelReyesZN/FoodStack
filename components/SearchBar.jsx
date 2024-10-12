@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import LogoImage from '../assets/Logo.png';
+import LogoImage from '../assets/FoodStackLogoNT.png';
 import { useNavigation } from '@react-navigation/native';
 
 const SearchBar = () => {
@@ -14,46 +14,60 @@ const SearchBar = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#FF6347"
+        translucent={false}
+      />
       <Image
         source={LogoImage}
-        style={{ width: 40, height: 40, marginRight: 10, marginTop: 10 }}
-      />
-      
-      <TextInput onPress={handleSearch}
-        style={styles.searchInput}
-        placeholder="Buscar en changarrito"
-        value={searchQuery}
-        onChangeText={handleSearch}
+        style={{ width: 50, height: 50, marginRight: width * 0.015 }}
       />
 
-      <TouchableOpacity onPress={handleSearch}>
-        <Icon name="search" size={20} color="#000" style={{ marginLeft: 10 }} />
-      </TouchableOpacity>
+      {/* View envolvente para el TextInput y el ícono */}
+      <View style={styles.inputWrapper}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar productos..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <TouchableOpacity onPress={handleSearch} style={styles.iconContainer}>
+          <Icon name="search" size={20} color="#AEAEAE" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
-    paddingTop: 15,
-    paddingBottom: 5,
-    paddingHorizontal: 20,
+    backgroundColor: '#FF6347',
+    paddingTop: height * 0.02, // 2% del alto de la pantalla
+    paddingBottom: height * 0.02, // 2% del alto de la pantalla
+    paddingHorizontal: width * 0.02, // 2% del ancho de la pantalla
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    marginRight: height * 0.02, // 2% del alto de la pantalla
+    flex: 1,
+    borderRadius: 10,
+  },
   searchInput: {
     flex: 1,
-    height: 30,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    paddingLeft: 10,
-    borderRadius: 5,
-    borderColor: 'white',
-    marginTop: 8,
+    height: height * 0.06, // 6% del alto de la pantalla
+    paddingLeft: width * 0.04, // 4% del ancho de la pantalla
+    fontFamily: 'Montserrat-Regular',
+  },
+  iconContainer: {
+    paddingHorizontal: width * 0.025, // 2.5% del ancho de la pantalla
   },
 });
 

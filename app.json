@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ChangarroApp",
-    "slug": "ChangarroApp",
+    "name": "FoodStack",
+    "slug": "FoodStack",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,16 +17,21 @@
         "foregroundImage": "./assets/FoodStackLogo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.angelzn.ChangarroApp",
-      "label": "ChangarritoFIF"
+      "package": "com.angelzn.FoodStack",
+      "label": "FoodStack"
 
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
-    ],
+    [
+      "expo-font",
+      {
+        "fonts": ["node_modules/@expo-google-fonts/inter/Montserrat_700Bold.ttf"]
+      }
+    ]
+  ],
     "extra": {
       "eas": {
         "projectId": "789d9091-1340-4689-af3e-df29950ee98b"

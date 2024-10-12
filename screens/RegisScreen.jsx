@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { db, auth, storage } from '../services/firebaseConfig';
-import TopBar from '../components/TopBar';
+import TopBackButton from '../components/TopBackButton';
 import BackButton from '../components/BackButton';
 import ErrorAlert from '../components/ErrorAlert';
+import CustomText from '../components/CustomText';
+
 
 const RegisScreen = ({ navigation }) => {
   const [expediente, setExpediente] = useState('');
@@ -69,6 +71,7 @@ const RegisScreen = ({ navigation }) => {
   };
 
   const handleRegistro = async () => {
+    navigation.navigate('Success');
     // Validar campos
     validateField('expediente', expediente);
     validateField('nombreUsuario', nombreUsuario);
@@ -139,8 +142,8 @@ const RegisScreen = ({ navigation }) => {
         registroFecha: new Date(),
       });
 
-      setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
-      navigation.navigate('Login');
+      // setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+      navigation.navigate('Success');
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
       setError("Hubo un problema al registrar el usuario.");
@@ -151,12 +154,12 @@ const RegisScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container1}>
-      <TopBar/>
+      <TopBackButton/>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Registro</Text>
+          <CustomText style={styles.title} fontWeight='Bold'>Registro</CustomText>
         </View>
-        <Text style={styles.subtitle}>Completa tu registro introduciendo los siguientes datos: </Text>
+        <CustomText style={styles.subtitle} fontWeight='Medium'>Completa tu registro introduciendo los siguientes datos: </CustomText>
         {error && (
           <ErrorAlert
             message={error}
@@ -169,12 +172,12 @@ const RegisScreen = ({ navigation }) => {
               {image ? (
                 <Image source={{ uri: image }} style={styles.image} />
               ) : (
-                <Text style={styles.imagePlaceholder}>Seleccionar Imagen</Text>
+                <CustomText style={styles.imagePlaceholder} fontWeight='Medium'>Seleccionar Imagen</CustomText>
               )}
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.label}>Expediente</Text>
+          <CustomText style={styles.label}>Expediente</CustomText>
           <TextInput
             value={expediente}
             onChangeText={text => {
@@ -187,7 +190,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.expediente && <Text style={styles.errorText}>{errors.expediente}</Text>}
 
-          <Text style={styles.label}>Nombre completo</Text>
+          <CustomText style={styles.label}>Nombre completo</CustomText>
           <TextInput
             value={nombreUsuario}
             onChangeText={text => {
@@ -198,7 +201,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.nombreUsuario && <Text style={styles.errorText}>{errors.nombreUsuario}</Text>}
 
-          <Text style={styles.label}>Correo electrónico</Text>
+          <CustomText style={styles.label}>Correo electrónico</CustomText>
           <TextInput
             value={correo}
             onChangeText={text => {
@@ -210,7 +213,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.correo && <Text style={styles.errorText}>{errors.correo}</Text>}
 
-          <Text style={styles.label}>Teléfono</Text>
+          <CustomText style={styles.label}>Teléfono</CustomText>
           <View style={styles.phoneInputContainer}>
             <Text style={styles.phonePrefix}>🇲🇽 +52</Text>
             <TextInput
@@ -226,7 +229,7 @@ const RegisScreen = ({ navigation }) => {
           </View>
           {errors.telefono && <Text style={styles.errorText}>{errors.telefono}</Text>}
 
-          <Text style={styles.label}>Contraseña</Text>
+          <CustomText style={styles.label}>Contraseña</CustomText>
           <TextInput
             value={contrasena}
             onChangeText={text => {
@@ -239,7 +242,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.contrasena && <Text style={styles.errorText}>{errors.contrasena}</Text>}
 
-          <Text style={styles.label}>Confirmar contraseña</Text>
+          <CustomText style={styles.label}>Confirmar contraseña</CustomText>
           <TextInput
             value={confirmarContrasena}
             onChangeText={text => {
@@ -252,7 +255,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.confirmarContrasena && <Text style={styles.errorText}>{errors.confirmarContrasena}</Text>}
 
-          <Text style={styles.label}>Descripción</Text>
+          <CustomText style={styles.label}>Descripción</CustomText>
           <TextInput
             value={descripcionUsuario}
             onChangeText={text => {
@@ -269,11 +272,11 @@ const RegisScreen = ({ navigation }) => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.signupButton} onPress={handleRegistro}>
-              <Text  style={styles.signupButtonlabel}>Registrar</Text>
+              <CustomText  style={styles.signupButtonlabel}>Registrar</CustomText>
             </TouchableOpacity>
             <View style={styles.orContainer}>
               <View style={styles.line}></View>
-              <Text style={styles.orText}>o inicia con</Text>
+              <CustomText style={styles.orText}>o inicia con</CustomText>
               <View style={styles.line}></View>
             </View>
           </View>
@@ -288,9 +291,9 @@ const RegisScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>¿Tienes cuenta? </Text>
+            <CustomText style={styles.registerText}>¿Tienes cuenta? </CustomText>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={[styles.registerText, { color: '#FF6347' }]}>Inicia sesión</Text>
+              <CustomText style={[styles.registerText, { color: '#FF6347' }]}>Inicia sesión</CustomText>
             </TouchableOpacity>
           </View>
         </ScrollView>

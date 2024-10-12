@@ -6,6 +6,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db } from '../services/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ErrorAlert from '../components/ErrorAlert'; // Importa el componente de alerta personalizado
+import CustomText from '../components/CustomText';
 
 const LoginScreen = ({ navigation }) => {
   const [isChecked, setChecked] = useState(false);
@@ -102,22 +103,22 @@ const LoginScreen = ({ navigation }) => {
         />
       </View>
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>Iniciar sesión</Text>
-        <Text style={styles.subtitle}>Introduce tus datos en los campos asignados.</Text>
+        <CustomText style={styles.title}  fontWeight="Bold">Iniciar sesión</CustomText>
+        <CustomText style={styles.subtitle} fontWeight="Medium">Introduce tus datos en los campos asignados.</CustomText>
         {error && (
         <ErrorAlert
           message={error}
           onClose={() => setError('')}
         />
       )}
-        <Text style={styles.labelUser}>Expediente</Text>
+        <CustomText style={styles.labelUser}  fontWeight="Medium">Expediente</CustomText>
         <TextInput
           style={styles.inputField}
           value={expediente}
           onChangeText={text => setExpediente(text)}
           keyboardType="numeric"
         />
-        <Text style={styles.labelpassword}>Contraseña</Text>
+        <CustomText style={styles.labelpassword}  fontWeight="Medium">Contraseña</CustomText>
         <TextInput
           style={styles.inputField}
           value={contraseña}
@@ -126,9 +127,9 @@ const LoginScreen = ({ navigation }) => {
         />
         <View style={styles.checkboxContainer}>
           <Checkbox  color="#FF6347" style={styles.checkbox} value={isChecked} onValueChange={setChecked} />
-          <Text style={styles.checkboxLabel}>Recordarme</Text>
+          <CustomText style={styles.checkboxLabel}  fontWeight="SemiBold">Recordarme</CustomText>
           <TouchableOpacity onPress={handleForgotPassword}>
-            <Text style={styles.forgotPasswordText}>Contraseña olvidada?</Text>
+            <CustomText style={styles.forgotPasswordText} fontWeight="Medium">¿Contraseña olvidada?</CustomText>
           </TouchableOpacity>
         </View>
         <View style={styles.buttonContainer}>
@@ -137,7 +138,7 @@ const LoginScreen = ({ navigation }) => {
           </TouchableOpacity>
           <View style={styles.orContainer}>
             <View style={styles.line}></View>
-            <Text style={styles.orText}>o inicia con</Text>
+            <CustomText style={styles.orText}>o inicia con</CustomText>
             <View style={styles.line}></View>
           </View>
           <View style={styles.socialContainer}>
@@ -149,9 +150,9 @@ const LoginScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>¿No tienes cuenta? </Text>
+            <CustomText style={styles.registerText}>¿No tienes cuenta? </CustomText>
             <TouchableOpacity onPress={() => navigation.navigate('Regis')}>
-              <Text style={[styles.registerText, { color: '#FF6347' }]}>Regístrate</Text>
+              <CustomText style={[styles.registerText, { color: '#FF6347' }]}>Regístrate</CustomText>
             </TouchableOpacity>
           </View>
         </View>
@@ -166,6 +167,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FF6347',
+  },
+  tilin: {
+    textAlign: 'left',
+    color: 'red',
+    fontSize: 20,
   },
   logoContainer: {
     backgroundColor: '#FF6347',
@@ -190,20 +196,23 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 34,  
-    fontWeight: 'bold',
-    color: 'black',
+    color: 'black', 
   },
   subtitle: {
     fontSize: 16,
     color: 'black',
     marginTop: 5,
+    paddingLeft: width * 0.02, // Padding dinámico
+    paddingRight: width * 0.02, // Padding dinámico
+    textAlign: 'center',
+
   },
   labelUser: {
     alignSelf: 'flex-start',
     marginLeft: width * 0.05, 
     marginTop: height * 0.03,
     fontSize: 14,
-    color: '#000',
+    color: '#6E6E6E',
     marginBottom: height * 0.01,
   },
   labelpassword: {
@@ -211,7 +220,7 @@ const styles = StyleSheet.create({
     marginLeft: width * 0.05,
     marginTop: height * 0.01,
     fontSize: 14,
-    color: '#000',
+    color: '#6E6E6E',
     marginBottom: height * 0.01,
   },
   inputField: {
@@ -222,7 +231,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     paddingLeft: 10,
     borderRadius: 5,
-    width: '90%', // Ocupa el 90% del ancho del contenedor
+    width: '90%', // Ocupa el 90% del ancho del contenedor,
+    fontFamily: 'Montserrat-Medium',
   },
   checkboxContainer: {
     flexDirection: 'row',
@@ -277,6 +287,7 @@ const styles = StyleSheet.create({
   orText: {
     marginHorizontal: 10,
     color: 'gray',
+
   },
   socialContainer: {
     flexDirection: 'row',
@@ -308,6 +319,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
 
 export default LoginScreen;

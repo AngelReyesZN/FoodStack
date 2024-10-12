@@ -13,7 +13,7 @@ export default function LoadScreen({ navigation }) {
       useNativeDriver: true,
     }).start(() => {
       // Navegar a la pantalla de inicio de sesión después de que la animación haya terminado
-      navigation.navigate('Login');
+      navigation.navigate('Welcome');
     });
   }, []);
 
