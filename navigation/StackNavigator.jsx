@@ -29,6 +29,8 @@ import EditProductScreen from '../screens/EditProductScreen.jsx';
 import SelfInfoScreen from '../screens/SelfInfoScreen';
 import OrderScreen from '../screens/OrderScreen.jsx';
 import LoadOrderScreen from '../screens/LoadOrderScreen.jsx';
+import SuccessfulRegistration from '../screens/SuccessfulRegistrationScreen.jsx';
+import WelcomeScreen from '../screens/WelcomeScreen.jsx';
 
 // Importa tu logo aquí
 import LogoImage from '../assets/Logo.png';
@@ -43,6 +45,11 @@ function MyScreens() {
         component={LoadScreen}
         options={{ headerShown: false }}
       />
+       <Stack.Screen
+        name="Welcome"
+        component={WelcomeScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -51,6 +58,11 @@ function MyScreens() {
       <Stack.Screen
         name='Regis'
         component={RegisScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name='Success'
+        component={SuccessfulRegistration} 
         options={{ headerShown: false }}
       />
       <Stack.Screen

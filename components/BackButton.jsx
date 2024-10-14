@@ -7,18 +7,15 @@ const BackButton = () => {
 
   return (
     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
-      <Image source={require('../assets/iconsButtonBar/flecha.png')} style={styles.icon} />
+      <Image source={require('../assets/arrow-left.png')} style={styles.icon} />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    padding: 10,
-  },
   icon: {
-    width: 25,
-    height: 25,
+    width: 30,
+    height: 30,
   },
 });
 
