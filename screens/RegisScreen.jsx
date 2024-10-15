@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { db, auth, storage } from '../services/firebaseConfig';
-import TopBar from '../components/TopBar';
+import TopBackButton from '../components/TopBackButton';
 import BackButton from '../components/BackButton';
 import ErrorAlert from '../components/ErrorAlert';
+import CustomText from '../components/CustomText';
+
 
 const RegisScreen = ({ navigation }) => {
   const [expediente, setExpediente] = useState('');
@@ -69,6 +71,7 @@ const RegisScreen = ({ navigation }) => {
   };
 
   const handleRegistro = async () => {
+    navigation.navigate('Success');
     // Validar campos
     validateField('expediente', expediente);
     validateField('nombreUsuario', nombreUsuario);
@@ -136,26 +139,27 @@ const RegisScreen = ({ navigation }) => {
         correo: correo,
         descripcionUsuario: descripcionUsuario,
         statusCard: false,
-        registroFecha: new Date(), 
+        registroFecha: new Date(),
       });
 
-      setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
-      navigation.navigate('Login');
+      // setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+      navigation.navigate('Success');
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
       setError("Hubo un problema al registrar el usuario.");
     }
   };
 
+  //! VISUAL ELEMENTS
+
   return (
     <View style={styles.container1}>
-      <TopBar />
+      <TopBackButton/>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-          <BackButton style={styles.backButton} />
-          <Text style={styles.title}>Registro</Text>
+          <CustomText style={styles.title} fontWeight='Bold'>Registro</CustomText>
         </View>
-        <Text style={styles.subtitle}>Completa tu registro introduciendo{'\n'}los siguientes datos</Text>
+        <CustomText style={styles.subtitle} fontWeight='Medium'>Completa tu registro introduciendo los siguientes datos: </CustomText>
         {error && (
           <ErrorAlert
             message={error}
@@ -168,12 +172,12 @@ const RegisScreen = ({ navigation }) => {
               {image ? (
                 <Image source={{ uri: image }} style={styles.image} />
               ) : (
-                <Text style={styles.imagePlaceholder}>Seleccionar Imagen</Text>
+                <CustomText style={styles.imagePlaceholder} fontWeight='Medium'>Seleccionar Imagen</CustomText>
               )}
             </View>
           </TouchableOpacity>
 
-          <Text style={styles.label}>Expediente</Text>
+          <CustomText style={styles.label}>Expediente</CustomText>
           <TextInput
             value={expediente}
             onChangeText={text => {
@@ -186,7 +190,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.expediente && <Text style={styles.errorText}>{errors.expediente}</Text>}
 
-          <Text style={styles.label}>Nombre completo</Text>
+          <CustomText style={styles.label}>Nombre completo</CustomText>
           <TextInput
             value={nombreUsuario}
             onChangeText={text => {
@@ -197,7 +201,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.nombreUsuario && <Text style={styles.errorText}>{errors.nombreUsuario}</Text>}
 
-          <Text style={styles.label}>Correo electrónico</Text>
+          <CustomText style={styles.label}>Correo electrónico</CustomText>
           <TextInput
             value={correo}
             onChangeText={text => {
@@ -209,7 +213,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.correo && <Text style={styles.errorText}>{errors.correo}</Text>}
 
-          <Text style={styles.label}>Teléfono</Text>
+          <CustomText style={styles.label}>Teléfono</CustomText>
           <View style={styles.phoneInputContainer}>
             <Text style={styles.phonePrefix}>🇲🇽 +52</Text>
             <TextInput
@@ -225,7 +229,7 @@ const RegisScreen = ({ navigation }) => {
           </View>
           {errors.telefono && <Text style={styles.errorText}>{errors.telefono}</Text>}
 
-          <Text style={styles.label}>Contraseña</Text>
+          <CustomText style={styles.label}>Contraseña</CustomText>
           <TextInput
             value={contrasena}
             onChangeText={text => {
@@ -238,7 +242,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.contrasena && <Text style={styles.errorText}>{errors.contrasena}</Text>}
 
-          <Text style={styles.label}>Confirmar contraseña</Text>
+          <CustomText style={styles.label}>Confirmar contraseña</CustomText>
           <TextInput
             value={confirmarContrasena}
             onChangeText={text => {
@@ -251,7 +255,7 @@ const RegisScreen = ({ navigation }) => {
           />
           {errors.confirmarContrasena && <Text style={styles.errorText}>{errors.confirmarContrasena}</Text>}
 
-          <Text style={styles.label}>Descripción</Text>
+          <CustomText style={styles.label}>Descripción</CustomText>
           <TextInput
             value={descripcionUsuario}
             onChangeText={text => {
@@ -261,32 +265,35 @@ const RegisScreen = ({ navigation }) => {
             style={[styles.input, styles.descripcionInput]} // Añadir un estilo adicional
             multiline
             numberOfLines={4}
+            maxLength={150} 
           />
           {errors.descripcionUsuario && <Text style={styles.errorText}>{errors.descripcionUsuario}</Text>}
 
 
           <View style={styles.buttonContainer}>
-            <Button title="Registrar" onPress={handleRegistro} color="#030A8C" />
+            <TouchableOpacity style={styles.signupButton} onPress={handleRegistro}>
+              <CustomText  style={styles.signupButtonlabel}>Registrar</CustomText>
+            </TouchableOpacity>
             <View style={styles.orContainer}>
               <View style={styles.line}></View>
-              <Text style={styles.orText}>o inicia con</Text>
+              <CustomText style={styles.orText}>o inicia con</CustomText>
               <View style={styles.line}></View>
             </View>
           </View>
 
           <View style={styles.socialContainer}>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#0910A6' }]} onPress={() => { }}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#C62A0E' }]} onPress={() => { }}>
               <Image source={require('../assets/google.png')} style={styles.logoImage} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#4145A6' }]} onPress={() => { }}>
+            <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#ED3615' }]} onPress={() => { }}>
               <Image source={require('../assets/facebook.png')} style={styles.logoImage} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>¿Tienes cuenta? </Text>
+            <CustomText style={styles.registerText}>¿Tienes cuenta? </CustomText>
             <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={[styles.registerText, { color: '#030A8C' }]}>Inicia sesión</Text>
+              <CustomText style={[styles.registerText, { color: '#FF6347' }]}>Inicia sesión</CustomText>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -294,6 +301,8 @@ const RegisScreen = ({ navigation }) => {
     </View>
   );
 };
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container1: {
@@ -306,38 +315,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    paddingHorizontal: 20,
   },
   title: {
-    fontSize: 25,
+    fontSize: 34, // Mantener fontSize sin cambios
     fontWeight: 'bold',
-    color: '#030A8C',
-    flex: 1,
-    marginLeft: 10,
+    color: '#000',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16, // Mantener fontSize sin cambios
     color: 'black',
-    textAlign: 'center',
-    marginTop: 5,
+    textAlign: 'left',
+    marginTop: height * 0.01, // Ajuste dinámico de márgenes
+    width: '90%',
   },
   imagePicker: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: width * 0.3, // Ajuste responsivo
+    height: width * 0.3,
+    borderRadius: 10, // Mantener borderRadius sin cambios
     backgroundColor: '#eee',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.02, // Ajuste dinámico de márgenes
   },
   image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: width * 0.3, // Ajuste responsivo
+    height: width * 0.3,
+    borderRadius: 10, // Mantener borderRadius sin cambios
   },
   imagePlaceholder: {
     color: '#aaa',
@@ -345,57 +351,70 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     width: '100%',
-    marginVertical: 20,
+    marginVertical: height * 0.02, // Ajuste dinámico de márgenes
   },
   scrollViewContent: {
     alignItems: 'center',
-    padding: 20,
+    padding: width * 0.05, // Ajuste dinámico de padding
   },
   label: {
     alignSelf: 'flex-start',
-    marginLeft: 20,
-    marginTop: 8,
-    fontSize: 15,
+    marginLeft: width * 0.05, // Ajuste dinámico de márgenes
+    marginTop: height * 0.01, // Ajuste dinámico de márgenes
+    fontSize: 14, // Mantener fontSize sin cambios
     color: '#000',
-    marginBottom: 5,
+    marginBottom: height * 0.01, // Ajuste dinámico de márgenes
   },
   input: {
-    height: 40,
-    marginTop: 5,
-    marginBottom: 10,
+    height: height * 0.05, // Ajuste dinámico de altura
+    marginTop: height * 0.01, // Ajuste dinámico de márgenes
+    marginBottom: height * 0.015, // Ajuste dinámico de márgenes
     borderWidth: 1,
     borderColor: '#ccc',
     paddingLeft: 10,
-    borderRadius: 5,
+    borderRadius: 5, // Mantener borderRadius sin cambios
     width: '90%',
   },
   phoneInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: height * 0.015, // Ajuste dinámico de márgenes
     width: '90%',
   },
   phonePrefix: {
-    fontSize: 16,
-    marginRight: 5,
+    fontSize: 16, // Mantener fontSize sin cambios
+    marginRight: width * 0.02, // Ajuste dinámico de márgenes
     color: 'black',
   },
   phoneInput: {
     flex: 1,
-    height: 40,
+    height: height * 0.05, // Ajuste dinámico de altura
     borderWidth: 1,
     borderColor: '#ccc',
     paddingLeft: 10,
-    borderRadius: 5,
+    borderRadius: 5, // Mantener borderRadius sin cambios
   },
   buttonContainer: {
     width: '90%',
-    marginTop: 15,
+    marginTop: height * 0.02, // Ajuste dinámico de márgenes
+  },
+  signupButton: {
+    marginTop: height * 0.015, // Ajuste dinámico de márgenes
+    marginBottom: height * 0.02, // Ajuste dinámico de márgenes
+    backgroundColor: '#FF6347',
+    padding: height * 0.015, // Ajuste dinámico de padding
+    borderRadius: 10, // Mantener borderRadius sin cambios
+    width: '100%',
+    alignSelf: 'center',
+  },
+  signupButtonlabel: {
+    color: 'white',
+    textAlign: 'center',
   },
   orContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: height * 0.015, // Ajuste dinámico de márgenes
   },
   line: {
     borderBottomWidth: 1,
@@ -403,48 +422,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   orText: {
-    marginHorizontal: 10,
+    marginHorizontal: width * 0.03, // Ajuste dinámico de márgenes
     color: 'gray',
   },
   socialContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: height * 0.02, // Ajuste dinámico de márgenes
     justifyContent: 'center',
     alignItems: 'center',
   },
   socialButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: width * 0.15, // Ajuste dinámico del tamaño
+    height: width * 0.15, // Mantener la forma circular
+    borderRadius: width * 0.075, // Ajuste dinámico para mantener la forma circular
     backgroundColor: '#DDDDDD',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: width * 0.03, // Ajuste dinámico de márgenes
   },
   logoImage: {
-    width: 21,
-    height: 21,
+    width: width * 0.05, // Ajuste dinámico del tamaño
+    height: width * 0.05,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: height * 0.02, // Ajuste dinámico de márgenes
   },
   registerText: {
     color: 'black',
-    fontSize: 16,
+    fontSize: 14, // Mantener fontSize sin cambios
   },
   errorText: {
     color: 'red',
     alignSelf: 'flex-start',
-    marginLeft: 20,
-    marginBottom: 5,
-    fontSize: 12,
+    marginLeft: width * 0.05, // Ajuste dinámico de márgenes
+    marginBottom: height * 0.01, // Ajuste dinámico de márgenes
+    fontSize: 12, // Mantener fontSize sin cambios
   },
   descripcionInput: {
-    width: '90%', // Ajustar el ancho de la descripción
-    height: 80, // Ajustar la altura según sea necesario
+    width: '90%', 
+    height: height * 0.1, // Ajuste dinámico de la altura
   },
 });
 

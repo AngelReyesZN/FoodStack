@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  const [menuIcon, setMenuIcon] = useState(require('../assets/iconsButtonBar/menuIcon.png'));
+  const [menuIcon, setMenuIcon] = useState(require('../assets/iconsButtonBar/user.png'));
 
   useEffect(() => {
     if (isMenuScreen && isFocused) {
-      setMenuIcon(require('../assets/iconsButtonBar/menuIconBlue.png'));
+      setMenuIcon(require('../assets/iconsButtonBar/userOrange.png'));
     } else {
-      setMenuIcon(require('../assets/iconsButtonBar/menuIcon.png'));
+      setMenuIcon(require('../assets/iconsButtonBar/user.png'));
     }
   }, [isMenuScreen, isFocused]);
 
@@ -20,19 +20,19 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
 
   useEffect(() => {
     if (isHomeScreen && isFocused) {
-      setHomeIcon(require('../assets/iconsButtonBar/home2.png'));
+      setHomeIcon(require('../assets/iconsButtonBar/homeOrange.png'));
     } else {
       setHomeIcon(require('../assets/iconsButtonBar/home.png'));
     }
   }, [isHomeScreen, isFocused]);
 
-  const [chatIcon, setChatIcon] = useState(require('../assets/iconsButtonBar/comentarios2.png'));
+  const [chatIcon, setChatIcon] = useState(require('../assets/iconsButtonBar/options.png'));
 
   useEffect(() => {
     if (isChatScreen && isFocused) {
-      setChatIcon(require('../assets/iconsButtonBar/comentarios.png'));
+      setChatIcon(require('../assets/iconsButtonBar/optionsOrange.png'));
     } else {
-      setChatIcon(require('../assets/iconsButtonBar/comentarios2.png'));
+      setChatIcon(require('../assets/iconsButtonBar/options.png'));
     }
   }, [isChatScreen, isFocused]);
 
@@ -42,17 +42,17 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.containerAddButton}>
+      {/* <View style={styles.containerAddButton}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('AddProduct')}>
           <Image source={require('../assets/iconsButtonBar/addbutton2.png')} style={styles.addButton} />
         </TouchableOpacity>
-      </View>
+      </View> */}
       <View style={styles.menuIconsContainer}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Home')}>
           <Image source={homeIcon} style={styles.iconImage} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconContainerSearch} onPress={() => navigateToScreen('Search')}>
-          <Image source={require('../assets/iconsButtonBar/busqueda2.png')} style={styles.iconImage} />
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Search')}>
+          <Image source={require('../assets/iconsButtonBar/search.png')} style={styles.iconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Chats')}>
           <Image source={chatIcon} style={styles.iconImage} />
@@ -65,6 +65,7 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
   );
 };
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -75,38 +76,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'white',
     elevation: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: width * 0.02,
+    paddingVertical: width * 0.045,
   },
   menuIconsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent:'space-between',
+    paddingRight: 45,
+    paddingLeft: 45,
     alignItems: 'center',
     flex: 1,
   },
   iconContainer: {
-    padding: 10,
   },
   iconContainerSearch: {
-    paddingRight: 80,
+    // paddingRight: 80,
   },
   iconImage: {
-    width: 19,
-    height: 19,
+    width: 24,
+    height: 24,
   },
   addButton: {
     width: 70,
     height: 70,
   },
-  containerAddButton: {
-    position: 'absolute',
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 45,
-    elevation: 10,
-  },
+  // containerAddButton: {
+  //   position: 'absolute',
+  //   width: '100%',
+  //   flexDirection: 'row',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   paddingBottom: 45,
+  //   elevation: 10,
+  // },
 });
 
 export default BottomMenuBar;

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Image, Animated } from 'react-native';
 
-import Logo from '../assets/Logo.png';
+import Logo from '../assets/FoodStackLogo.png';
 
 export default function LoadScreen({ navigation }) {
   const scaleValue = new Animated.Value(0);
@@ -12,8 +12,8 @@ export default function LoadScreen({ navigation }) {
       duration: 1200, // Duración
       useNativeDriver: true,
     }).start(() => {
-      // Navegar a la pantalla de inicio de sesión después de que la animación haya terminado
-      navigation.navigate('Login');
+      // Reemplazar la pantalla actual para que no sea accesible desde el back button
+      navigation.replace('Welcome');
     });
   }, []);
 
@@ -23,7 +23,7 @@ export default function LoadScreen({ navigation }) {
   });
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#030A8C' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FF6347' }}>
       <Animated.Image source={Logo} style={{ width: 250, height: 250, transform: [{ scale }] }} />
     </View>
   );
