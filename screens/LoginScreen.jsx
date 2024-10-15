@@ -312,7 +312,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    marginTop: height * 0.05,
+    left: 0, // Alinear a la izquierda
+    bottom: 0, // Alinear en la parte inferior
+    marginTop: height * 0.03,
   },
   registerText: {
     color: 'black',
