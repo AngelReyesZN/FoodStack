@@ -86,7 +86,10 @@ const MenuScreen = ({ navigation }) => {
           text: 'Sí', onPress: () => {
             const auth = getAuth();
             signOut(auth).then(() => {
-              navigation.replace('Login'); // Redirige al usuario a la pantalla de inicio de sesión
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }], // Deja solo la pantalla de Login en el historial
+              });
             }).catch((error) => {
               console.error('Error al cerrar sesión:', error);
             });
@@ -96,6 +99,7 @@ const MenuScreen = ({ navigation }) => {
       { cancelable: false }
     );
   };
+  
 
   const handleOptionPress = (option) => {
     navigation.navigate(option.screen, { label: option.label });
