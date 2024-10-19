@@ -5,6 +5,9 @@ import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import BackButton from '../components/BackButton';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CustomText from '../components/CustomText';
+import { search } from 'react-native-country-picker-modal/lib/CountryService';
+
 
 const SearchResults = ({ route }) => {
   const searchQuery = route?.params?.searchQuery || '';
@@ -46,8 +49,8 @@ const SearchResults = ({ route }) => {
     >
       <View style={styles.item}>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
-        <Text style={styles.name}>{item.nombre}</Text>
-        <Text style={styles.price}>${item.precio}.00</Text>
+        <CustomText style={styles.name}>{item.nombre}</CustomText>
+        <CustomText style={styles.price}>${item.precio}.00</CustomText>
       </View>
     </TouchableOpacity>
   );
@@ -56,11 +59,11 @@ const SearchResults = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <BackButton/>
+          <BackButton />
           <TextInput
             ref={searchInputRef}
             style={styles.searchInput}
-            placeholder="Buscar en changarrito"
+            placeholder="Buscar productos..."
             value={searchText}
             onChangeText={setSearchText}
             autoFocus={true}
@@ -71,6 +74,22 @@ const SearchResults = ({ route }) => {
             </TouchableOpacity>
           )}
         </View>
+        <View style={styles.recentContainer}>
+          <View style={styles.leftSection}>
+            <Image
+              source={require('../assets/search.png')}
+              style={styles.searchImage}
+            />
+            <CustomText style={styles.searchText} fontWeight='SemiBold'>
+              Busquedas recientes
+            </CustomText>
+          </View>
+          <CustomText style={styles.removeHistory}>
+            Borrar historial
+          </CustomText>
+        </View>
+
+
       </View>
       {filteredProducts.length > 0 ? (
         <FlatList
@@ -80,7 +99,7 @@ const SearchResults = ({ route }) => {
           contentContainerStyle={styles.productList}
         />
       ) : (
-        <Text style={styles.noResultsText}>No se encontraron productos</Text>
+        <CustomText style={styles.noResultsText}>No se encontraron productos</CustomText>
       )}
     </View>
   );
@@ -105,17 +124,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchInput: {
-    height: 30,
+    height: 40,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#e6e6e6',
     paddingLeft: 10,
-    borderRadius: 5,
-    borderColor: 'white',
+    borderRadius: 50,
     flex: 1,
+    fontFamily: "Montserrat-Regular",
   },
   clearButton: {
     position: 'absolute',
     right: 10,
+  },
+  recentContainer: {
+    flexDirection: 'row', // Alinea los elementos en fila
+    justifyContent: 'space-between', // Distribuye elementos a izquierda y derecha
+    alignItems: 'center', // Alinea los elementos verticalmente al centro
+    paddingHorizontal: 10, // Espaciado horizontal
+    marginVertical: 10, // Espaciado vertical
+  },
+  leftSection: {
+    flexDirection: 'row', // Imagen y texto alineados en fila
+    alignItems: 'center', // Centrado verticalmente
+  },
+  searchImage: {
+    height: 25,
+    width: 25,
+    marginRight: 8, // Espacio entre la imagen y el texto
+
+  },
+  removeHistory: {
+    color: '#FF6347',
+    fontSize: 13
   },
   productImage: {
     width: 55,
@@ -133,7 +173,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: 'bold',
     paddingLeft: 10,
   },
   price: {
@@ -143,9 +182,13 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: 16,
-    fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 20,
+    color: "#C6C6C6"
+  },
+  searchText: {
+    fontSize: 16,
+    textAlign: 'left',
   },
 });
 

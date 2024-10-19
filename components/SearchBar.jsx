@@ -3,6 +3,7 @@ import { View, TextInput, StyleSheet, Image, TouchableOpacity, StatusBar, Dimens
 import Icon from 'react-native-vector-icons/FontAwesome';
 import LogoImage from '../assets/FoodStackLogoNT.png';
 import { useNavigation } from '@react-navigation/native';
+import CustomText from '../components/CustomText';
 
 const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,8 +50,7 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.02, // 2% del alto de la pantalla
     paddingBottom: height * 0.02, // 2% del alto de la pantalla
     paddingHorizontal: width * 0.02, // 2% del ancho de la pantalla
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    elevation: 5, // Sombra para resaltar la barra superior
   },
   inputWrapper: {
     flexDirection: 'row',

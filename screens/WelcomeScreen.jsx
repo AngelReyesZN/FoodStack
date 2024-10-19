@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Importar el hook
 import CustomText from '../components/CustomText';
 
@@ -8,6 +8,11 @@ const WelcomeScreen = () => {
 
     return (
         <View style={styles.container}>
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="#FF6347"
+                translucent={false}
+            />
             <View style={styles.logoContainer}>
                 <Image source={require('../assets/FoodStackLogo.png')} style={styles.logo} />
             </View>
@@ -77,13 +82,13 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderWidth: 2,
         borderColor: '#CBCBCB',
-      },
-      signupButtonlabel: {
+    },
+    signupButtonlabel: {
         color: '#fff',
         textAlign: 'center',
         fontSize: 20,
-      },
-      loginButton: {
+    },
+    loginButton: {
         marginTop: height * 0.015,
         marginBottom: height * 0.02,
         backgroundColor: '#FFFFFF',
@@ -93,11 +98,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         borderWidth: 2,
         borderColor: '#FF6347',
-      },
-      loginButtonlabel: {
+    },
+    loginButtonlabel: {
         color: '#000',
         textAlign: 'center',
         fontSize: 20,
-      },
+    },
 });
 export default WelcomeScreen;
