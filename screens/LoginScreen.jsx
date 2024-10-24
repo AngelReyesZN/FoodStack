@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Button, Dimensions  } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, StatusBar, Dimensions  } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -59,7 +59,7 @@ const LoginScreen = ({ navigation }) => {
           await AsyncStorage.setItem('isChecked', 'false');
         }
 
-        navigation.navigate('Home');
+        navigation.replace('Home');
       } else {
         setError('Expediente no encontrado');
       }
@@ -96,6 +96,11 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+       <StatusBar
+        barStyle="light-content"
+        backgroundColor="#FF6347"
+        translucent={false}
+      />
       <View style={styles.logoContainer}>
         <Image
           source={require('../assets/FoodStackLogo.png')}

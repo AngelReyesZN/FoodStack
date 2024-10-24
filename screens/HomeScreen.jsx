@@ -248,9 +248,8 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 40,
     borderWidth: 1,
-    borderColor: 'white',
+    borderColor: 'transparent',
     marginBottom: 10,
   },
   adImage: {

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import { getAuth, signOut } from 'firebase/auth';
 import { getDocs, query, collection, where, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CustomText from '../components/CustomText';
+
 
 const options = [
   { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/campana.png'), screen: 'Notifications' },
@@ -99,7 +101,7 @@ const MenuScreen = ({ navigation }) => {
       { cancelable: false }
     );
   };
-  
+
 
   const handleOptionPress = (option) => {
     navigation.navigate(option.screen, { label: option.label });
@@ -117,8 +119,7 @@ const MenuScreen = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.safeContainer}>
         <TopBar />
-        <Text style={styles.menuTitle}>Menú</Text>
-        <Text style={styles.loadingText}>Cargando datos del usuario...</Text>
+        <CustomText style={styles.loadingText}>Cargando datos del usuario...</CustomText>
         <BottomMenuBar isMenuScreen={true} />
       </SafeAreaView>
     );
@@ -129,22 +130,29 @@ const MenuScreen = ({ navigation }) => {
       <TopBar />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.contentContainer}>
-          <Text style={styles.menuTitle}>Menú</Text>
           <TouchableOpacity style={styles.userContainer} onPress={navigateToUserInfo}>
             <Image source={{ uri: userData.foto }} style={styles.userPhoto} />
             <View style={styles.userInfo}>
-              <Text style={styles.userName} numberOfLines={1} ellipsizeMode="tail">{userData.nombre}</Text>
+              <CustomText style={styles.userName} fontWeight='Bold' numberOfLines={1} ellipsizeMode="tail">
+                {userData.nombre.split(' ').slice(0, 2).join(' ')}
+              </CustomText>
               <View style={styles.ratingContainer}>
-                <Text style={styles.userRating}>{userRating} </Text>
-                <Icon name="star" size={17} color="#030A8C" />
+                <CustomText style={styles.labelText} fontWeight='Medium'>
+                  Calificación:
+                </CustomText>
+                <CustomText style={styles.ratingText} fontWeight='Regular'>
+                  {'  ' + userRating + '  '}
+                </CustomText>
+                <Icon name="star" size={17} color="#FF6347" />
               </View>
             </View>
           </TouchableOpacity>
+          <View style={styles.separator} />
           <View style={styles.optionsContainer}>
             {options.map((option) => (
               <TouchableOpacity key={option.id} style={styles.optionButton} onPress={() => handleOptionPress(option)}>
                 <Image source={option.icon} style={styles.optionIcon} />
-                <Text style={styles.optionText}>{option.label}</Text>
+                <CustomText style={styles.optionText} fontWeight='Regular'>{option.label}</CustomText>
                 {option.id === '1' && unreadNotifications > 0 && (
                   <View style={styles.notificationBadge}>
                     <Text style={styles.notificationBadgeText}>{unreadNotifications}</Text>
@@ -153,8 +161,9 @@ const MenuScreen = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
+          <View style={styles.separator} />
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+            <CustomText style={styles.logoutButtonText} fontWeight='Regular'>Cerrar Sesión</CustomText>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -163,6 +172,7 @@ const MenuScreen = ({ navigation }) => {
   );
 };
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
@@ -176,54 +186,43 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   contentContainer: {
-    paddingBottom: 120, // Espacio adicional para el BottomMenuBar
-  },
-  menuTitle: {
-    fontSize: 22,
-    marginVertical: 20,
-    color: '#030A8C',
-    paddingLeft: 25,
+    paddingBottom: height * .1,
   },
   userContainer: {
     flexDirection: 'row',
     padding: 25,
     marginHorizontal: 20,
-    marginBottom: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
+    marginBottom: 20,
+    marginTop: 20,
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   userPhoto: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 80,
+    height: 80,
+    borderRadius: 10,
   },
   userInfo: {
-    marginLeft: 10,
+    marginLeft: 15,
     flex: 1,
   },
   userName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#030A8C',
+    color: 'black',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: 8,
   },
   starIcon: {
     width: 20,
     height: 20,
-    marginLeft: 5,
   },
   userRating: {
     fontSize: 18,
+  },
+  labelText: {
+    color: '#767272'
   },
   noUserText: {
     fontSize: 18,
@@ -237,18 +236,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 20,
   },
+  separator: {
+    height: .5,
+    backgroundColor: '#C1C1C1',
+    width: '85%',
+    alignSelf: 'center',
+  },
   optionsContainer: {
-    marginTop: 20,
-    paddingHorizontal: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
     padding: 20,
     marginHorizontal: 20,
+    marginBottom: 20,
+    marginTop: 20,
   },
   optionButton: {
     flexDirection: 'row',
@@ -261,27 +259,19 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   optionText: {
-    fontSize: 18,
+    fontSize: 16,
     color: 'black',
     flex: 1,
   },
   logoutButton: {
-    backgroundColor: '#030A8C',
-    paddingVertical: 10,
-    borderRadius: 10,
     marginHorizontal: 20,
     marginTop: 25,
-    alignItems: 'center',
+    alignItems: 'left',
     justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   logoutButtonText: {
-    color: 'white',
-    fontSize: 15,
+    color: '#F50000',
+    fontSize: 20,
   },
   notificationBadge: {
     backgroundColor: 'red',

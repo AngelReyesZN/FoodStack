@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions,StatusBar } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { db, auth, storage } from '../services/firebaseConfig';
-import TopBackButton from '../components/TopBackButton';
 import BackButton from '../components/BackButton';
 import ErrorAlert from '../components/ErrorAlert';
 import CustomText from '../components/CustomText';
@@ -154,9 +153,14 @@ const RegisScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container1}>
-      <TopBackButton/>
+        <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFFFFF"
+        translucent={false}
+      />
       <View style={styles.container}>
         <View style={styles.headerContainer}>
+        <BackButton />
           <CustomText style={styles.title} fontWeight='Bold'>Registro</CustomText>
         </View>
         <CustomText style={styles.subtitle} fontWeight='Medium'>Completa tu registro introduciendo los siguientes datos: </CustomText>
@@ -313,16 +317,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     alignItems: 'center',
+    paddingTop: '20'
   },
   headerContainer: {
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
   title: {
     fontSize: 34, // Mantener fontSize sin cambios
     fontWeight: 'bold',
     color: '#000',
+    textAlign: 'center',
+    flex: 1, // Hace que el texto ocupe el espacio restante
   },
   subtitle: {
     fontSize: 16, // Mantener fontSize sin cambios
