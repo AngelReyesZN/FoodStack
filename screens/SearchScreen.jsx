@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
     height: 25,
     width: 25,
     marginRight: 8, // Espacio entre la imagen y el texto
-
   },
   removeHistory: {
     color: '#FF6347',
