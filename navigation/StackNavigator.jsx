@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, FlatList, Image, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 
 import LoginScreen from '../screens/LoginScreen';
 import LoadScreen from '../screens/LoadScreen';
@@ -39,13 +39,19 @@ const Stack = createStackNavigator();
 
 function MyScreens() {
   return (
-    <Stack.Navigator initialRouteName="Load">
+    <Stack.Navigator
+      initialRouteName="Load"
+      screenOptions={{
+        ...TransitionPresets.SlideFromRightIOS, // Cambia a la animación deseada
+        gestureEnabled: true, // Permite gestos para volver atrás
+      }}
+    >
       <Stack.Screen
         name="Load"
         component={LoadScreen}
         options={{ headerShown: false }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Welcome"
         component={WelcomeScreen}
         options={{ headerShown: false }}
@@ -60,9 +66,9 @@ function MyScreens() {
         component={RegisScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen 
+      <Stack.Screen
         name='Success'
-        component={SuccessfulRegistration} 
+        component={SuccessfulRegistration}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -73,9 +79,9 @@ function MyScreens() {
             <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
               <Image
                 source={LogoImage}
-                style={{ width: 35, height: 35, marginRight:5, marginStart: 30 }}
+                style={{ width: 35, height: 35, marginRight: 5, marginStart: 30 }}
               />
-              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center',fontWeight: 'bold', alignItems: 'center'}}>Changarrito FIF</Text>
+              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center', fontWeight: 'bold', alignItems: 'center' }}>Changarrito FIF</Text>
             </View>
           ),
           headerStyle: {
@@ -138,15 +144,15 @@ function MyScreens() {
         component={AddProductsScreen}
         options={{ headerShown: false }}
       />
-      
-      
-        {/* Navegacion del MenuScreen */}
-        <Stack.Screen 
-        name="SelfInfoScreen" 
-        component={SelfInfoScreen} 
+
+
+      {/* Navegacion del MenuScreen */}
+      <Stack.Screen
+        name="SelfInfoScreen"
+        component={SelfInfoScreen}
         options={{ headerShown: false }}
-        />
-      
+      />
+
       <Stack.Screen
         name="PersonalInfo"
         component={PersonalDataScreen}
@@ -182,7 +188,7 @@ function MyScreens() {
         component={NotificationsScreen}
         options={{ headerShown: false }}
       />
-      
+
       {/*Navegacion HistoryScreen */}
 
       <Stack.Screen

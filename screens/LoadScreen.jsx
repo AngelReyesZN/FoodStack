@@ -12,8 +12,8 @@ export default function LoadScreen({ navigation }) {
       duration: 1200, // Duración
       useNativeDriver: true,
     }).start(() => {
-      // Navegar a la pantalla de inicio de sesión después de que la animación haya terminado
-      navigation.navigate('Welcome');
+      // Reemplazar la pantalla actual para que no sea accesible desde el back button
+      navigation.replace('Welcome');
     });
   }, []);
 
