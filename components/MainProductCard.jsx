@@ -5,12 +5,16 @@ const MainProductCard = ({ product, onAddToCart }) => {
   return (
     <View style={styles.card}>
       <Image source={{ uri: product.imagen }} style={styles.image} />
-      <Text style={styles.title}>{product.nombre}</Text>
-      <Text style={styles.price}>${product.precio}</Text>
-      <Text style={styles.units}>Unidades: {product.cantidad}</Text>
-      <TouchableOpacity onPress={onAddToCart} style={styles.button}>
-        <Text style={styles.buttonText}>Add to cart</Text>
-      </TouchableOpacity>
+      <View style={styles.detailsContainer}>
+        <Text style={styles.title}>{product.nombre}</Text>
+        <Text style={styles.descripcion}>{product.descripcion}</Text>
+      </View>
+      <View style={styles.bottomContainer}>
+        <Text style={styles.price}>${product.precio}</Text>
+        <TouchableOpacity onPress={onAddToCart} style={styles.button}>
+          <Text style={styles.buttonText}>Agregar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -20,40 +24,67 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 10,
+    paddingTop: 0,
     margin: 10,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+
+    width: 150,
+    height: 260,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   image: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
+    alignSelf: 'center',
+    width: 150,
+    height: 150,
+    resizeMode: 'cover',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   title: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginTop: 8,
-  },
-  price: {
-    color: 'gray',
-    fontSize: 14,
     marginTop: 4,
   },
-  units: {
-    fontSize: 14,
+  price: {
+    color: '#FF6347',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  descripcion: {
+    fontSize: 12,
     marginTop: 4,
   },
   button: {
-    backgroundColor: '#f0c14b',
-    width: 100,
-    height: 30,
-    borderRadius: 5,
+    backgroundColor: '#FF6347',
+    padding: 10,
+    paddingHorizontal: 15,
+    borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
   },
   buttonText: {
     fontSize: 14,
     fontWeight: 'bold',
+    color: 'white',
+  },
+  detailsContainer: {
+    padding: 10,
+    paddingTop: 4,
+    alignItems: 'flex-start',
+  },
+  bottomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 10,
+    marginTop: 4,
   },
 });
 

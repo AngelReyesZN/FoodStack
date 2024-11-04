@@ -46,7 +46,7 @@ const HomeScreen = () => {
       console.error("Error fetching products:", error);
     }
   };
-
+  //filtrar las categorias de los productos sobre los productos
   const applyCategoryFilter = (products, category) => {
     let filtered = products.filter(product => product.cantidad > 0 && product.statusView === true);
     if (category !== 'Todos') {
