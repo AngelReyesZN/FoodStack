@@ -7,7 +7,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
-
+import MainProductCard from '../components/MainProductCard';
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -46,7 +46,7 @@ const HomeScreen = () => {
       console.error("Error fetching products:", error);
     }
   };
-
+  //filtrar las categorias de los productos sobre los productos
   const applyCategoryFilter = (products, category) => {
     let filtered = products.filter(product => product.cantidad > 0 && product.statusView === true);
     if (category !== 'Todos') {
@@ -113,21 +113,12 @@ const HomeScreen = () => {
     if (item.cantidad <= 0 || !item.statusView) {
       return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
     }
-
+    const handleAddToCart = () => {
+      console.log('Product added to cart:', item);
+    };
+    //renderizado de los productos
     return (
-      <TouchableOpacity
-        style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
-      >
-        <Image source={{ uri: item.imagen }} style={styles.productImage} />
-        <View style={styles.productInfo}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>${item.precio}.00</Text>
-          </View>
-          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
-        </View>
-      </TouchableOpacity>
+      <MainProductCard product={item} onAddToCart={handleAddToCart} />
     );
   };
 
@@ -167,6 +158,7 @@ const HomeScreen = () => {
                   { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
                   { key: 'Otros', color: '#aa9e9e', icon: require('../assets/mas.png') },
                 ]}
+                //renderizado de las categorias
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
                     <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
