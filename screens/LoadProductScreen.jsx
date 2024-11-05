@@ -1,31 +1,34 @@
 import React, { useEffect } from 'react';
 import { View, Image, Text, Animated, StyleSheet } from 'react-native';
+import CustomText from '../components/CustomText';
 
-import Logo from '../assets/rscMenu/LoadProduct.png';
+import Logo from '../assets/rscMenu/checkProduct.png';
 
 export default function LoadProductScreen({ navigation }) {
-  const scaleValue = new Animated.Value(0);
+  const scaleValue = new Animated.Value(0); // Inicializa en 0
 
   useEffect(() => {
-    Animated.timing(scaleValue, {
-      toValue: 1,
-      duration: 1200, // Duración
+    Animated.spring(scaleValue, {
+      toValue: 1, // Valor final de la escala
+      friction: 4, // Controla la resistencia del rebote
+      tension: 40, // Controla la velocidad de la animación
+      duration: 5000, // Duración de 3 segundos
       useNativeDriver: true,
     }).start(() => {
-      // Navegar a la pantalla de inicio de sesión después de que la animación haya terminado
-      navigation.navigate('Home');
+      // Navegar a la pantalla de inicio después de la animación
+      navigation.replace('Home');
     });
   }, []);
 
   const scale = scaleValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.5, 1], // Cambiar el tamaño de 0.5 a 1
+    outputRange: [0.3, 1], // Empieza más pequeño para dar efecto de rebote
   });
 
   return (
     <View style={styles.container}>
       <Animated.Image source={Logo} style={[styles.logo, { transform: [{ scale }] }]} />
-      <Text style={styles.text}>¡Tu producto ha sido publicado!</Text>
+      <CustomText style={styles.text} fontWeight='Medium'>¡Tu producto ha sido publicado!</CustomText>
     </View>
   );
 }
@@ -35,19 +38,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#030A8C',
+    backgroundColor: '#FF6347',
   },
   logo: {
-    width: 350,
-    height: 450,
+    width: 300,
+    height: 228.25,
   },
   text: {
     marginTop: 5,
     padding: 20,
-    fontSize: 36,
+    fontSize: 31,
     textAlign: 'center',
-    alignItems: 'center',
     color: '#fff',
-    
   },
 });

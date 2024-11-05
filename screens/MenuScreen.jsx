@@ -71,7 +71,7 @@ const MenuScreen = ({ navigation }) => {
           setUserRating((totalRating / ratings.length).toFixed(1));
         }
       } catch (error) {
-        console.error('Error fetching user rating:', error);
+        // console.error('Error fetching user rating:', error);
       }
     };
 
