@@ -11,6 +11,8 @@ import BackButton from '../components/BackButton';
 import { onAuthStateChanged } from 'firebase/auth';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
 import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
+import CustomText from '../components/CustomText';
+
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -81,6 +83,8 @@ const AddProductsScreen = ({ navigation }) => {
   };
 
   const handlePublishProduct = async () => {
+    navigation.navigate('LoadProduct');
+
     if (productName && productPrice && productUnits && productImage && productCategory && productDescription) {
       try {
         // Subir la imagen a Firebase Storage
@@ -137,10 +141,7 @@ const AddProductsScreen = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TopBar />
-      <View style={styles.headerContainer}>
-        <BackButton />
-        <Text style={styles.title}>Publicar Producto</Text>
-      </View>
+
       {error && (
         <ErrorAlert
           message={error}
@@ -148,21 +149,31 @@ const AddProductsScreen = ({ navigation }) => {
         />
       )}
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.headerContainer}>
+          <BackButton />
+          <CustomText style={styles.title} fontWeight="SemiBold">
+            Publicar producto
+          </CustomText>
+        </View>
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Nombre del Producto</Text>
+          <CustomText style={styles.label} fontWeight='Medium'>Nombre del Producto</CustomText>
           <TextInput
             style={styles.input}
             value={productName}
             onChangeText={setProductName}
           />
-          <Text style={styles.label}>Categoría del Producto</Text>
+          <CustomText style={styles.label} fontWeight='Medium'>Categoría del Producto</CustomText>
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={productCategory}
               style={styles.picker}
-              onValueChange={(itemValue) => setProductCategory(itemValue)}
+              onValueChange={(itemValue) => {
+                if (itemValue !== "") {
+                  setProductCategory(itemValue);
+                }
+              }}
             >
-              <Picker.Item label="Selecciona una categoría" value="" />
+              <Picker.Item label="Selecciona una categoría" value="" enabled={false} />
               <Picker.Item label="Frituras" value="Frituras" />
               <Picker.Item label="Dulces" value="Dulces" />
               <Picker.Item label="Comida" value="Comida" />
@@ -173,9 +184,9 @@ const AddProductsScreen = ({ navigation }) => {
           </View>
           <View style={styles.row}>
             <View style={styles.columnSmall}>
-              <Text style={styles.label}>Precio</Text>
+              <CustomText style={styles.label} fontWeight='Medium'>Precio</CustomText>
               <View style={styles.inputContainer}>
-                <Text style={styles.prefix}>$ </Text>
+                <CustomText style={styles.prefix} fontWeight='SemiBold'>$ </CustomText>
                 <TextInput
                   style={[styles.input, styles.inputWithoutBorder]}
                   value={productPrice}
@@ -185,7 +196,7 @@ const AddProductsScreen = ({ navigation }) => {
               </View>
             </View>
             <View style={styles.columnLarge}>
-              <Text style={styles.label}>Unidades</Text>
+              <CustomText style={styles.label} fontWeight='Medium'>Unidades</CustomText>
               <View style={styles.inputContainer}>
                 <TextInput
                   style={[styles.input, styles.inputWithoutBorder]}
@@ -193,29 +204,29 @@ const AddProductsScreen = ({ navigation }) => {
                   onChangeText={setProductUnits}
                   keyboardType="numeric"
                 />
-                <Text style={styles.suffix}> piezas</Text>
+                <CustomText style={styles.suffix} fontWeight='SemiBold'> piezas</CustomText>
               </View>
             </View>
           </View>
-          <Text style={styles.label}>Descripción</Text>
+          <CustomText style={styles.label} fontWeight='Medium'>Descripción</CustomText>
           <TextInput
             style={[styles.input, styles.textArea]}
             value={productDescription}
             onChangeText={setProductDescription}
             multiline
           />
-          <Text style={styles.labelImage}>Imagen del Producto</Text>
+          <CustomText style={styles.labelImage} fontWeight='Medium'>Imagen del Producto</CustomText>
           <TouchableOpacity style={styles.imagePicker} onPress={handleChooseImage}>
             {productImage ? (
               <Image source={{ uri: productImage }} style={styles.imagePreview} />
             ) : (
               <>
-                <Image source={require('../assets/rscMenu/imagen.png')} style={styles.imagePlaceholder} />
+                <Image source={require('../assets/photoImage.png')} style={styles.imagePlaceholder} />
               </>
             )}
           </TouchableOpacity>
           <TouchableOpacity style={styles.publishButton} onPress={handlePublishProduct}>
-            <Text style={styles.publishButtonText}>Publicar producto</Text>
+            <CustomText style={styles.publishButtonText} fontWeight='Bold'>Publicar producto</CustomText>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -239,21 +250,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 15,
+    marginBottom: 15,
+
   },
   title: {
-    paddingLeft: 10,
-    alignItems: 'center',
-    fontSize: 23,
-    fontWeight: 'bold',
-    color: '#030A8C',
+    fontSize: 24,
+    color: '#000',
+    textAlign: 'center',
+    flex: 1,
   },
   formContainer: {
     paddingLeft: 20,
     paddingRight: 20,
   },
   label: {
-    fontSize: 18,
+    fontSize: 14,
     color: '#000',
     marginBottom: 10,
     marginTop: 15,
@@ -274,8 +286,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 1.5,
+    borderColor: '#DFDFDF',
     borderRadius: 6,
     paddingHorizontal: 10,
   },
@@ -290,12 +302,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   prefix: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000',
-    fontWeight: 'bold',
   },
   suffix: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000',
   },
   row: {
@@ -333,26 +344,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 45,
     height: 45,
-    opacity: 0.6,
   },
   labelImage: {
-    fontSize: 18,
+    fontSize: 14,
     color: '#000',
     marginBottom: 4,
     marginTop: 20,
   },
   publishButton: {
-    backgroundColor: '#030A8C',
+    backgroundColor: '#FF6347',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
     marginTop: 20,
     alignItems: 'center',
-    alignSelf: 'flex-end',
+    width: '100%',
   },
   publishButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 13,
   },
 });
 

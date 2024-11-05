@@ -19,10 +19,10 @@ const WelcomeScreen = () => {
             <View style={styles.contentContainer}>
                 <CustomText style={styles.title} fontWeight='Bold'>¡Bienvenido!</CustomText>
                 <Image source={require('../assets/welcomeImage.png')} style={styles.welcomeImage} />
-                <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate('Regis')}>
+                <TouchableOpacity style={styles.signupButton} onPress={() => navigation.replace('Regis')}>
                     <CustomText style={styles.signupButtonlabel} fontWeight="Bold">Registrarse</CustomText>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
+                <TouchableOpacity style={styles.loginButton} onPress={() => navigation.replace('Login')}>
                     <CustomText style={styles.loginButtonlabel} fontWeight="Medium">Iniciar sesión</CustomText>
                 </TouchableOpacity>
             </View>

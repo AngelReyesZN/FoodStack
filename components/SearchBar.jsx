@@ -26,12 +26,13 @@ const SearchBar = () => {
       />
 
       {/* View envolvente para el TextInput y el ícono */}
-      <View style={styles.inputWrapper}>
+      <View style={styles.inputWrapper} >
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar productos..."
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onPress={handleSearch}
         />
         <TouchableOpacity onPress={handleSearch} style={styles.iconContainer}>
           <Icon name="search" size={20} color="#AEAEAE" />

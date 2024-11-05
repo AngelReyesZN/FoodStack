@@ -42,11 +42,11 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
 
   return (
     <View style={styles.container}>
-      {/* <View style={styles.containerAddButton}>
+      <View style={styles.containerAddButton}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('AddProduct')}>
           <Image source={require('../assets/iconsButtonBar/addbutton2.png')} style={styles.addButton} />
         </TouchableOpacity>
-      </View> */}
+      </View>
       <View style={styles.menuIconsContainer}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Home')}>
           <Image source={homeIcon} style={styles.iconImage} />
