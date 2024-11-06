@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -7,6 +7,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import MainProductCard from '../components/MainProductCard';
+import ModalProductDetails from '../components/ModalProductDetails';
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,7 +17,11 @@ const HomeScreen = () => {
   const [products, setProducts] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [currentCategory, setCurrentCategory] = useState('Todos');
+  const [selectedCategory, setSelectedCategory] = useState('Todos'); // Estado para la categoría seleccionada
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -109,30 +115,39 @@ const HomeScreen = () => {
     setRefreshing(false);
   }, [currentCategory]);
 
+  const handleAddToFavorites = (product) => {
+    console.log('Product added to favorites:', product);
+    // Aquí puedes agregar la lógica para manejar los favoritos
+  };
+
+  const handleCardPress = (product) => {
+    setSelectedProduct(product);
+    setModalVisible(true);
+  }
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedProduct(null);
+  }
   const renderItem = ({ item }) => {
     if (item.cantidad <= 0 || !item.statusView) {
       return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
     }
-
+    const handleAddToCart = () => {
+      console.log('Product added to cart:', item);
+    };
     return (
-      <TouchableOpacity
-        style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
-      >
-        <Image source={{ uri: item.imagen }} style={styles.productImage} />
-        <View style={styles.productInfo}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>${item.precio}.00</Text>
-          </View>
-          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
-        </View>
-      </TouchableOpacity>
+      <MainProductCard
+        product={item}
+        onCardPress={() => handleCardPress(item)}
+        onAddToCart={handleAddToCart}
+        onAddToFavorites={() => handleAddToFavorites(item)}
+      />
     );
   };
 
   const filterByCategory = (category) => {
     setCurrentCategory(category);
+    setSelectedCategory(category); // Actualiza la categoría seleccionada
     applyCategoryFilter(products, category);
   };
 
@@ -151,9 +166,11 @@ const HomeScreen = () => {
                 style={styles.adImage}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleLinkPress} style={styles.linkContainer}>
-              <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
-            </TouchableOpacity>
+            <View style={styles.linkContainer}>
+              <Text style={styles.linkText}>
+                Ve todos los anuncios <Text style={styles.linkHighlight} onPress={handleLinkPress}>aquí</Text>
+              </Text>
+            </View>
             <View style={styles.categoryContainer}>
               <FlatList
                 horizontal
@@ -169,19 +186,23 @@ const HomeScreen = () => {
                 ]}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
-                    <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
-                      {typeof item.icon === 'string' ? (
-                        <Icon name={item.icon} size={24} color="white" />
-                      ) : (
-                        <Image source={item.icon} style={styles.iconImage} />
-                      )}
-                    </View>
-                    <Text style={styles.iconText}>{item.key}</Text>
+                    <Text style={[
+                      styles.iconText,
+                      selectedCategory === item.key ? styles.selectedCategory : styles.unselectedCategory
+                    ]}>
+                      {item.key}
+                    </Text>
                   </TouchableOpacity>
                 )}
                 keyExtractor={item => item.key}
                 showsHorizontalScrollIndicator={false}
               />
+              <ModalProductDetails 
+                visible={modalVisible} 
+                product={selectedProduct} 
+                onClose={handleCloseModal} 
+              />
+
               <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
             </View>
           </>
@@ -196,6 +217,9 @@ const HomeScreen = () => {
         }
       />
       {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
+      <TouchableOpacity style={styles.cartButton} onPress={() => console.log('Carrito')}>
+        <Icon name="shopping-cart" size={34} color="white" />
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
@@ -259,18 +283,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   linkContainer: {
-    alignItems: 'center',
+    width: '100%', 
+    paddingHorizontal: 20, 
   },
   linkText: {
-    textAlign: 'center',
+    textAlign: 'right',
     marginTop: 4,
-    fontSize: 12,
-    borderWidth: 3,
-    padding: 5,
-    width: 225,
-    borderRadius: 20,
-    borderColor: '#ccc',
-    elevation: 30,
+    fontSize: 14,
+  },
+  linkHighlight: {
+    color: '#FF6347',
+    textDecorationLine: 'underline',
   },
   iconContainer: {
     flexDirection: 'row',
@@ -280,14 +303,47 @@ const styles = StyleSheet.create({
   iconWrapper: {
     paddingTop: 8,
     alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   iconImage: {
     width: 40,
     height: 40,
   },
   iconText: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 5,
+    paddingHorizontal: 10,
     marginTop: 5,
+    marginBottom: 5,
     fontSize: 12,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  selectedCategory: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    opacity: 1,
+  },
+  unselectedCategory: {
+    opacity: 0.5,
   },
   containerProduccts: {
     flex: 1,
@@ -382,7 +438,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     paddingTop: 8,
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 5,
   },
   iconCircle: {
     width: 60,
@@ -397,6 +453,19 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    elevation: 5,
+  },
+  cartButton: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    height: 80,
+    width: 80,
+    backgroundColor: '#FF6347',
+    padding: 15,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
     elevation: 5,
   },
 });

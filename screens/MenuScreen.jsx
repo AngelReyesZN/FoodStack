@@ -70,9 +70,9 @@ const MenuScreen = ({ navigation }) => {
           const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
           setUserRating((totalRating / ratings.length).toFixed(1));
         }
-      //} catch (error) {
-        //console.error('Error fetching user rating:', error);
-      //}
+      /*} catch (error) {
+        console.error('Error fetching user rating:', error);
+      }*/
     };
 
     fetchUserData();
