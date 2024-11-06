@@ -55,7 +55,7 @@ const MenuScreen = ({ navigation }) => {
     };
 
     const fetchUserRating = async (userId) => {
-      try {
+      //try {
         const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', userId)));
         const querySnapshot = await getDocs(q);
         const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -70,9 +70,9 @@ const MenuScreen = ({ navigation }) => {
           const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
           setUserRating((totalRating / ratings.length).toFixed(1));
         }
-      } catch (error) {
-        console.error('Error fetching user rating:', error);
-      }
+      //} catch (error) {
+        //console.error('Error fetching user rating:', error);
+      //}
     };
 
     fetchUserData();
