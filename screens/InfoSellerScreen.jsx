@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity, Dimensions } from 'react-native';
 import SearchBar from '../components/SearchBar';
 import BackButton from '../components/BackButton';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import CustomText from '../components/CustomText';
+
 
 const InfoSeller = ({ route, navigation }) => {
   const { sellerId } = route.params;
@@ -91,10 +93,10 @@ const InfoSeller = ({ route, navigation }) => {
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <View style={styles.productInfo}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>${item.precio}.00</Text>
+            <CustomText style={styles.productName}>{item.nombre}</CustomText>
+            <CustomText style={styles.productPrice}>${item.precio}.00</CustomText>
           </View>
-          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
+          <CustomText style={styles.productUnits}>Unidades: {item.cantidad}</CustomText>
         </View>
       </TouchableOpacity>
     );
@@ -116,26 +118,28 @@ const InfoSeller = ({ route, navigation }) => {
       <View style={styles.profileContainer}>
         <Image source={{ uri: seller.foto || 'path/to/default/image' }} style={styles.profileImage} />
       </View>
-      <Text style={styles.sellerName}>{seller.nombre}</Text>
-      <Text style={styles.sellerInfo}>
+      <CustomText style={styles.sellerName} fontWeight='SemiBold'>{seller.nombre}</CustomText>
+      <CustomText style={styles.selfInfo} fontWeight='SemiBold'>Sobre de mí</CustomText>
+      <CustomText style={styles.sellerInfo}>
         {seller.descripcionUsuario || 'Sin descripción disponible.'}
-      </Text>
+      </CustomText>
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>{sellerRating}</Text>
-            <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
+            <CustomText style={styles.ratingText}>{sellerRating}</CustomText>
+            <Icon name="star" size={19} color="#FF6347" style={styles.starIcon} />
           </View>
-          <Text style={styles.detailLabel}>Calificación</Text>
+          <CustomText style={styles.detailLabel} fontWeight='Medium'>Calificación</CustomText>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>{timeInApp}</Text>
-          <Text style={styles.detailLabel}>{timeMeasure}</Text>
+          <CustomText style={styles.monthsText}>{timeInApp}</CustomText>
+          <CustomText style={styles.detailLabel} fontWeight='Medium'>{timeMeasure}</CustomText>
         </View>
       </View>
-      <Text style={styles.allProductsText}>Productos</Text>
+      <View style={styles.separator} />
+      <CustomText style={styles.allProductsText} fontWeight='SemiBold'>Productos</CustomText>
       {sellerProducts.length === 0 ? (
-        <Text style={styles.noProductsText}>No hay productos para mostrar.</Text>
+        <CustomText style={styles.noProductsText}>No hay productos para mostrar.</CustomText>
       ) : (
         <FlatList
           data={sellerProducts}
@@ -150,11 +154,13 @@ const InfoSeller = ({ route, navigation }) => {
   );
 };
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
     backgroundColor: 'white',
+    paddingBottom: height * .06,
+
   },
   imageContainer: {
     position: 'relative',
@@ -164,7 +170,7 @@ const styles = StyleSheet.create({
   backgroundImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'fill',
   },
   backButtonContainer: {
     position: 'absolute',
@@ -178,14 +184,19 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 110,
     height: 110,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: '#030A8C',
+    borderRadius: 10,
+  },
+  selfInfo: {
+
+    marginLeft: 30,
+    fontSize: 17,
+    marginTop: 15,
+
   },
   sellerName: {
-    fontSize: 25,
+    fontSize: 20,
     paddingTop: 15,
-    paddingLeft: 30,
+    alignSelf: 'center'
   },
   sellerInfo: {
     fontSize: 16,
@@ -199,6 +210,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
+    marginBottom: 15,
   },
   detailItem: {
     alignItems: 'center',
@@ -226,10 +238,9 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   allProductsText: {
-    fontSize: 20,
+    fontSize: 17,
     marginLeft: 30,
     marginTop: 20,
-    fontWeight: 'bold',
     marginBottom: 15,
   },
   noProductsText: {
@@ -237,6 +248,12 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     marginTop: 20,
+  },
+  separator: {
+    height: .5,
+    backgroundColor: '#C1C1C1',
+    width: '85%',
+    alignSelf: 'center',
   },
   productList: {
     paddingHorizontal: 20,
@@ -282,7 +299,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: 'bold',
     marginRight: 3,
-    color: '#030A8C',
+    color: '#FF6347',
     textAlign: 'right',
   },
   productUnits: {

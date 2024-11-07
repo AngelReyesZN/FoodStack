@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, Platform, ScrollView, Alert, Linking, KeyboardAvoidingView, Keyboard } from 'react-native';
+import { View, StyleSheet, Text, Image, TouchableOpacity, Modal, TextInput, Platform, ScrollView, Alert, Linking, KeyboardAvoidingView, Keyboard, Dimensions } from 'react-native';
 import { collection, query, where, getDocs, doc, getDoc, addDoc, updateDoc } from 'firebase/firestore';
 import * as Clipboard from 'expo-clipboard';
 import { db, auth } from '../services/firebaseConfig';
@@ -12,6 +12,8 @@ import clock from '../assets/rscMenu/reloj.png';
 import cash from '../assets/rscMenu/cash.png';
 import card from '../assets/rscMenu/card.png';
 import ErrorAlert from '../components/ErrorAlert';
+import CustomText from '../components/CustomText';
+
 
 const OrderScreen = ({ navigation }) => {
   const route = useRoute();
@@ -189,56 +191,58 @@ Instrucciones: ${instructions}`;
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <TopBar />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerContainer}>
-          <BackButton style={styles.backButton} />
-          <Text style={styles.title}>Tu Orden</Text>
-          <View style={styles.placeholder} />
+          <BackButton />
+          <CustomText style={styles.title} fontWeight="SemiBold">
+            Tu orden
+          </CustomText>
         </View>
         <View style={styles.totalContainer}>
-          <Text style={styles.totalLabel}>Total</Text>
+          <CustomText style={styles.totalLabel} fontWeight="SemiBold">Total</CustomText>
         </View>
         <View style={styles.productRow}>
           <View style={styles.quantityBox}>
-            <Text style={styles.quantityText}>{quantity}</Text>
+            <CustomText style={styles.quantityText} fontWeight="SemiBold">{quantity}</CustomText>
           </View>
-          <Text style={styles.productText}>{product.nombre}</Text>
-          <Text style={styles.quantityText1}>({quantity}) </Text>
-          <Text style={styles.priceText}>${product.precio.toFixed(2)}</Text>
+          <CustomText style={styles.productText} fontWeight="SemiBold">{product.nombre}</CustomText>
+          <CustomText style={styles.quantityText1} fontWeight="Medium">({quantity}) </CustomText>
+          <CustomText style={styles.priceText} fontWeight="Medium">${product.precio.toFixed(2)}</CustomText>
         </View>
         <View style={styles.separator} />
         <View style={styles.containerTotal}>
-          <Text style={styles.TotalText}>Total a pagar</Text>
-          <Text style={styles.sumaTotal}>${(product.precio * quantity).toFixed(2)}</Text>
+          <CustomText style={styles.TotalText} fontWeight="SemiBold">Total a pagar</CustomText>
+          <CustomText style={styles.sumaTotal} fontWeight="Bold">${(product.precio * quantity).toFixed(2)}</CustomText>
         </View>
         <View style={styles.separator} />
         <View style={styles.containerEntrega}>
-          <Text style={styles.entrega}>Tiempo de entrega</Text>
+          <CustomText style={styles.entrega} fontWeight="SemiBold">Tiempo de entrega</CustomText>
           <Image source={clock} style={styles.imageClock} />
         </View>
         <View style={styles.estimatedTimeContainer}>
-          <Text style={styles.estimatedTimeText}>
-            Tiempo de entrega estimado de <Text style={styles.blueText}>15min</Text>
-          </Text>
+          <CustomText style={styles.estimatedTimeText} fontWeight="Medium">
+            Tiempo de entrega estimado de <CustomText style={styles.blueText} fontWeight="Bold">15min</CustomText>
+          </CustomText>
         </View>
         <View style={styles.separator} />
         <View style={styles.methodOfPaymentContainer}>
-          <Text style={styles.methodOfPaymentText}>Método de pago</Text>
+          <CustomText style={styles.methodOfPaymentText} fontWeight="SemiBold">Método de pago</CustomText>
         </View>
+
         <View style={styles.pickerContainer}>
           <TouchableOpacity
             style={styles.pickerButton}
             onPress={() => setModalVisible(true)}
           >
             {selectedImage && <Image source={selectedImage} style={styles.icon} />}
-            <Text style={styles.pickerButtonText}>
+            <CustomText style={styles.pickerButtonText}>
               {paymentMethod || 'Selecciona un método de pago'}
-            </Text>
+            </CustomText>
           </TouchableOpacity>
         </View>
         <Modal
@@ -256,7 +260,7 @@ Instrucciones: ${instructions}`;
                 onPress={() => handlePaymentMethod('Efectivo', cash)}
               >
                 <Image source={cash} style={styles.icon} />
-                <Text style={styles.optionText}>Efectivo</Text>
+                <CustomText style={styles.optionText}>Efectivo</CustomText>
               </TouchableOpacity>
               {statusCard && (
                 <TouchableOpacity
@@ -264,7 +268,7 @@ Instrucciones: ${instructions}`;
                   onPress={() => handlePaymentMethod('Tarjeta de crédito/débito', card)}
                 >
                   <Image source={card} style={styles.icon} />
-                  <Text style={styles.optionText}>Tarjeta de crédito/débito</Text>
+                  <CustomText style={styles.optionText}>Tarjeta de crédito/débito</CustomText>
                 </TouchableOpacity>
               )}
             </View>
@@ -278,7 +282,7 @@ Instrucciones: ${instructions}`;
         )}
         <View style={styles.separator} />
         <View style={styles.instructionsContainer}>
-          <Text style={styles.instructionsText}>Instrucciones</Text>
+          <CustomText style={styles.instructionsText} fontWeight="SemiBold">Instrucciones</CustomText>
         </View>
         <View style={styles.inputContainer}>
           <TextInput
@@ -286,11 +290,11 @@ Instrucciones: ${instructions}`;
             value={instructions}
             onChangeText={setInstructions}
           />
-          <Text style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</Text>
+          <CustomText style={styles.helperText}>Agrega instrucciones específicas para tu entrega (opcional)</CustomText>
         </View>
         <View style={styles.confirmButtonContainer}>
           <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmPurchase}>
-            <Text style={styles.confirmButtonText}>Confirmar Compra</Text>
+            <CustomText style={styles.confirmButtonText} fontWeight="SemiBold">Enviar pedido</CustomText>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -299,10 +303,13 @@ Instrucciones: ${instructions}`;
   );
 };
 
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    justifyContent: 'center',
+    paddingBottom: height * .06,
   },
   scrollContent: {
     flexGrow: 1,
@@ -311,19 +318,20 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 15,
+    marginBottom: 30,
+
   },
   backButton: {
     position: 'absolute',
     left: 0,
   },
   title: {
-    flex: 1,
-    textAlign: 'center',
     fontSize: 24,
-    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+    flex: 1,
   },
   placeholder: {
     width: 50,
@@ -336,7 +344,6 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 21,
-    fontWeight: 'bold',
   },
   productRow: {
     flexDirection: 'row',
@@ -356,7 +363,6 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     color: 'black',
-    fontWeight: 'bold',
     fontSize: 20,
   },
   quantityText1: {
@@ -367,12 +373,11 @@ const styles = StyleSheet.create({
   productText: {
     flex: 1,
     paddingLeft: 10,
-    fontWeight: 'bold',
     fontSize: 20,
   },
   priceText: {
     fontSize: 20,
-    color: '#030A8C',
+    color: '#FF6347',
   },
   separator: {
     height: 1,
@@ -390,13 +395,11 @@ const styles = StyleSheet.create({
   TotalText: {
     flex: 1,
     paddingLeft: 10,
-    fontWeight: 'bold',
     fontSize: 20,
   },
   sumaTotal: {
     fontSize: 20,
-    color: '#030A8C',
-    fontWeight: 'bold',
+    color: '#FF6347',
   },
   containerEntrega: {
     flexDirection: 'row',
@@ -406,7 +409,6 @@ const styles = StyleSheet.create({
   },
   entrega: {
     marginLeft: 10,
-    fontWeight: 'bold',
     fontSize: 20,
   },
   imageClock: {
@@ -423,8 +425,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   blueText: {
-    color: '#030A8C',
-    fontWeight: 'bold',
+    color: '#FF6347',
   },
   methodOfPaymentContainer: {
     paddingHorizontal: 35,
@@ -432,10 +433,9 @@ const styles = StyleSheet.create({
   },
   methodOfPaymentText: {
     fontSize: 20,
-    fontWeight: 'bold',
   },
   pickerContainer: {
-    paddingTop: 8,
+    paddingTop: 20,
     paddingHorizontal: 35,
     marginBottom: 10,
   },
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   },
   pickerButtonText: {
     paddingLeft: 10,
-    fontSize: 19,
+    fontSize: 17,
   },
   modalContainer: {
     flex: 1,
@@ -482,7 +482,6 @@ const styles = StyleSheet.create({
   },
   instructionsText: {
     fontSize: 20,
-    fontWeight: 'bold',
   },
   inputContainer: {
     paddingHorizontal: 35,
@@ -504,15 +503,14 @@ const styles = StyleSheet.create({
     marginBottom: 20, // Añade un margen inferior para que no se amontone con el BottomMenuBar
   },
   confirmButton: {
-    backgroundColor: '#030A8C',
+    backgroundColor: '#FF6347',
     paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 10,
   },
   confirmButtonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 
