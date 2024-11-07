@@ -114,15 +114,9 @@ const CardsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TopBar />
+      <TopBar title="Mis tarjetas" showBackButton={true} navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <CustomText style={styles.title} fontWeight="SemiBold">
-            Mis tarjetas
-          </CustomText>
-        </View>
         <Image
           source={require('../assets/cardImage.png')}
           style={styles.cardImage}
