@@ -44,6 +44,8 @@ const PersonalDataScreen = ({ navigation }) => {
             description: userData.descripcionUsuario || '',
             statusCard: userData.statusCard || false,
           });
+        } else {
+          console.error(`No se encontró el usuario con el correo: ${currentUser.email}`);
         }
       } catch (err) {
         console.error('Error fetching user data:', err);
@@ -53,16 +55,20 @@ const PersonalDataScreen = ({ navigation }) => {
   }, []);
 
   const handleSave = useCallback(async () => {
+    Keyboard.dismiss();
+  
+    const cleanedPhone = formData.phone.replace(/\D/g, ''); // Solo números
+    
+    if (isEditing.phone && cleanedPhone.length !== 10) {
+      return setError('El número de teléfono debe tener 10 dígitos');
+    }
+  
     const updatedData = {
-      telefono: formData.phone,
+      telefono: cleanedPhone,
       descripcionUsuario: formData.description,
       statusCard: formData.statusCard,
     };
-
-    if (isEditing.phone && formData.phone.length !== 10) {
-      return setError('El número de teléfono debe tener 10 dígitos');
-    }
-
+  
     try {
       const userRef = doc(db, 'usuarios', user.id);
       await updateDoc(userRef, updatedData);
@@ -75,7 +81,7 @@ const PersonalDataScreen = ({ navigation }) => {
       setError('Hubo un problema al actualizar la información.');
     }
   }, [formData, isEditing]);
-
+  
   const handleChangePhoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -107,7 +113,7 @@ const PersonalDataScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.safeContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <TopBar title="Información personal" showBackButton={true} />
+      <TopBar title="Información personal" showBackButton={true} navigation={navigation} />
       <View style={styles.userInfoContainer}>
         <UserInfoSection
           user={user}
@@ -153,6 +159,7 @@ const UserInfoSection = ({
         onChangeText={(text) => setFormData((prev) => ({ ...prev, phone: text }))}
         placeholder="Ingresa tu número de teléfono"
         placeholderTextColor="#DBD4D3"
+        keyboardType="numeric"
       />
       <Text style={styles.label}>Descripción</Text>
       <TextInput
@@ -166,10 +173,11 @@ const UserInfoSection = ({
       <View style={styles.switchContainer}>
         <Text style={styles.label}>Aceptar transferencias</Text>
         <Switch
+          style={styles.switch}
           value={formData.statusCard}
           onValueChange={handleStatusCardChange}
-          trackColor={{ false: '#767577', true: '#030A8C' }}
-          thumbColor={formData.statusCard ? '#030A8C' : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: '#FF6347' }}
+          thumbColor={formData.statusCard ? '#FF6347' : '#f4f3f4'}
         />
       </View>
       <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
@@ -199,7 +207,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     alignItems: 'center',
     position: 'relative',
-
   },
   userPhoto: {
     width: 120,
@@ -227,13 +234,13 @@ const styles = StyleSheet.create({
   },
   inputBox: {
     borderWidth: 1,
-    borderColor: '#DBD4D3',
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
     fontSize: 18,
     width: '100%',
     color: '#DBD4D6',
+    borderColor: '#DBD4D6',
   },
   saveButton: {
     backgroundColor: '#FF6347',
@@ -264,6 +271,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  switch: {
+    // color del switch
+
   },
 });
 

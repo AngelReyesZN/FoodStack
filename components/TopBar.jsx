@@ -4,9 +4,7 @@ import CustomText from '../components/CustomText';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 
-const TopBar = ({ title, showBackButton }) => {
-  const navigation = useNavigation();
-
+const TopBar = ({ title, showBackButton, navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar
@@ -34,20 +32,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FF6347",
-    height: 60, // Ajusta la altura según sea necesario
-    elevation: 5, // Sombra para resaltar la barra superior
-    justifyContent: "center",
-    position: "relative",
+    height: 60,
+    elevation: 5,
+    justifyContent: "space-between", // Ajustar elementos a los extremos
+    paddingHorizontal: 10, // Espaciado consistente
   },
   backButton: {
-    position: "absolute",
-    left: 20,
+    zIndex: 10, // Asegura que el botón esté por encima de otros elementos
   },
   logo: {
     width: 40,
     height: 40,
-    position: "absolute",
-    right: 10,
   },
   text: {
     fontSize: 22,
