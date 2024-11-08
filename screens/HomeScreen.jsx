@@ -175,14 +175,14 @@ const HomeScreen = () => {
               <FlatList
                 horizontal
                 data={[
-                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png') },
-                  { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
-                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/refresco.png') },
-                  { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
-                  { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
-                  { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
-                  { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
-                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/mas.png') },
+                  { key: 'Todos', icon: require('../assets/todo.png') },
+                  { key: 'Comida', icon: require('../assets/comida.png') },
+                  { key: 'Bebidas', icon: require('../assets/refresco.png') },
+                  { key: 'Frituras', icon: require('../assets/frituras.png') },
+                  { key: 'Postres', icon: require('../assets/postres.png') },
+                  { key: 'Dulces', icon: require('../assets/dulces.png') },
+                  { key: 'Dispositivos', icon: require('../assets/dispositivos.png') },
+                  { key: 'Otros', icon: require('../assets/mas.png') },
                 ]}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
@@ -211,7 +211,7 @@ const HomeScreen = () => {
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         numColumns={2}
-        contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
+        contentContainerStyle={[styles.productList, { flexGrow: 1 }, alignItems = 'center']}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   productList: {
+    justifyContent: 'center',
     paddingHorizontal: 10,
     paddingBottom: 100,
   },
@@ -365,6 +366,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#fff',
     margin: 5,
+    marginHorizontal: 10,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -423,7 +425,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   categoryContainer: {
-    marginTop: 10,
     marginBottom: 10,
   },
   searchResultContainer: {
