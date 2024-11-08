@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     margin: 10,
     alignItems: 'flex-start',
-    width: 155,
+    width: '45%',
     height: 260,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
