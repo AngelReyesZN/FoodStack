@@ -1,8 +1,10 @@
-import React, { useEffect, useCallback } from 'react';
+// App.jsx
+import React, { useEffect } from 'react';
 import Navigation from './navigation/StackNavigator.jsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen'; 
+import * as SplashScreen from 'expo-splash-screen';
+import { FavoritosProvider } from './components/FavoritesContext.jsx'; // Importa el proveedor
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,17 +18,19 @@ export default function App() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync(); 
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null; // No renderizar la UI hasta que las fuentes estén cargadas
+    return null;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Navigation />
+      <FavoritosProvider>
+        <Navigation />
+      </FavoritosProvider>
     </GestureHandlerRootView>
   );
 }

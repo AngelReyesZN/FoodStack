@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions,StatusBar } from 'react-native';
+import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions,StatusBar, Modal } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import Checkbox from 'expo-checkbox';
 import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
@@ -21,7 +22,20 @@ const RegisScreen = ({ navigation }) => {
   const [descripcionUsuario, setDescripcionUsuario] = useState('');
   const [error, setError] = useState('');
   const [errors, setErrors] = useState({});
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalContent, setModalContent] = useState('');
 
+
+  const openModal = (content) => {
+    setModalContent(content);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
+  
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -274,10 +288,108 @@ const RegisScreen = ({ navigation }) => {
           {errors.descripcionUsuario && <Text style={styles.errorText}>{errors.descripcionUsuario}</Text>}
 
 
+          {/*Checkbox de terminos y politicas*/}
+          <View style={styles.checkboxContainer}>
+            <Checkbox
+              value={acceptedTerms}
+              onValueChange={setAcceptedTerms}
+              color={acceptedTerms ? '#FF6347' : undefined}
+              style={styles.checkbox}
+            />
+            <CustomText style={styles.termsText} fontWeight="Medium">
+              Acepto los{' '}
+              <CustomText style={styles.linkText} fontWeight="Medium" onPress={() => openModal('Términos y Condiciones')}>
+                Términos y Condiciones
+              </CustomText>{' '}
+              y{' '}
+              <CustomText style={styles.linkText} fontWeight="Medium" onPress={() => openModal('Políticas de Privacidad')}>
+                Políticas de Privacidad
+              </CustomText>.
+            </CustomText>
+          </View>
+          
+
+          {/*Cambio de boton conforme al check box*/}
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.signupButton} onPress={handleRegistro}>
-              <CustomText  style={styles.signupButtonlabel}>Registrar</CustomText>
+            <TouchableOpacity
+              style={[styles.signupButton, !acceptedTerms && { backgroundColor: 'gray' }]}
+              onPress={handleRegistro}
+              disabled={!acceptedTerms}
+            >
+            <CustomText  style={styles.signupButtonlabel}>Registrar</CustomText>
             </TouchableOpacity>
+
+            {/*Documentacion de los terminos y condiciones*/}
+            <Modal
+              visible={isModalVisible}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={closeModal}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <ScrollView 
+                    contentContainerStyle={styles.modalScrollContent} 
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <Text style={styles.modalTitle}>{modalContent}</Text>
+
+                    {modalContent === 'Términos y Condiciones' ? (
+                      <Text style={styles.modalText}>
+                        <Text style={styles.sectionTitle}>Última actualización: 28 de octubre de 2024</Text>{'\n\n'}
+                        Bienvenido a nuestra aplicación. Al utilizar esta plataforma, aceptas los{' '}
+                        <Text style={styles.bold}>Términos y Condiciones</Text>. Te recomendamos leerlos detenidamente.{'\n\n'}
+
+                        <Text style={styles.subheading}>1. Aceptación de los Términos</Text>{'\n'}
+                        El acceso y uso de la aplicación implica la aceptación de estos términos.{'\n\n'}
+
+                        <Text style={styles.subheading}>2. Registro y Uso de la Cuenta</Text>{'\n'}
+                        - Debes proporcionar información veraz al registrarte.{'\n'}
+                        - Eres responsable de la confidencialidad de tu contraseña.{'\n'}
+                        - Podemos eliminar cuentas por incumplimiento de los términos.{'\n\n'}
+
+                        <Text style={styles.subheading}>3. Uso Aceptable</Text>{'\n'}
+                        Está prohibido publicar contenido ofensivo o fraudulento.{'\n\n'}
+
+                        <Text style={styles.subheading}>4. Modificaciones</Text>{'\n'}
+                        Nos reservamos el derecho de modificar estos términos.{'\n\n'}
+
+                        <Text style={styles.subheading}>5. Limitación de Responsabilidad</Text>{'\n'}
+                        No somos responsables por interrupciones del servicio.{'\n\n'}
+                      </Text>
+                    ) : (
+                      <Text style={styles.modalText}>
+                        <Text style={styles.sectionTitle}>Última actualización: 28 de octubre de 2024</Text>{'\n\n'}
+                        Nos tomamos en serio tu privacidad. Esta política describe cómo{' '}
+                        <Text style={styles.bold}>recopilamos, usamos y protegemos</Text> tu información.{'\n\n'}
+
+                        <Text style={styles.subheading}>1. Información que Recopilamos</Text>{'\n'}
+                        - Datos personales proporcionados durante el registro.{'\n'}
+                        - Información técnica del dispositivo.{'\n\n'}
+
+                        <Text style={styles.subheading}>2. Uso de la Información</Text>{'\n'}
+                        Utilizamos tus datos para mejorar la experiencia.{'\n\n'}
+
+                        <Text style={styles.subheading}>3. Compartir Información con Terceros</Text>{'\n'}
+                        No compartimos datos sin tu consentimiento, excepto por ley.{'\n\n'}
+
+                        <Text style={styles.subheading}>4. Seguridad</Text>{'\n'}
+                        Implementamos medidas para proteger tu información.{'\n\n'}
+
+                        <Text style={styles.subheading}>5. Modificaciones</Text>{'\n'}
+                        Podemos modificar esta política en cualquier momento.{'\n\n'}
+                      </Text>
+                    )}
+
+                    <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+                      <Text style={styles.closeButtonText}>Cerrar</Text>
+                    </TouchableOpacity>
+                  </ScrollView>
+                </View>
+              </View>
+            </Modal>
+
+          
             <View style={styles.orContainer}>
               <View style={styles.line}></View>
               <CustomText style={styles.orText}>o inicia con</CustomText>
@@ -418,6 +530,8 @@ const styles = StyleSheet.create({
   signupButtonlabel: {
     color: 'white',
     textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   orContainer: {
     flexDirection: 'row',
@@ -472,6 +586,82 @@ const styles = StyleSheet.create({
   descripcionInput: {
     width: '90%', 
     height: height * 0.1, // Ajuste dinámico de la altura
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 19,
+
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    marginRight: 10,
+    borderColor: '#FF6347', // Contorno en color naranja
+    borderWidth: 2, // Asegura que el borde sea visible
+    borderRadius: 3, // Opcional para esquinas redondeadas
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#575757',
+    flex: 1,
+  },
+  linkText: {
+    color: '#FF6347',
+    textDecorationLine: 'underline',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalScrollContent: {
+    paddingHorizontal: 10, // Añadir espacio a los lados
+    paddingBottom: 10, // Espacio al final
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  subheading: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginVertical: 5,
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 22,
+    textAlign: 'justify',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    backgroundColor: '#FF6347',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
 });
 

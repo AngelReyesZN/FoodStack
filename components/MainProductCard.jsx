@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, Button } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useFavoritos } from './FavoritesContext.jsx'; // Importa el contexto
 
-const MainProductCard = ({ product, onAddToCart, onAddToFavorites, onCardPress }) => {
+const MainProductCard = ({ product, onAddToCart, onCardPress }) => {
+  const { toggleFavorito, favoritos } = useFavoritos(); // Obtén la función del contexto y la lista de favoritos
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Actualiza el estado si `favoritos` cambia
+  useEffect(() => {
+    setIsFavorite(favoritos.some((item) => item.id === product.id));
+  }, [favoritos, product.id]);
+
   const handleFavoritePress = () => {
-    setIsFavorite(!isFavorite);
-    if (onAddToFavorites) {
-      onAddToFavorites();
-    }
+    toggleFavorito(product); // Alterna el estado de favorito
   };
 
   return (
