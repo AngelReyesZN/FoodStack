@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -8,6 +8,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import StarRating from '../components/StarRating';
+import CustomText from '../components/CustomText'; // Importa tu componente de texto personalizado
 
 const MyReviewsScreen = () => {
   const [reviews, setReviews] = useState([]);
@@ -56,9 +57,9 @@ const MyReviewsScreen = () => {
         <TopBar />
         <View style={styles.headerContainer}>
           <BackButton />
-          <Text style={styles.title}>Reseñas</Text>
+          <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
         </View>
-        <Text style={styles.loadingText}>Cargando reseñas...</Text>
+        <CustomText variant="loading" style={styles.loadingText}>Cargando reseñas...</CustomText>
       </View>
     );
   }
@@ -68,7 +69,7 @@ const MyReviewsScreen = () => {
       <TopBar />
       <View style={styles.headerContainer}>
         <BackButton />
-        <Text style={styles.title}>Reseñas</Text>
+        <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reviews.map((review, index) => (
@@ -78,11 +79,11 @@ const MyReviewsScreen = () => {
             </View>
             <View style={styles.reviewDetails}>
               <View style={styles.productInfo}>
-                <Text style={styles.productName}>{review.producto.nombre}</Text>
+                <CustomText variant="subtitle" style={styles.productName}>{review.producto.nombre}</CustomText>
                 <View style={styles.rateDateContainer}>
-                  <Text style={styles.reviewDate}>
+                  <CustomText variant="caption" style={styles.reviewDate}>
                     {review.fechaResena ? review.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
-                  </Text>
+                  </CustomText>
                   <View style={styles.verticalLine} />
                   <StarRating
                     maxStars={5}
@@ -94,7 +95,7 @@ const MyReviewsScreen = () => {
                 </View>
               </View>
               <View style={styles.reviewTextContainer}>
-                <Text style={styles.reviewText}>{review.comentario}</Text>
+                <CustomText variant="body" style={styles.reviewText}>{review.comentario}</CustomText>
               </View>
             </View>
           </View>
@@ -112,9 +113,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'black',
     position: 'absolute',
     left: 0,
     right: 0,
@@ -149,7 +147,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    elevation: 4,
+    elevation: 8,
     height: 120,
     width: '95%',
   },
