@@ -115,6 +115,8 @@ const FavoritesScreen = () => {
         <FlatList
           data={favorites}
           renderItem={renderItem}
+          numColumns={2}
+          ListFooterComponent={<View style={{ height: 60 }} />}
           keyExtractor={item => item.id.toString()}
           numColumns={2} // Mostrar los productos en dos columnas
           key={2} // Cambia la propiedad key para forzar una nueva renderización

@@ -7,6 +7,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import MainProductCardEdit from '../components/MainProductCardEdit';
+import CustomText from '../components/CustomText';
+
 
 const SelfInfoScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -87,22 +90,17 @@ const SelfInfoScreen = ({ navigation }) => {
     fetchUserData();
   }, []);
 
+
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.includes(item.id);
+    if (item.cantidad <= 0 || !item.statusView) {
+      return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
+    }
+  
     return (
-      <TouchableOpacity
-        style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id, isFavorite })}
-      >
-        <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
-        <View style={styles.productInfo}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>${item.precio}.00</Text>
-          </View>
-          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
-        </View>
-      </TouchableOpacity>
+      <MainProductCardEdit 
+        product={item} 
+        navigation={navigation} 
+      />
     );
   };
 
@@ -122,26 +120,26 @@ const SelfInfoScreen = ({ navigation }) => {
       <View style={styles.profileContainer}>
         <Image source={{ uri: user.foto || 'path/to/default/image' }} style={styles.profileImage} />
       </View>
-      <Text style={styles.userName}>{user.nombre}</Text>
-      <Text style={styles.userInfo}>
+      <CustomText style={styles.userName} fontWeight='SemiBold'>{user.nombre}</CustomText>
+      <CustomText style={styles.userInfo}>
         {user.descripcionUsuario || 'Sin descripción disponible.'}
-      </Text>
+      </CustomText>
       <View style={styles.detailsContainer}>
         <View style={styles.detailItem}>
           <View style={styles.ratingContainer}>
-            <Text style={styles.ratingText}>{userRating}</Text>
-            <Icon name="star" size={19} color="#030A8C" style={styles.starIcon} />
+            <CustomText style={styles.ratingText}>{userRating}</CustomText>
+            <Icon name="star" size={19} color="#FF6347" style={styles.starIcon} />
           </View>
-          <Text style={styles.detailLabel}>Calificación</Text>
+          <CustomText style={styles.detailLabel} fontWeight='Medium'>Calificación</CustomText>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.monthsText}>{timeInApp}</Text>
-          <Text style={styles.detailLabel}>{timeMeasure}</Text>
+          <CustomText style={styles.monthsText}>{timeInApp}</CustomText>
+          <CustomText style={styles.detailLabel} fontWeight='Medium'>{timeMeasure}</CustomText>
         </View>
       </View>
-      <Text style={styles.allProductsText}>Productos</Text>
+      <CustomText style={styles.allProductsText} fontWeight='SemiBold'>Productos</CustomText>
       {userProducts.length === 0 ? (
-        <Text style={styles.noProductsText}>No hay productos para mostrar.</Text>
+        <CustomText style={styles.noProductsText}>No hay productos para mostrar.</CustomText>
       ) : (
         <FlatList
           data={userProducts}
@@ -159,7 +157,6 @@ const SelfInfoScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
     backgroundColor: 'white',
   },
   imageContainer: {
@@ -184,14 +181,12 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 110,
     height: 110,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: '#030A8C',
+    borderRadius: 10,
   },
   userName: {
-    fontSize: 25,
+    fontSize: 20,
     paddingTop: 15,
-    paddingLeft: 30,
+    alignSelf: 'center'
   },
   userInfo: {
     fontSize: 16,
@@ -205,6 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
+    marginBottom: 15,
   },
   detailItem: {
     alignItems: 'center',
@@ -232,11 +228,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   allProductsText: {
-    fontSize: 20,
+    fontSize: 17,
     marginLeft: 30,
     marginTop: 20,
     marginBottom: 15,
-    fontWeight: 'bold',
   },
   noProductsText: {
     fontSize: 16,
@@ -249,59 +244,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 4,
   },
-  productItem: {
-    flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    margin: 5,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 4,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: .5,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    paddingTop: 8
-  },
-  productImage: {
-    width: '100%',
-    height: 80,
-    resizeMode: 'contain',
-    borderRadius: 10,
-  },
-  productInfo: {
-    flex: 1,
-    marginLeft: 5,
-  },
-  productName: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginLeft: 2,
-    textAlign: 'left',
-  },
-  productPrice: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginRight: 3,
-    color: '#030A8C',
-    textAlign: 'right',
-  },
-  productUnits: {
-    fontSize: 12,
-    marginLeft: 2,
-    marginBottom: 3,
-    color: '#666',
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
+  
 });
 
 export default SelfInfoScreen;

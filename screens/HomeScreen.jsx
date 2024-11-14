@@ -171,7 +171,7 @@ const HomeScreen = () => {
                 keyExtractor={item => item.key}
                 showsHorizontalScrollIndicator={false}
               />
-              <CustomText style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</CustomText>
+              <CustomText style={styles.allProductsText} fontWeight='Bold'>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</CustomText>
             </View>
           </>
         }
@@ -225,14 +225,6 @@ const styles = StyleSheet.create({
     height: 50,
     marginRight: 10,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  price: {
-    fontSize: 14,
-    color: '#888',
-  },
   adContainer: {
     paddingTop: 20,
     justifyContent: 'center',
@@ -261,10 +253,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 10,
   },
-  iconImage: {
-    width: 40,
-    height: 40,
-  },
   iconText: {
     fontSize: 12,
     backgroundColor: '#fff',
@@ -286,68 +274,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginLeft: 10,
     marginBottom: 5,
-    fontWeight: 'bold',
     marginTop: 15,
   },
   productList: {
     paddingHorizontal: 10,
     paddingBottom: 100,
   },
-  productItem: {
-    flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    margin: 5,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 4,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: .5,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    paddingTop: 8
-  },
-  productImage: {
-    width: '100%',
-    height: 80,
-    resizeMode: 'contain',
-    borderRadius: 10,
-  },
-  productInfo: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  productName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginLeft: 2,
-    textAlign: 'left',
-  },
-  productPrice: {
-    marginRight: 10,
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#030A8C',
-    textAlign: 'right',
-  },
-  productUnits: {
-    fontSize: 14,
-    marginTop: 5,
-    marginLeft: 2,
-    marginBottom: 5,
-    color: '#666',
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-
+  
   // Estilos de categorySearch
 
   searchResultContainer: {
@@ -370,7 +303,7 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 5,
   },
   iconCircle: {
     width: 60,

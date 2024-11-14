@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, FlatList, ActivityIndicator } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import MainProductCardEdit from '../components/MainProductCardEdit';
 
 const MyProductsScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -50,34 +51,11 @@ const MyProductsScreen = ({ navigation }) => {
     fetchUserDataAndProducts();
   }, []);
 
-  const renderProductItem = ({ item }) => (
-    <View style={styles.productItem}>
-      <Image source={{ uri: item.imagen }} style={styles.productImage} />
-      <TouchableOpacity
-        style={styles.editIcon}
-        onPress={() => navigation.navigate('EditProduct', { productId: item.id })}
-      >
-          <Image source={require('../assets/edit.png')} style={styles.iconImage} />
-      </TouchableOpacity>
-      <View style={styles.productInfoContainer}>
-        <View style={styles.productInfoRow}>
-          <Text style={styles.productName}>{item.nombre}</Text>
-          <Text style={styles.productPrice}>${item.precio.toFixed(2)}</Text>
-        </View>
-        <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
-      </View>
-    </View>
-  );
-
   if (loading) {
     return (
       <View style={styles.container}>
-        <TopBar />
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <Text style={styles.title}>Mis productos</Text>
-        </View>
-        <ActivityIndicator size="large" color="#FF6347" />
+      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
+      <ActivityIndicator size="large" color="#FF6347" />
         <Text style={styles.loadingText}>Cargando productos...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </View>
@@ -89,11 +67,16 @@ const MyProductsScreen = ({ navigation }) => {
       <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
       <FlatList
         data={products}
-        renderItem={renderProductItem}
+        renderItem={({ item }) => (
+          <MainProductCardEdit
+            product={item}
+            onEditPress={() => navigation.navigate('EditProduct', { productId: item.id })}
+          />
+        )}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.productList}
         numColumns={2}
-        ListFooterComponent={<View style={{ height: 60 }} />} // Añade un margen inferior adicional
+        ListFooterComponent={<View style={{ height: 60 }} />}
       />
       <BottomMenuBar isMenuScreen={true} />
     </View>
@@ -120,68 +103,11 @@ const styles = StyleSheet.create({
   productList: {
     padding: 10,
   },
-  productItem: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    margin: 10,
-    flex: 1,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    position: 'relative',
-    paddingTop: 30
-  },
-  productImage: {
-    width: '100%',
-    height: 80,
-    resizeMode: 'contain',
-    borderRadius: 10,
-  },
-  productInfoContainer: {
-    width: '100%',
-    alignItems: 'flex-start',
-  },
-  productInfoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 5,
-  },
-  productName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: 'bold',
-    textAlign: 'left',
-  },
-  productPrice: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#030A8C',
-    textAlign: 'right',
-  },
-  productUnits: {
-    fontSize: 14,
-    marginTop: 5,
-    color: '#666',
-  },
   loadingText: {
     fontSize: 18,
     color: '#666',
     textAlign: 'center',
     marginVertical: 20,
-  },
-  editIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  iconImage: {
-    width: 20,
-    height: 20,
   },
 });
 

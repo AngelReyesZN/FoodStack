@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { getDocs, query, collection, where, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebaseConfig';
-
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
@@ -93,7 +92,7 @@ const HistoryScreen = ({navigation}) => {
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{purchaseDate}</CustomText>
-        <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
+        <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
             <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
@@ -123,7 +122,7 @@ const HistoryScreen = ({navigation}) => {
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{saleDate}</CustomText>
-        <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
+        <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
             <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
@@ -187,6 +186,7 @@ const HistoryScreen = ({navigation}) => {
             style={[styles.sectionHeader, isSalesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsSalesOpen(!isSalesOpen)}
           >
+
             <CustomText style={styles.sectionHeaderText} variant={'title'}>Ventas</CustomText>
             <AntDesign
               name={isSalesOpen ? 'up' : 'down'}
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   orderIdText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B4B4B4',
     marginBottom: 5,
     fontWeight: 'Regular',
   },

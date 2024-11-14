@@ -20,6 +20,8 @@ import * as ImagePicker from 'expo-image-picker';
 import TopBar from '../components/TopBar';
 import { agregarNotificacion } from '../services/notifications';
 import ErrorAlert from '../components/ErrorAlert';
+import CustomText from '../components/CustomText';
+
 
 const PersonalDataScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -144,16 +146,16 @@ const UserInfoSection = ({
   <View style={styles.userDetailsContainer}>
     <Image source={{ uri: user.foto }} style={styles.userPhoto} />
     <TouchableOpacity onPress={handleChangePhoto}>
-      <Text style={styles.changePhotoText}>Cambiar imagen</Text>
+      <CustomText style={styles.changePhotoText}>Cambiar imagen</CustomText>
     </TouchableOpacity>
     <View style={styles.detailsContent}>
-      <Text style={styles.username}>{user.nombre}</Text>
-      <Text style={styles.label}>Correo</Text>
-      <Text style={styles.userInfo}>{user.correo}</Text>
-      <Text style={styles.label}>Expediente</Text>
-      <Text style={styles.userInfo}>{user.expediente}</Text>
-      <Text style={styles.label}>Teléfono</Text>
-      <TextInput
+      <CustomText style={styles.username} fontWeight='SemiBold'>{user.nombre}</CustomText>
+      <CustomText style={styles.label} fontWeight='Medium'>Correo</CustomText>
+      <CustomText style={styles.userInfo}>{user.correo}</CustomText>
+      <CustomText style={styles.label} fontWeight='Medium'>Expediente</CustomText>
+      <CustomText style={styles.userInfo}>{user.expediente}</CustomText>
+      <CustomText style={styles.label} fontWeight='Medium'>Teléfono</CustomText>
+      <CustomText
         style={styles.inputBox}
         value={formData.phone}
         onChangeText={(text) => setFormData((prev) => ({ ...prev, phone: text }))}
@@ -161,7 +163,7 @@ const UserInfoSection = ({
         placeholderTextColor="#DBD4D3"
         keyboardType="numeric"
       />
-      <Text style={styles.label}>Descripción</Text>
+      <CustomText style={styles.label} fontWeight='Medium'>Descripción</CustomText>
       <TextInput
         style={styles.inputBox}
         value={formData.description}
@@ -171,7 +173,7 @@ const UserInfoSection = ({
         multiline
       />
       <View style={styles.switchContainer}>
-        <Text style={styles.label}>Aceptar transferencias</Text>
+        <CustomText style={styles.label} fontWeight='Medium'>Aceptar transferencias</CustomText>
         <Switch
           style={styles.switch}
           value={formData.statusCard}
@@ -181,7 +183,7 @@ const UserInfoSection = ({
         />
       </View>
       <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-        <Text style={styles.saveButtonText}>Guardar cambios</Text>
+        <CustomText style={styles.saveButtonText}>Guardar cambios</CustomText>
       </TouchableOpacity>
     </View>
   </View>
@@ -219,13 +221,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   changePhotoText: {
-    marginTop: 70,
+    marginTop: 60,
     color: '#FF6347',
-    fontSize: 18,
+    fontSize: 14,
     marginBottom: 20,
   },
   username: {
-    fontWeight: 'bold',
     fontSize: 20,
     marginBottom: 10,
     borderBottomWidth: 1,
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
-    fontSize: 18,
+    fontSize: 16,
     width: '100%',
     color: '#DBD4D6',
     borderColor: '#DBD4D6',
@@ -256,8 +257,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   label: {
-    fontSize: 18,
-    fontWeight: 'semibold',
+    fontSize: 17,
   },
   userInfo: {
     fontSize: 16,

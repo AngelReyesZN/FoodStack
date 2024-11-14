@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   optionText: {
-    fontSize: 19,
+    fontSize: 14,
   },
   instructionsContainer: {
     paddingHorizontal: 35,
