@@ -1,27 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import CustomText from '../components/CustomText';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useFavoritos } from './FavoritesContext.jsx'; // Importa el contexto
+import { db, auth } from '../services/firebaseConfig';
+import { doc, getDocs, updateDoc, query, where, collection, arrayUnion, arrayRemove } from 'firebase/firestore';
 
-const MainProductCard = ({ product, onAddToCart, onCardPress }) => {
-  const { toggleFavorito, favoritos } = useFavoritos(); // Obtén la función del contexto y la lista de favoritos
+const MainProductCard = ({ product, navigation }) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Actualiza el estado si `favoritos` cambia
   useEffect(() => {
-    setIsFavorite(favoritos.some((item) => item.id === product.id));
-  }, [favoritos, product.id]);
+    const fetchFavorites = async () => {
+      try {
+        const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+        const userSnapshot = await getDocs(userQuery);
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          const favRefs = userDoc.data().favoritos || [];
+          const isFav = favRefs.some(ref => ref.id === product.id);
+          setIsFavorite(isFav);
+        }
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+      }
+    };
 
-  const handleFavoritePress = () => {
-    toggleFavorito(product); // Alterna el estado de favorito
+    fetchFavorites();
+  }, [product.id]);
+
+  const toggleFavorite = async () => {
+    try {
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+      if (!userSnapshot.empty) {
+        const userDocRef = userSnapshot.docs[0].ref;
+
+        if (isFavorite) {
+          await updateDoc(userDocRef, {
+            favoritos: arrayRemove(doc(db, 'productos', product.id))
+          });
+        } else {
+          await updateDoc(userDocRef, {
+            favoritos: arrayUnion(doc(db, 'productos', product.id))
+          });
+        }
+        setIsFavorite(!isFavorite);
+      } else {
+        console.error('User not found');
+      }
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+    }
   };
 
   return (
-    <TouchableOpacity onPress={onCardPress} style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate('ProductScreen', { productId: product.id })}
+    >
       <View style={styles.imageContainer}>
         <Image source={{ uri: product.imagen }} style={styles.image} />
         <TouchableOpacity
-          onPress={handleFavoritePress}
+          onPress={toggleFavorite}
           style={[
             styles.favoriteButton,
             isFavorite ? styles.favoriteButtonSelected : styles.favoriteButtonUnselected
@@ -31,15 +70,16 @@ const MainProductCard = ({ product, onAddToCart, onCardPress }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.detailsContainer}>
-        <Text style={styles.title}>{product.nombre}</Text>
-        <Text style={styles.descripcion}>
-          {product.descripcion.substring(0, 20)}{product.descripcion.length > 20 ? '...' : ''}
-        </Text>
+        <CustomText style={styles.title} fontWeight='Bold'>{product.nombre}</CustomText>
+        <CustomText style={styles.descripcion}>
+          {product.descripcion.substring(0, 20)}
+          {product.descripcion.length > 20 ? '...' : ''}
+        </CustomText>
       </View>
       <View style={styles.bottomContainer}>
-        <Text style={styles.price}>${product.precio}</Text>
-        <TouchableOpacity onPress={onAddToCart} style={styles.button}>
-          <Text style={styles.buttonText}>Agregar</Text>
+        <CustomText style={styles.price} fontWeight='Medium'>${product.precio}</CustomText>
+        <TouchableOpacity style={styles.button}>
+          <CustomText style={styles.buttonText} fontWeight='Medium'>Agregar</CustomText>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -61,42 +101,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    overflow: 'hidden', 
+    overflow: 'hidden',
   },
   imageContainer: {
     position: 'relative',
-    width: '100%', 
+    width: '100%',
   },
   image: {
-    width: '100%', 
+    width: '100%',
     height: 150,
     resizeMode: 'cover',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    borderRadius: 15,
-    padding: 5,
-  },
-  favoriteButtonSelected: {
-    backgroundColor: '#FF6347',
-  },
-  favoriteButtonUnselected: {
-    backgroundColor: 'white',
-    borderColor: '#ccc',
-    borderWidth: 1,
-  },
   title: {
-    fontWeight: 'bold',
     fontSize: 16,
     marginTop: 4,
   },
   price: {
     color: '#FF6347',
-    fontWeight: 'bold',
     fontSize: 16,
   },
   descripcion: {
@@ -113,7 +136,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 14,
-    fontWeight: 'bold',
     color: 'white',
   },
   detailsContainer: {
@@ -128,6 +150,21 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 10,
     marginTop: 4,
+  },
+  favoriteButton: {
+    position: 'absolute',
+    padding: 5,
+    borderRadius: 50,
+    top: 10,
+    right: 10,
+  },
+  favoriteButtonSelected: {
+    backgroundColor: '#FF6347',
+  },
+  favoriteButtonUnselected: {
+    backgroundColor: 'white',
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
 });
 

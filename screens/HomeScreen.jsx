@@ -7,6 +7,10 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import CustomText from '../components/CustomText';
+import MainProductCard from '../components/MainProductCard';
+
+
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,23 +117,15 @@ const HomeScreen = () => {
     if (item.cantidad <= 0 || !item.statusView) {
       return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
     }
-
+  
     return (
-      <TouchableOpacity
-        style={styles.productItem}
-        onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}
-      >
-        <Image source={{ uri: item.imagen }} style={styles.productImage} />
-        <View style={styles.productInfo}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.productName}>{item.nombre}</Text>
-            <Text style={styles.productPrice}>${item.precio}.00</Text>
-          </View>
-          <Text style={styles.productUnits}>Unidades: {item.cantidad}</Text>
-        </View>
-      </TouchableOpacity>
+      <MainProductCard 
+        product={item} 
+        navigation={navigation} 
+      />
     );
   };
+  
 
   const filterByCategory = (category) => {
     setCurrentCategory(category);
@@ -152,37 +148,30 @@ const HomeScreen = () => {
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleLinkPress} style={styles.linkContainer}>
-              <Text style={styles.linkText}>Ve todos los anuncios <Text style={{ color: '#030A8C' }}>aquí</Text></Text>
+              <CustomText style={styles.linkText} fontWeight='Regular'>Ve todos los anuncios <CustomText style={{ color: '#FF6347', textDecorationLine: 'underline'}} fontWeight='SemiBold'>aquí</CustomText></CustomText>
             </TouchableOpacity>
             <View style={styles.categoryContainer}>
               <FlatList
                 horizontal
                 data={[
-                  { key: 'Todos', color: '#030A8C', icon: require('../assets/todo.png') },
-                  { key: 'Comida', color: '#dfe164', icon: require('../assets/comida.png') },
-                  { key: 'Bebidas', color: '#f5a623', icon: require('../assets/refresco.png') },
-                  { key: 'Frituras', color: '#e82d2d', icon: require('../assets/frituras.png') },
-                  { key: 'Postres', color: '#f496e5', icon: require('../assets/postres.png') },
-                  { key: 'Dulces', color: '#5fe8bf', icon: require('../assets/dulces.png') },
-                  { key: 'Dispositivos', color: '#8e44ad', icon: require('../assets/dispositivos.png') },
-                  { key: 'Otros', color: '#aa9e9e', icon: require('../assets/mas.png') },
+                  { key: 'Todos' },
+                  { key: 'Comida' },
+                  { key: 'Bebidas'},
+                  { key: 'Frituras'},
+                  { key: 'Postres'},
+                  { key: 'Dulces'},
+                  { key: 'Dispositivos'},
+                  { key: 'Otros'},
                 ]}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
-                    <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
-                      {typeof item.icon === 'string' ? (
-                        <Icon name={item.icon} size={24} color="white" />
-                      ) : (
-                        <Image source={item.icon} style={styles.iconImage} />
-                      )}
-                    </View>
-                    <Text style={styles.iconText}>{item.key}</Text>
+                    <CustomText style={styles.iconText}>{item.key}</CustomText>
                   </TouchableOpacity>
                 )}
                 keyExtractor={item => item.key}
                 showsHorizontalScrollIndicator={false}
               />
-              <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
+              <CustomText style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</CustomText>
             </View>
           </>
         }
@@ -207,7 +196,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    paddingTop: 20,
   },
   header: {
     backgroundColor: 'white',
@@ -261,35 +249,34 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   linkContainer: {
-    alignItems: 'center',
+    alignItems: 'right',
   },
   linkText: {
-    textAlign: 'center',
-    marginTop: 4,
+    textAlign: 'right',
     fontSize: 12,
-    borderWidth: 3,
     padding: 5,
-    width: 225,
-    borderRadius: 20,
-    borderColor: '#ccc',
-    elevation: 30,
   },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 10,
   },
-  iconWrapper: {
-    paddingTop: 8,
-    alignItems: 'center',
-  },
   iconImage: {
     width: 40,
     height: 40,
   },
   iconText: {
-    marginTop: 5,
     fontSize: 12,
+    backgroundColor: '#fff',
+    borderWidth: .5, // Thickness of the border
+    borderColor: '#DBDBDB', // Border color (e.g., a red-orange)
+    borderRadius: 40, // Optional: rounds the corners of the border
+    padding: 5, // Padding around the text
+    paddingHorizontal: 8,
+    textAlign: 'center',
+    alignSelf: 'center',
+    elevation: 2,
+    marginBottom: 10,
   },
   containerProduccts: {
     flex: 1,
@@ -382,7 +369,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   iconWrapper: {
-    paddingTop: 8,
     alignItems: 'center',
     marginHorizontal: 10,
   },

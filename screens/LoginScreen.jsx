@@ -301,13 +301,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   socialButton: {
-    width: width * 0.15,  // Tamaño relativo basado en el ancho de la pantalla
-    height: width * 0.15,
+    width: width * 0.13,  // Tamaño relativo basado en el ancho de la pantalla
+    height: width * 0.13,
     borderRadius: width * 0.075, // Para mantener la forma circular
     backgroundColor: '#DDDDDD',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: width * 0.025,
+    marginBottom: height * 0.01,
   },
   logoImage: {
     width: width * 0.05,
@@ -319,7 +320,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     left: 0, // Alinear a la izquierda
     bottom: 0, // Alinear en la parte inferior
-    marginTop: height * 0.03,
   },
   registerText: {
     color: 'black',

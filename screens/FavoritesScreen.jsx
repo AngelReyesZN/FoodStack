@@ -7,6 +7,8 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import MainProductCard from '../components/MainProductCard';
+
 
 const FavoritesScreen = () => {
   const [favorites, setFavorites] = useState([]);
@@ -85,21 +87,17 @@ const FavoritesScreen = () => {
 
   const renderItem = ({ item }) => {
     const isFavorite = favorites.some((fav) => fav.id === item.id);
+    
     return (
-      <TouchableOpacity style={styles.productItem} onPress={() => navigation.navigate('ProductScreen', { productId: item.id })}>
-        <Image source={{ uri: item.imagen }} style={styles.productImage} />
-        <View style={styles.productInfo}>
-          <Text style={styles.productName}>{item.nombre}</Text>
-          <Text style={styles.productPrice}>${item.precio}.00</Text>
-        </View>
-        <TouchableOpacity style={styles.favoriteIcon} onPress={() => toggleFavorite(item.id)}>
-          <View style={styles.favoriteIconWrapper}>
-            <Icon name={isFavorite ? "heart" : "heart-o"} size={20} color={isFavorite ? "#e82d2d" : "#e82d2d"} />
-          </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
+      <MainProductCard 
+        product={item} 
+        navigation={navigation}
+        isFavorite={isFavorite}
+        onToggleFavorite={() => toggleFavorite(item.id)} 
+      />
     );
   };
+  
 
   return (
     <View style={styles.container}>
