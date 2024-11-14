@@ -3,8 +3,9 @@ import { View, Image, StyleSheet, StatusBar, TouchableOpacity } from "react-nati
 import CustomText from '../components/CustomText';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import SearchBar from '../components/SearchBar'; // Importa el componente SearchBar
 
-const TopBar = ({ title, showBackButton, navigation }) => {
+const TopBar = ({ title, showBackButton, showSearchBar, navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar
@@ -12,17 +13,26 @@ const TopBar = ({ title, showBackButton, navigation }) => {
         backgroundColor="#FF6347"
         translucent={false}
       />
-      {showBackButton && (
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Icon name="chevron-left" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+      <View style={styles.leftContainer}>
+        {showBackButton && (
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Icon name="chevron-left" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        )}
+        {!showBackButton && (
+          <Image source={require("../assets/FoodStackLogoNT.png")} style={styles.logo} />
+        )}
+      </View>
+      {showSearchBar ? (
+        <SearchBar />
+      ) : (
+        <View style={styles.titleContainer}>
+          <CustomText style={styles.text} variant='caption'>
+            {showBackButton ? title : 'Food Stack'}
+          </CustomText>
+        </View>
       )}
-      <CustomText style={styles.text} fontWeight="Medium">
-        {showBackButton ? title : 'Food Stack'}
-      </CustomText>
-      {!showBackButton && (
-        <Image source={require("../assets/FoodStackLogoNT.png")} style={styles.logo} />
-      )}
+      <View style={styles.rightContainer} />
     </View>
   );
 };
@@ -37,6 +47,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between", // Ajustar elementos a los extremos
     paddingHorizontal: 10, // Espaciado consistente
   },
+  leftContainer: {
+    width: 40, // Ancho fijo para el contenedor izquierdo
+    alignItems: 'flex-start',
+  },
+  rightContainer: {
+    width: 40, // Ancho fijo para el contenedor derecho
+  },
   backButton: {
     zIndex: 10, // Asegura que el botón esté por encima de otros elementos
   },
@@ -44,11 +61,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center', // Centra el título horizontalmente
+  },
   text: {
     fontSize: 22,
     color: "#FFFFFF",
     textAlign: "center",
-    flex: 1,
   },
 });
 

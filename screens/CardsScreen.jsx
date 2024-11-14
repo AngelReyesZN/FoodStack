@@ -114,7 +114,8 @@ const CardsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TopBar title="Mis tarjetas" showBackButton={true} navigation={navigation} />
+      <TopBar title="Mis tarjetas" showBackButton={true} navigation={navigation} showSearchBar={false} />
+
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Image

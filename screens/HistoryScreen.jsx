@@ -9,7 +9,7 @@ import BackButton from '../components/BackButton';
 import CustomText from '../components/CustomText';
 import { AntDesign } from '@expo/vector-icons';
 
-const HistoryScreen = () => {
+const HistoryScreen = ({navigation}) => {
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,12 +152,8 @@ const HistoryScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar />
+      <TopBar title="Historial" showBackButton={true} navigation={navigation} showSearchBar={false} />
       <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <CustomText style={styles.title}>Historial</CustomText>
-        </View>
         <View style={styles.separator} />
         <View style={styles.content}>
           <TouchableOpacity

@@ -86,11 +86,7 @@ const MyProductsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <TopBar />
-      <View style={styles.headerContainer}>
-        <BackButton />
-        <Text style={styles.title}>Mis productos</Text>
-      </View>
+      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
       <FlatList
         data={products}
         renderItem={renderProductItem}
