@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { auth, db } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
@@ -8,6 +8,7 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import StarRating from '../components/StarRating';
+import CustomText from '../components/CustomText'; // Importa tu componente de texto personalizado
 
 const MyReviewsScreen = () => {
   const [reviews, setReviews] = useState([]);
@@ -55,10 +56,10 @@ const MyReviewsScreen = () => {
       <View style={styles.container}>
         <TopBar />
         <View style={styles.headerContainer}>
-          <BackButton onPress={() => navigation.goBack()} />
-          <Text style={styles.title}>Reseñas</Text>
+          <BackButton />
+          <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
         </View>
-        <Text style={styles.loadingText}>Cargando reseñas...</Text>
+        <CustomText variant="loading" style={styles.loadingText}>Cargando reseñas...</CustomText>
       </View>
     );
   }
@@ -67,30 +68,36 @@ const MyReviewsScreen = () => {
     <View style={styles.container}>
       <TopBar />
       <View style={styles.headerContainer}>
-        <BackButton onPress={() => navigation.goBack()} />
-        <Text style={styles.title}>Reseñas</Text>
+        <BackButton />
+        <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reviews.map((review, index) => (
           <View key={index} style={styles.reviewItem}>
-            <View style={styles.productInfo}>
+            <View style={styles.imageContainer}>
               <Image source={{ uri: review.producto.imagen }} style={styles.productImage} />
-              <Text style={styles.productName}>{review.producto.nombre}</Text>
             </View>
-            <View style={styles.reviewHeader}>
-              <StarRating
-                maxStars={5}
-                rating={review.calificacionResena}
-                onStarPress={() => {}}
-                starSize={15}
-              />
-              <Text style={styles.reviewDate}>
-                {review.fechaResena ? review.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
-              </Text>
+            <View style={styles.reviewDetails}>
+              <View style={styles.productInfo}>
+                <CustomText variant="subtitle" style={styles.productName}>{review.producto.nombre}</CustomText>
+                <View style={styles.rateDateContainer}>
+                  <CustomText variant="caption" style={styles.reviewDate}>
+                    {review.fechaResena ? review.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
+                  </CustomText>
+                  <View style={styles.verticalLine} />
+                  <StarRating
+                    maxStars={5}
+                    rating={review.calificacionResena}
+                    onStarPress={() => {}}
+                    starSize={16}
+                    color={'#FF6347'}
+                  />
+                </View>
+              </View>
+              <View style={styles.reviewTextContainer}>
+                <CustomText variant="body" style={styles.reviewText}>{review.comentario}</CustomText>
+              </View>
             </View>
-            <View style={styles.commentSeparator} />
-
-            <Text style={styles.reviewText}>{review.comentario}</Text>
           </View>
         ))}
         <View style={styles.bottomPadding} />
@@ -106,21 +113,23 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#030A8C',
-    marginLeft: 10,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
   },
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 12,
+    marginTop: 20,
+    marginBottom: 40,
   },
   scrollViewContent: {
     paddingHorizontal: 20,
     paddingBottom: 20,
+    alignItems: 'center',
   },
   loadingText: {
     fontSize: 18,
@@ -130,49 +139,68 @@ const styles = StyleSheet.create({
   },
   reviewItem: {
     backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
+    padding: 0,
+    borderRadius: 10,
     marginBottom: 10,
-    borderColor: '#ddd',
-    borderWidth: 1,
-  },
-  productInfo: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+    height: 120,
+    width: '95%',
   },
-  productImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  imageContainer: {
     marginRight: 10,
   },
-  productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  productImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 25,
   },
-  reviewHeader: {
-    flexDirection: 'row',
+  reviewDetails: {
+    flex: 1,
+  },
+  productInfo: {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
   },
+  productName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    alignSelf: 'flex-start',
+    marginBottom: 5,
+  },
+  rateDateContainer: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+  },
   reviewDate: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#666',
+  },
+  verticalLine: {
+    height: 10,
+    width: 1,
+    backgroundColor: '#666',
+    marginHorizontal: 6,
   },
   reviewText: {
     fontSize: 16,
     color: '#333',
     lineHeight: 20,
-  },
-  commentSeparator: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 10,
+    textAlign: 'justify',
   },
   bottomPadding: {
     height: 80,
+  },
+  reviewTextContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
   },
 });
 
