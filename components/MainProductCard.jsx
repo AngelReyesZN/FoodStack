@@ -78,8 +78,8 @@ const MainProductCard = ({ product, navigation }) => {
       </View>
       <View style={styles.bottomContainer}>
         <CustomText style={styles.price} fontWeight='Medium'>${product.precio}</CustomText>
-        <TouchableOpacity style={styles.button}>
-          <CustomText style={styles.buttonText} fontWeight='Medium'>Agregar</CustomText>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ProductScreen', { productId: product.id })}>
+          <CustomText style={styles.buttonText} fontWeight='Medium'>Detalles</CustomText>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
