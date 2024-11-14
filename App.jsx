@@ -4,7 +4,6 @@ import Navigation from './navigation/StackNavigator.jsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { FavoritosProvider } from './components/FavoritesContext.jsx'; // Importa el proveedor
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,9 +27,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <FavoritosProvider>
         <Navigation />
-      </FavoritosProvider>
     </GestureHandlerRootView>
   );
 }

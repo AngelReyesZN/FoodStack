@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, Modal, Image, TouchableOpacity, Linking } from 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { getDoc, doc, getDocs, query, collection, where } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import { useNavigation } from '@react-navigation/native';
 
 const ModalProductDetails = ({ visible, product, onClose, onAddToFavorites, onAddToCart }) => {
   const [vendedor, setVendedor] = useState(null);
   const [vendedorRating, setVendedorRating] = useState('-');
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchVendedor = async () => {
@@ -76,6 +78,10 @@ const ModalProductDetails = ({ visible, product, onClose, onAddToFavorites, onAd
     }
   };
 
+  const navigateToSellerInfo = () => {
+    navigation.navigate('InfoSeller', { sellerId: product.vendedorRef.id });
+  };
+
   return (
     <Modal
       visible={visible}
@@ -111,13 +117,17 @@ const ModalProductDetails = ({ visible, product, onClose, onAddToFavorites, onAd
                 {vendedor && (
                   <View style={styles.vendedorContainer}>
                     <Image source={{ uri: vendedor.foto }} style={styles.vendedorImage} />
+
                     <View style={styles.vendedorDetails}>
+                      <TouchableOpacity onPress={navigateToSellerInfo}>
                       <Text style={styles.vendedorName}>{vendedor.nombre}</Text>
+                      </TouchableOpacity>0
                       <View style={styles.vendedorRating}>
                         <Text>{vendedorRating}</Text>
                         <Icon name="star" size={16} color="#FFD700" />
                       </View>
                     </View>
+
                     <TouchableOpacity onPress={handleWhatsAppPress} style={styles.whatsappButton}>
                       <Icon name="whatsapp" size={24} color="white" />
                     </TouchableOpacity>

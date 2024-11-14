@@ -77,7 +77,7 @@ const MyProductsScreen = ({ navigation }) => {
           <BackButton />
           <Text style={styles.title}>Mis productos</Text>
         </View>
-        <ActivityIndicator size="large" color="#030A8C" />
+        <ActivityIndicator size="large" color="#FF6347" />
         <Text style={styles.loadingText}>Cargando productos...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </View>
