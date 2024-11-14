@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native'; // Importa Image desde react-native
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, onSnapshot, doc, getDocs, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,10 +14,17 @@ const NotificationsScreen = () => {
   const renderHeader = () => (
     <View>
       <View style={styles.headerContainer}>
-        <BackButton />
-        <CustomText style={styles.title} fontWeight="SemiBold">
-          Notificaciones
-        </CustomText>
+        <View style={styles.backButtonContainer}>
+          <BackButton />
+        </View>
+        <View style={styles.titleContainer}>
+          <CustomText style={styles.title} fontWeight="SemiBold">
+            Notificaciones
+          </CustomText>
+        </View>
+        <View style={styles.bellcon}>
+          <Image source={require('../assets/rscMenu/campana.png')} style={{ width: 30, height: 30 }} />
+        </View>
       </View>
       <View style={styles.separator} />
       <TouchableOpacity style={styles.clearButton} onPress={() => setNotificaciones([])}>
@@ -179,6 +186,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     marginTop: 15,
   },

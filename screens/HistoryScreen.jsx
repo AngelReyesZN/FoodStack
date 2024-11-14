@@ -96,7 +96,7 @@ const HistoryScreen = ({navigation}) => {
         <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
-            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="contain" />
+            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
           )}
           <View style={styles.productDetails}>
             <View style={styles.productHeader}>
@@ -126,7 +126,7 @@ const HistoryScreen = ({navigation}) => {
         <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
-            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="contain" />
+            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
           )}
           <View style={styles.productDetails}>
             <View style={styles.productHeader}>
@@ -160,7 +160,7 @@ const HistoryScreen = ({navigation}) => {
             style={[styles.sectionHeader, isPurchasesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsPurchasesOpen(!isPurchasesOpen)}
           >
-            <CustomText style={styles.sectionHeaderText} fontWeight='Bold'>Compras</CustomText>
+            <CustomText style={styles.sectionHeaderText} variant={'title'}>Compras</CustomText>
             <AntDesign
               name={isPurchasesOpen ? 'up' : 'down'}
               size={16}
@@ -187,7 +187,7 @@ const HistoryScreen = ({navigation}) => {
             style={[styles.sectionHeader, isSalesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsSalesOpen(!isSalesOpen)}
           >
-            <CustomText style={styles.sectionHeaderText} fontWeight='Bold'>Ventas</CustomText>
+            <CustomText style={styles.sectionHeaderText} variant={'title'}>Ventas</CustomText>
             <AntDesign
               name={isSalesOpen ? 'up' : 'down'}
               size={16}
@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc', // Color del separador
     paddingBottom: 10,
+
   },
   sectionHeaderOpen: {
     borderBottomLeftRadius: 0,
@@ -297,9 +298,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   productImage: {
-    width: 50,
-    height: 50,
+    width: 80,
+    height: 80,
     marginRight: 10,
+    borderRadius: 10,
   },
   productDetails: {
     flex: 1,
@@ -336,10 +338,8 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#C1C1C1',
     width: '85%',
     alignSelf: 'center',
-    marginTop: 20,
     marginBottom: 10,
   },
 });

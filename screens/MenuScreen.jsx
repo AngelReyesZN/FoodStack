@@ -8,7 +8,6 @@ import { db } from '../services/firebaseConfig';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CustomText from '../components/CustomText';
 
-
 const options = [
   { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/campana.png'), screen: 'Notifications' },
   { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/corazon.png'), screen: 'Favorites' },
@@ -102,7 +101,6 @@ const MenuScreen = ({ navigation }) => {
     );
   };
 
-
   const handleOptionPress = (option) => {
     navigation.navigate(option.screen, { label: option.label });
   };
@@ -184,9 +182,10 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    paddingBottom: 50, // Añadir padding para asegurar que el contenido no se corte
   },
   contentContainer: {
-    paddingBottom: height * .1,
+    paddingBottom: height * 0.1,
   },
   userContainer: {
     flexDirection: 'row',
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   separator: {
-    height: .5,
+    height: 0.5,
     backgroundColor: '#C1C1C1',
     width: '85%',
     alignSelf: 'center',
@@ -266,7 +265,8 @@ const styles = StyleSheet.create({
   logoutButton: {
     marginHorizontal: 20,
     marginTop: 25,
-    alignItems: 'left',
+    padding: 15,
+    alignItems: 'flex-start', // Cambiado de 'left' a 'flex-start'
     justifyContent: 'center',
   },
   logoutButtonText: {

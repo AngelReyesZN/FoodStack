@@ -114,9 +114,15 @@ const CardsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <TopBar title="Mis tarjetas" showBackButton={true} navigation={navigation} showSearchBar={false} />
-
-
+      <TopBar/>
+      <View style={styles.headerContainer}>
+        <View style={styles.backButtonContainer}>
+          <BackButton />
+        </View>
+        <View style={styles.titleContainer}>
+          <CustomText variant='title'>Mis tarjetas</CustomText>
+        </View>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Image
           source={require('../assets/cardImage.png')}
@@ -192,8 +198,16 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
-    marginTop: 15,
+    marginTop: 20,
+    width: '90%',
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
+  backButtonContainer: {
+    position: 'absolute',
+    left: 20,
   },
   cardImage: {
     height: 85,
