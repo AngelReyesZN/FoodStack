@@ -180,6 +180,10 @@ const SearchResults = ({ route }) => {
         <CustomText style={styles.noResultsText}>No se encontraron productos</CustomText>
       )}
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
       <View style={styles.recentContainer}>
         <View style={styles.leftSection}>
           <Image source={require('../assets/search.png')} style={styles.searchImage} />
@@ -187,9 +191,16 @@ const SearchResults = ({ route }) => {
         </View>
       </View>
       <FlatList
+<<<<<<< Updated upstream
         data={categories}
         renderItem={renderCategoryIcon}
         keyExtractor={(item) => item.key}
+=======
+        data={recentSearches}
+        renderItem={renderRecentItem}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.recentList}
+>>>>>>> Stashed changes
       />
     </View>
   );
