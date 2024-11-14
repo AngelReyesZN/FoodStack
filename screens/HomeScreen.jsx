@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl, Modal } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Keyboard, Platform, Linking, RefreshControl } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BottomMenuBar from '../components/BottomMenuBar';
 import SearchBar from '../components/SearchBar';
@@ -7,8 +7,10 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { getDocuments } from '../services/firestore';
 import { getDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import CustomText from '../components/CustomText';
 import MainProductCard from '../components/MainProductCard';
-import ModalProductDetails from '../components/ModalProductDetails';
+
+
 
 const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,11 +19,7 @@ const HomeScreen = () => {
   const [products, setProducts] = useState([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [currentCategory, setCurrentCategory] = useState('Todos');
-  const [selectedCategory, setSelectedCategory] = useState('Todos'); // Estado para la categoría seleccionada
   const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-
   const navigation = useNavigation();
 
   const fetchProducts = async () => {
@@ -115,39 +113,22 @@ const HomeScreen = () => {
     setRefreshing(false);
   }, [currentCategory]);
 
-  const handleAddToFavorites = (product) => {
-    console.log('Product added to favorites:', product);
-    // Aquí puedes agregar la lógica para manejar los favoritos
-  };
-
-  const handleCardPress = (product) => {
-    setSelectedProduct(product);
-    setModalVisible(true);
-  }
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedProduct(null);
-  }
   const renderItem = ({ item }) => {
     if (item.cantidad <= 0 || !item.statusView) {
       return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
     }
-    const handleAddToCart = () => {
-      console.log('Product added to cart:', item);
-    };
+  
     return (
-      <MainProductCard
-        product={item}
-        onCardPress={() => handleCardPress(item)}
-        onAddToCart={handleAddToCart}
-        onAddToFavorites={() => handleAddToFavorites(item)}
+      <MainProductCard 
+        product={item} 
+        navigation={navigation} 
       />
     );
   };
+  
 
   const filterByCategory = (category) => {
     setCurrentCategory(category);
-    setSelectedCategory(category); // Actualiza la categoría seleccionada
     applyCategoryFilter(products, category);
   };
 
@@ -166,44 +147,31 @@ const HomeScreen = () => {
                 style={styles.adImage}
               />
             </TouchableOpacity>
-            <View style={styles.linkContainer}>
-              <Text style={styles.linkText}>
-                Ve todos los anuncios <Text style={styles.linkHighlight} onPress={handleLinkPress}>aquí</Text>
-              </Text>
-            </View>
+            <TouchableOpacity onPress={handleLinkPress} style={styles.linkContainer}>
+              <CustomText style={styles.linkText} fontWeight='Regular'>Ve todos los anuncios <CustomText style={{ color: '#FF6347', textDecorationLine: 'underline'}} fontWeight='SemiBold'>aquí</CustomText></CustomText>
+            </TouchableOpacity>
             <View style={styles.categoryContainer}>
               <FlatList
                 horizontal
                 data={[
-                  { key: 'Todos', icon: require('../assets/todo.png') },
-                  { key: 'Comida', icon: require('../assets/comida.png') },
-                  { key: 'Bebidas', icon: require('../assets/refresco.png') },
-                  { key: 'Frituras', icon: require('../assets/frituras.png') },
-                  { key: 'Postres', icon: require('../assets/postres.png') },
-                  { key: 'Dulces', icon: require('../assets/dulces.png') },
-                  { key: 'Dispositivos', icon: require('../assets/dispositivos.png') },
-                  { key: 'Otros', icon: require('../assets/mas.png') },
+                  { key: 'Todos' },
+                  { key: 'Comida' },
+                  { key: 'Bebidas'},
+                  { key: 'Frituras'},
+                  { key: 'Postres'},
+                  { key: 'Dulces'},
+                  { key: 'Dispositivos'},
+                  { key: 'Otros'},
                 ]}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => filterByCategory(item.key)} style={styles.iconWrapper}>
-                    <Text style={[
-                      styles.iconText,
-                      selectedCategory === item.key ? styles.selectedCategory : styles.unselectedCategory
-                    ]}>
-                      {item.key}
-                    </Text>
+                    <CustomText style={styles.iconText}>{item.key}</CustomText>
                   </TouchableOpacity>
                 )}
                 keyExtractor={item => item.key}
                 showsHorizontalScrollIndicator={false}
               />
-              <ModalProductDetails 
-                visible={modalVisible} 
-                product={selectedProduct} 
-                onClose={handleCloseModal} 
-              />
-
-              <Text style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</Text>
+              <CustomText style={styles.allProductsText}>{currentCategory === 'Todos' ? 'Todos los productos' : currentCategory}</CustomText>
             </View>
           </>
         }
@@ -211,15 +179,12 @@ const HomeScreen = () => {
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
         numColumns={2}
-        contentContainerStyle={[styles.productList, { flexGrow: 1 }, alignItems = 'center']}
+        contentContainerStyle={[styles.productList, { flexGrow: 1 }]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
       {!keyboardVisible && <BottomMenuBar isHomeScreen={true} />}
-      <TouchableOpacity style={styles.cartButton} onPress={() => console.log('Carrito')}>
-        <Icon name="shopping-cart" size={34} color="white" />
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
@@ -272,8 +237,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 40,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: 'white',
     marginBottom: 10,
   },
   adImage: {
@@ -283,67 +249,34 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   linkContainer: {
-    width: '100%', 
-    paddingHorizontal: 20, 
+    alignItems: 'right',
   },
   linkText: {
     textAlign: 'right',
-    marginTop: 4,
-    fontSize: 14,
-  },
-  linkHighlight: {
-    color: '#FF6347',
-    textDecorationLine: 'underline',
+    fontSize: 12,
+    padding: 5,
   },
   iconContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginTop: 10,
   },
-  iconWrapper: {
-    paddingTop: 8,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
   iconImage: {
     width: 40,
     height: 40,
   },
   iconText: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 5,
-    paddingHorizontal: 10,
-    marginTop: 5,
-    marginBottom: 5,
     fontSize: 12,
-    color: '#666',
-    fontWeight: 'bold',
-  },
-  selectedCategory: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    opacity: 1,
-  },
-  unselectedCategory: {
-    opacity: 0.5,
+    backgroundColor: '#fff',
+    borderWidth: .5, // Thickness of the border
+    borderColor: '#DBDBDB', // Border color (e.g., a red-orange)
+    borderRadius: 40, // Optional: rounds the corners of the border
+    padding: 5, // Padding around the text
+    paddingHorizontal: 8,
+    textAlign: 'center',
+    alignSelf: 'center',
+    elevation: 2,
+    marginBottom: 10,
   },
   containerProduccts: {
     flex: 1,
@@ -357,7 +290,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   productList: {
-    justifyContent: 'center',
     paddingHorizontal: 10,
     paddingBottom: 100,
   },
@@ -366,7 +298,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: '#fff',
     margin: 5,
-    marginHorizontal: 10,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: {
@@ -425,6 +356,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   categoryContainer: {
+    marginTop: 10,
     marginBottom: 10,
   },
   searchResultContainer: {
@@ -437,7 +369,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   iconWrapper: {
-    paddingTop: 8,
     alignItems: 'center',
     marginHorizontal: 5,
   },
@@ -454,19 +385,6 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
-  },
-  cartButton: {
-    position: 'absolute',
-    bottom: 80,
-    right: 20,
-    height: 80,
-    width: 80,
-    backgroundColor: '#FF6347',
-    padding: 15,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
     elevation: 5,
   },
 });
