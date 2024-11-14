@@ -23,8 +23,6 @@ import MyReviewsScreen from '../screens/MyReviewsScreen.jsx';
 import CardsScreen from '../screens/CardsScreen.jsx';
 import NotificationsScreen from '../screens/NotificationsScreen.jsx';
 import MyProductsScreen from '../screens/MyProductsScreen.jsx';
-import PurchaseScreen from '../screens/PurchaseScreen.jsx';
-import SellScreen from '../screens/SellScreen.jsx';
 import EditProductScreen from '../screens/EditProductScreen.jsx';
 import SelfInfoScreen from '../screens/SelfInfoScreen';
 import OrderScreen from '../screens/OrderScreen.jsx';
@@ -190,18 +188,6 @@ function MyScreens() {
       />
 
       {/*Navegacion HistoryScreen */}
-
-      <Stack.Screen
-        name="Purchase"
-        component={PurchaseScreen}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="Sell"
-        component={SellScreen}
-        options={{ headerShown: false }}
-      />
 
       {/**Otras pantallas*/}
       <Stack.Screen

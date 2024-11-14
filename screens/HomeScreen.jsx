@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     alignItems: 'center',
-    marginHorizontal: 5,
+    marginHorizontal: 10,
   },
   iconCircle: {
     width: 60,

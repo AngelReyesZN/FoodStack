@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert } from 'react-native';
-import SearchBar from '../components/SearchBar';
+import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { agregarNotificacion } from '../services/notifications';
 import ReviewsSection from '../components/ReviewsSection';
+import CustomText from '../components/CustomText';
 
 const ProductScreen = ({ route }) => {
   const { productId, isFavorite: initialIsFavorite } = route.params;
@@ -209,13 +210,17 @@ const ProductScreen = ({ route }) => {
       style={[styles.container, { paddingBottom: keyboardVisible ? 0 : 20 }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <SearchBar />
+      <TopBar/>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <View style={styles.headerContainer}>
           <BackButton />
+          </View>
+          <CustomText style={styles.title} fontWeight="SemiBold">
+            <Text style={styles.category}>{product.categoria}</Text>
+          </CustomText>
         </TouchableOpacity>
-        <Text style={styles.category}>{product.categoria}</Text>
-        <Text style={styles.name}>{product.nombre}</Text>
+        <CustomText style={styles.name} fontWeight='SemiBold'>{product.nombre}</CustomText>
         <Image source={{ uri: product.imagen }} style={styles.image} />
         <View style={styles.sellerContainer}>
           <TouchableOpacity onPress={navigateToSellerInfo}>
@@ -234,7 +239,7 @@ const ProductScreen = ({ route }) => {
 
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>{averageRating}</Text>
-              <Icon name="star" size={18} color="#030A8C" style={styles.starIcon} />
+              <Icon name="star" size={18} color="#FF6347" style={styles.starIcon} />
             </View>
           </View>
         </View>
@@ -250,21 +255,21 @@ const ProductScreen = ({ route }) => {
         </View>
         <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
-                        <Text style={styles.OrderText}>Ordenar</Text>
+                        <CustomText style={styles.OrderText} fontWeight='SemiBold'>Ordenar</CustomText>
                     </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
             <Icon
               name={isFavorite ? 'heart' : 'heart-o'}
               size={27}
-              color={isFavorite ? '#e82d2d' : '#030A8C'}
+              color={isFavorite ? '#FF6347' : '#FF6347'}
               style={[styles.favoriteIcon]}
             />
           </TouchableOpacity>
         </View>
         <View style={styles.separatorReviews} />
         <View style={styles.containerDescription}>
-          <Text style={styles.TextDescription}>Descripción</Text>
-          <Text style={styles.description}>{product.descripcion}</Text>
+          <CustomText style={styles.TextDescription} fontWeight='Bold'>Descripción</CustomText>
+          <CustomText style={styles.description} fontWeight='Medium'>{product.descripcion}</CustomText>
         </View>
         <ReviewsSection
           reviews={reviews}
@@ -285,7 +290,6 @@ const ProductScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
     backgroundColor: 'white',
     position: 'relative',
   },
@@ -301,7 +305,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     textAlign: 'center',
     marginTop: 10,
-    color: '#030A8C',
+    color: '#FF6347',
   },
   name: {
     fontSize: 30,
@@ -310,7 +314,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 300,
+    height: 230,
     resizeMode: 'contain',
     alignSelf: 'center',
   },
@@ -364,10 +368,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 0,
+    color: '#FF6347',
   },
   buttonIcon: {
     width: 35,
     height: 35,
+    color: '#FF6347',
   },
   quantity: {
     fontSize: 20,
@@ -376,7 +382,7 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 22,
-    color: '#030A8C',
+    color: '#FF6347',
     marginLeft: 120,
   },
   units: {
@@ -394,7 +400,7 @@ const styles = StyleSheet.create({
   imageButton: {
     width: '70%',
     height: 40,
-    backgroundColor: '#030A8C',
+    backgroundColor: '#FF6347',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
@@ -408,9 +414,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 3,
     right: 45,
-    borderWidth: 1,
-    borderColor: '#D6DBDE',
-    borderRadius: 6,
   },
   favoriteIcon: {
     margin: 3,
@@ -429,7 +432,6 @@ const styles = StyleSheet.create({
   TextDescription: {
     fontSize: 25,
     textAlign: 'center',
-    fontWeight: 'bold',
     marginBottom: 10,
   },
   description: {
@@ -438,8 +440,26 @@ const styles = StyleSheet.create({
   },
   OrderText: {
     color: 'white',
-    fontWeight: 'bold',
     fontSize: 17,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 15,
+  },
+  title: {
+    fontSize: 24,
+    color: '#000',
+    textAlign: 'center',
+    flex: 1,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#C1C1C1',
+    width: '80%',
+    alignSelf: 'center',
+    marginTop: 20,
   },
 });
 

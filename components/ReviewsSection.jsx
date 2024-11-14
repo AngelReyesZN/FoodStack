@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import StarRating from './StarRating';
+import CustomText from '../components/CustomText';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const ReviewsSection = ({
@@ -16,14 +17,14 @@ const ReviewsSection = ({
   return (
     <View style={styles.reviewsContainer}>
       <View style={styles.separatorReviews} />
-      <Text style={styles.reviewCount}>{reviews.length} Reseñas</Text>
+      <CustomText style={styles.reviewCount} fontWeight='Bold'>{reviews.length} Reseñas</CustomText>
       <View style={styles.fixedStars}>
         {Array.from({ length: 5 }, (_, index) => (
-          <Icon key={index} name="star" size={30} color={index < averageRating ? "#030A8C" : "#ccc"} style={styles.starIcon} />
+          <Icon key={index} name="star" size={30} color={index < averageRating ? "#FF6347" : "#ccc"} style={styles.starIcon} />
         ))}
       </View>
       <View style={styles.reviewContainer}>
-        <Text style={styles.reviewLabel}>Tu reseña</Text>
+        <CustomText style={styles.reviewLabel} fontWeight='Regular'>Tu reseña</CustomText>
         <TextInput
           style={styles.reviewInput}
           value={review}
@@ -32,7 +33,7 @@ const ReviewsSection = ({
           textAlignVertical="top"
         />
       </View>
-      <Text style={styles.generalRatingLabel}>Tu calificación</Text>
+      <CustomText style={styles.generalRatingLabel}>Tu calificación</CustomText>
       <View style={styles.ratingAndButtonContainer}>
         <View style={styles.starsAndButton}>
           <View style={{ marginLeft: 30 }}>
@@ -53,7 +54,7 @@ const ReviewsSection = ({
           <View key={index} style={styles.reviewItem}>
             <View style={styles.userHeader}>
               <Image source={{ uri: rev.usuario.foto }} style={styles.userImage} />
-              <Text style={styles.userName}>{rev.usuario.nombre}</Text>
+              <CustomText style={styles.userName} fontWeight='SemiBold'>{rev.usuario.nombre}</CustomText>
             </View>
             <View style={styles.reviewHeader}>
               <StarRating
@@ -62,11 +63,11 @@ const ReviewsSection = ({
                 onStarPress={() => {}}
                 starSize={15}
               />
-              <Text style={styles.reviewDate}>
+              <CustomText style={styles.reviewDate}>
                 {rev.fechaResena ? rev.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
-              </Text>
+              </CustomText>
             </View>
-            <Text style={styles.reviewText}>{rev.comentario}</Text>
+            <CustomText style={styles.reviewText}>{rev.comentario}</CustomText>
             <View style={styles.commentSeparator} />
           </View>
         ))}
@@ -90,7 +91,6 @@ const styles = StyleSheet.create({
   reviewCount: {
     fontSize: 20,
     textAlign: 'center',
-    fontWeight: 'bold',
     marginTop: 10,
     marginBottom: 5,
   },
@@ -138,9 +138,10 @@ const styles = StyleSheet.create({
   starsAndButton: {
     flexDirection: 'row',
     alignItems: 'center',
+
   },
   publishButton: {
-    backgroundColor: '#030A8C',
+    backgroundColor: '#FF6347',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 5,
@@ -204,7 +205,6 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
-    fontWeight: 'bold',
   },
 });
 
