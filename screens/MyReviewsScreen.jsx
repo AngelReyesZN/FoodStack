@@ -157,7 +157,8 @@ const styles = StyleSheet.create({
   productImage: {
     width: 120,
     height: 120,
-    borderRadius: 25,
+    borderTopLeftRadius: 10, 
+    borderBottomLeftRadius: 10, 
   },
   reviewDetails: {
     flex: 1,

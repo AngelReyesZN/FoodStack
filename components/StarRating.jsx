@@ -9,8 +9,8 @@ const StarRating = ({ maxStars, rating, onStarPress, size, color}) => {
                 <TouchableOpacity key={index} onPress={() => onStarPress(index + 1)}>
                     <Icon
                         name={index < rating ? 'star' : 'star-o'}
-                        size={35}
-                        color="#FF6347"
+                        size={size}
+                        color={color}
                         style={styles.star}
                     />
                 </TouchableOpacity>
