@@ -11,6 +11,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
 import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
+import Header from '../components/Header';
 
 const EditProductScreen = ({ route, navigation }) => {
   const { productId } = route.params;
@@ -177,10 +178,7 @@ const EditProductScreen = ({ route, navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TopBar />
-      <View style={styles.headerContainer}>
-        <BackButton />
-        <Text style={styles.title}>Editar producto</Text>
-      </View>
+      <Header title="Editar Producto" />
       {error && (
         <ErrorAlert
           message={error}
@@ -333,6 +331,7 @@ const styles = StyleSheet.create({
   prefix: {
     marginRight: 5,
     fontSize: 16,
+    fontWeight: 'bold',
   },
   inputWithSuffix: {
     flexDirection: 'row',
@@ -345,6 +344,7 @@ const styles = StyleSheet.create({
   suffix: {
     marginLeft: 5,
     fontSize: 16,
+    fontWeight: 'bold',
   },
   textArea: {
     height: 100,
@@ -395,24 +395,30 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Distribuye los botones horizontalmente con espacio entre ellos
+    paddingHorizontal: 30, // Añade padding horizontal para ajustar el espacio
     marginBottom: 20,
   },
   deleteButton: {
-    backgroundColor: 'red',
+    flex: 1,
     padding: 15,
     borderRadius: 5,
-    marginLeft: 35,
+    marginRight: 10,
+    borderColor: 'red',
+    borderWidth: 1,
+    alignItems: 'center', // Centra el texto horizontalmente
   },
   deleteButtonText: {
-    color: 'white',
+    color: 'red',
     fontSize: 16,
   },
   saveButton: {
-    backgroundColor: '#030A8C',
+    flex: 1,
+    backgroundColor: '#FF6347',
     padding: 15,
     borderRadius: 5,
-    marginRight: 35,
+    marginLeft: 10,
+    alignItems: 'center', // Centra el texto horizontalmente
   },
   saveButtonText: {
     color: 'white',

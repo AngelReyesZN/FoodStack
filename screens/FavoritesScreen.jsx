@@ -8,6 +8,7 @@ import BackButton from '../components/BackButton';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MainProductCard from '../components/MainProductCard';
 import CustomText from '../components/CustomText';
+import Header from '../components/Header';
 
 const FavoritesScreen = () => {
   const [favorites, setFavorites] = useState([]);
@@ -100,14 +101,7 @@ const FavoritesScreen = () => {
   return (
     <View style={styles.container}>
       <TopBar />
-      <View style={styles.headerContainer}>
-        <View style={styles.backButtonContainer}>
-          <BackButton />
-        </View>
-        <View style={styles.titleContainer}>
-          <CustomText variant='title'>Favoritos</CustomText>
-        </View>
-      </View>
+      <Header title="Favoritos" />
       <View style={styles.horizontalBar}></View>
       {favorites.length === 0 ? (
         <Text style={styles.noFavoritesText}>No tienes productos favoritos aún.</Text>
@@ -118,7 +112,6 @@ const FavoritesScreen = () => {
           numColumns={2}
           ListFooterComponent={<View style={{ height: 60 }} />}
           keyExtractor={item => item.id.toString()}
-          numColumns={2} // Mostrar los productos en dos columnas
           key={2} // Cambia la propiedad key para forzar una nueva renderización
           contentContainerStyle={[styles.productList, { paddingBottom: 100 }]}
           columnWrapperStyle={styles.columnWrapper} // Estilo para las columnas
@@ -143,7 +136,6 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center', // Centra el contenedor horizontal
     marginVertical: 10,
-
   },
   titleContainer: {
     flex: 1,
