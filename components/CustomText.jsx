@@ -1,43 +1,20 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 
-const CustomText = ({ children, style, variant = 'body', ...props }) => {
+const CustomText = ({ style, fontWeight = 'Regular', children, ...props }) => {
+  // Definir las variantes de la fuente Montserrat
+  const fontFamilies = {
+    Regular: 'Montserrat-Regular',
+    Medium: 'Montserrat-Medium',
+    SemiBold: 'Montserrat-SemiBold',
+    Bold: 'Montserrat-Bold',
+  };
+
   return (
-    <Text style={[styles[variant], style]} {...props}>
+    <Text style={[{ fontFamily: fontFamilies[fontWeight] }, style]} {...props}>
       {children}
     </Text>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: 'black',
-    fontFamily: 'Montserrat-Bold',
-  },
-  subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'black',
-    fontFamily: 'Montserrat-Bold',
-  },
-  body: {
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'Montserrat-Regular',
-  },
-  caption: {
-    fontSize: 16,
-    color: '#A0A0A0',
-    fontFamily: 'Montserrat-Regular',
-  },
-  loading: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: '#666',
-    fontFamily: 'Montserrat-Regular',
-  },
-});
 
 export default CustomText;
