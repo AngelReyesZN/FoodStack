@@ -248,7 +248,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
-    width: '100%',
+    alignSelf: 'center',
+    marginTop: 20,
+    width: '90%',
   },
   saveButtonText: {
     color: '#fff',
