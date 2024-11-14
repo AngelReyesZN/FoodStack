@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
@@ -12,6 +12,7 @@ const SearchResults = ({ route }) => {
   const searchQuery = route?.params?.searchQuery || '';
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchText, setSearchText] = useState(searchQuery);
+  const [isManualInput, setIsManualInput] = useState(true);
   const [recentSearches, setRecentSearches] = useState([]); // Almacena búsquedas recientes
   const searchInputRef = useRef(null);
   const navigation = useNavigation();
@@ -62,27 +63,58 @@ const SearchResults = ({ route }) => {
     navigation.navigate('ProductScreen', { productId: item.id });
   };
 
-  const renderRecentItem = ({ item }) => (
-    <TouchableOpacity onPress={() => setSearchText(item)} style={styles.recentItemContainer}>
+  const renderRecentItem = ({ item, index }) => (
+    <TouchableOpacity onPress={() => setSearchText(item)} style={styles.recentItemContainer} key={index}>
       <Image
         source={require('../assets/SearchScreenIcons/clock.png')}
         style={styles.clockImage}
       />
-      <CustomText style={styles.recentItemText}>{item}</CustomText>
+      <CustomText style={styles.recentItemText} variant='body'>{item}</CustomText>
     </TouchableOpacity>
   );
 
+  const categories = [
+    { key: 'Comida', icon: require('../assets/SearchScreenIcons/comida.png') },
+    { key: 'Bebidas', icon: require('../assets/SearchScreenIcons/bebida.png') },
+    { key: 'Frituras', icon: require('../assets/SearchScreenIcons/frituras.png') },
+    { key: 'Postres', icon: require('../assets/SearchScreenIcons/postres.png') },
+    { key: 'Dulces', icon: require('../assets/SearchScreenIcons/Dulces.png') },
+    { key: 'Dispositivos', icon: require('../assets/SearchScreenIcons/Dispositivos.png') },
+  ];
 
+  const renderCategoryIcon = ({ item }) => (
+    <TouchableOpacity 
+      onPress={() => handleCategorySelect(item.key)} 
+      style={styles.recentItemContainer}
+    >
+      <View style={styles.IconImageContainer}>
+        <Image
+          source={item.icon}
+          style={styles.IconImage}
+          resizeMode='contain'
+        />  
+      </View> 
+      <CustomText style={styles.recentItemText} variant='body'>{item.key}</CustomText>
+    </TouchableOpacity>
+  );
+  
 
   useEffect(() => {
     handleSearch(searchText);
-    if (searchInputRef.current) {
+    if (isManualInput && searchInputRef.current) {
       searchInputRef.current.focus();
     }
+    setIsManualInput(true); // Reset para futuras búsquedas manuales
   }, [searchText]);
 
+  const handleCategorySelect = (category) => {
+    Keyboard.dismiss(); // Oculta el teclado
+    setIsManualInput(false); // No enfocar automáticamente
+    setSearchText(category);
+  };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => handleProductPress(item)}>
+    <TouchableOpacity onPress={() => handleProductPress(item)} key={item.id}>
       <View style={styles.item}>
         <Image source={{ uri: item.imagen }} style={[styles.productImage, { alignSelf: 'center' }]} />
         <CustomText style={styles.name}>{item.nombre}</CustomText>
@@ -90,6 +122,7 @@ const SearchResults = ({ route }) => {
       </View>
     </TouchableOpacity>
   );
+
   const clearSearchHistory = async () => {
     try {
       await AsyncStorage.removeItem('recentSearches'); // Elimina las búsquedas de AsyncStorage
@@ -98,7 +131,6 @@ const SearchResults = ({ route }) => {
       console.error('Error clearing search history', error);
     }
   };
-
 
   return (
     <View style={styles.container}>
@@ -122,7 +154,7 @@ const SearchResults = ({ route }) => {
         <View style={styles.recentContainer}>
           <View style={styles.leftSection}>
             <Image source={require('../assets/search.png')} style={styles.searchImage} />
-            <CustomText style={styles.searchText} fontWeight='SemiBold'>
+            <CustomText style={styles.searchText} variant='subtitle'>
               Búsquedas recientes
             </CustomText>
           </View>
@@ -147,6 +179,18 @@ const SearchResults = ({ route }) => {
       ) : (
         <CustomText style={styles.noResultsText}>No se encontraron productos</CustomText>
       )}
+
+      <View style={styles.recentContainer}>
+        <View style={styles.leftSection}>
+          <Image source={require('../assets/search.png')} style={styles.searchImage} />
+          <CustomText style={styles.searchText} variant='subtitle'>Explorar Categorías</CustomText>
+        </View>
+      </View>
+      <FlatList
+        data={categories}
+        renderItem={renderCategoryIcon}
+        keyExtractor={(item) => item.key}
+      />
     </View>
   );
 };
@@ -155,10 +199,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white', paddingTop: 10, padding: 10 },
   header: { backgroundColor: 'white', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#ccc' },
   headerContent: { flexDirection: 'row', alignItems: 'center' },
-  searchInput: { height: 40, borderWidth: 1, borderColor: '#e6e6e6', paddingLeft: 10, borderRadius: 50, flex: 1 },
+  searchInput: { 
+    height: 40, 
+    borderWidth: 1, 
+    borderColor: '#e6e6e6', 
+    paddingLeft: 10, 
+    borderRadius: 50, 
+    flex: 1, 
+    marginLeft: 10,
+    paddingLeft: 20,
+    fontSize: 16,
+    color: '#555',
+  },
   clearButton: { position: 'absolute', right: 10 },
-  recentContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 },
-  leftSection: { flexDirection: 'row', alignItems: 'center' },
+  recentContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10,  borderBottomColor: '#CCCACA', borderBottomWidth: 1, paddingBottom: 10, width: '95%', alignSelf: 'center', marginTop: 20 },
+  leftSection: { flexDirection: 'row', alignItems: 'center'},
   searchImage: { height: 25, width: 25, marginRight: 8 },
   removeHistory: { color: '#FF6347', fontSize: 13 },
   recentList: { marginTop: 10 },
@@ -182,6 +237,20 @@ const styles = StyleSheet.create({
   recentItemText: {
     fontSize: 16,
     color: '#555',
+  },
+  IconImage: {
+    width: 25,
+    height: 25,
+    alignSelf: 'center',
+  },
+  IconImageContainer: {
+    backgroundColor: '#FFE8DD',
+    borderRadius: 5,
+    padding: 6,
+    alignContent: 'center',
+    justifyContent: 'center',
+    display: 'flex',
+    marginRight: 15,
   },
 });
 
