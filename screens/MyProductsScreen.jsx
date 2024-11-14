@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { getAuth } from 'firebase/auth';
 import { getDocs, query, collection, where, doc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import BackButton from '../components/BackButton';
 import MainProductCardEdit from '../components/MainProductCardEdit';
+import Header from '../components/Header';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const MyProductsScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -54,8 +55,8 @@ const MyProductsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.container}>
-      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
-      <ActivityIndicator size="large" color="#FF6347" />
+        <TopBar />
+        <ActivityIndicator size="large" color="#FF6347" />
         <Text style={styles.loadingText}>Cargando productos...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </View>
@@ -64,7 +65,8 @@ const MyProductsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
+      <TopBar/>
+      <Header title="Mis productos" backButton={false} />
       <FlatList
         data={products}
         renderItem={({ item }) => (
@@ -78,7 +80,10 @@ const MyProductsScreen = ({ navigation }) => {
         numColumns={2}
         ListFooterComponent={<View style={{ height: 60 }} />}
       />
-      <BottomMenuBar isMenuScreen={true} />
+      <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate('AddProduct')}>
+        <Icon name="plus" size={24} color="white" />
+      </TouchableOpacity>
+      <BottomMenuBar isChatScreen={true} />
     </View>
   );
 };
@@ -102,12 +107,30 @@ const styles = StyleSheet.create({
   },
   productList: {
     padding: 10,
+    paddingBottom: 30, // Añadir padding inferior para asegurar que el contenido no se corte
   },
   loadingText: {
     fontSize: 18,
     color: '#666',
     textAlign: 'center',
     marginVertical: 20,
+  },
+  addButton: {
+    backgroundColor: '#FF6347',
+    padding: 15,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    width: 60,
+    height: 60,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
 });
 
