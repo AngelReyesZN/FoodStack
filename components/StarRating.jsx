@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const StarRating = ({ maxStars, rating, onStarPress }) => {
+const StarRating = ({ maxStars, rating, onStarPress, size, color}) => {
     return (
         <View style={styles.starContainer}>
             {Array.from({ length: maxStars }, (_, index) => (
