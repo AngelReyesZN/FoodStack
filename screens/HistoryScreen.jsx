@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { getDocs, query, collection, where, doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebaseConfig';
-
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import CustomText from '../components/CustomText';
 import { AntDesign } from '@expo/vector-icons';
 
-const HistoryScreen = () => {
+const HistoryScreen = ({navigation}) => {
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +92,7 @@ const HistoryScreen = () => {
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{purchaseDate}</CustomText>
-        <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
+        <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
             <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="contain" />
@@ -123,7 +122,7 @@ const HistoryScreen = () => {
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{saleDate}</CustomText>
-        <CustomText style={styles.orderIdText}>ID: {item.id}</CustomText>
+        <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
           {item.producto && (
             <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="contain" />
@@ -152,19 +151,15 @@ const HistoryScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar />
+      <TopBar title="Historial" showBackButton={true} navigation={navigation} showSearchBar={false} />
       <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <CustomText style={styles.title}>Historial</CustomText>
-        </View>
         <View style={styles.separator} />
         <View style={styles.content}>
           <TouchableOpacity
             style={[styles.sectionHeader, isPurchasesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsPurchasesOpen(!isPurchasesOpen)}
           >
-            <CustomText style={styles.sectionHeaderText} fontWeight='Bold'>Compras</CustomText>
+            <CustomText style={styles.sectionHeaderText} fontWeight='SemiBold'>Compras</CustomText>
             <AntDesign
               name={isPurchasesOpen ? 'up' : 'down'}
               size={16}
@@ -191,7 +186,7 @@ const HistoryScreen = () => {
             style={[styles.sectionHeader, isSalesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsSalesOpen(!isSalesOpen)}
           >
-            <CustomText style={styles.sectionHeaderText} fontWeight='Bold'>Ventas</CustomText>
+            <CustomText style={styles.sectionHeaderText} fontWeight='SemiBold'>Ventas</CustomText>
             <AntDesign
               name={isSalesOpen ? 'up' : 'down'}
               size={16}
@@ -292,7 +287,7 @@ const styles = StyleSheet.create({
   },
   orderIdText: {
     fontSize: 12,
-    color: '#666',
+    color: '#B4B4B4',
     marginBottom: 5,
     fontWeight: 'Regular',
   },

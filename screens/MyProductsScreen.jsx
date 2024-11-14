@@ -6,7 +6,7 @@ import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
-import MainProductCard from '../components/MainProductCardEdit';
+import MainProductCardEdit from '../components/MainProductCardEdit';
 
 const MyProductsScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -54,12 +54,8 @@ const MyProductsScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <TopBar />
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <Text style={styles.title}>Mis productos</Text>
-        </View>
-        <ActivityIndicator size="large" color="#FF6347" />
+      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
+      <ActivityIndicator size="large" color="#FF6347" />
         <Text style={styles.loadingText}>Cargando productos...</Text>
         <BottomMenuBar isMenuScreen={true} />
       </View>
@@ -68,15 +64,11 @@ const MyProductsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <TopBar />
-      <View style={styles.headerContainer}>
-        <BackButton />
-        <Text style={styles.title}>Mis productos</Text>
-      </View>
+      <TopBar title="Mis productos" showBackButton={true} navigation={navigation} showSearchBar={false} />
       <FlatList
         data={products}
         renderItem={({ item }) => (
-          <MainProductCard
+          <MainProductCardEdit
             product={item}
             onEditPress={() => navigation.navigate('EditProduct', { productId: item.id })}
           />

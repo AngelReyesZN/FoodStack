@@ -112,6 +112,8 @@ const FavoritesScreen = () => {
         <FlatList
           data={favorites}
           renderItem={renderItem}
+          numColumns={2}
+          ListFooterComponent={<View style={{ height: 60 }} />}
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={[styles.productList, { paddingBottom: 100 }]}
         />

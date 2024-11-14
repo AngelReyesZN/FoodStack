@@ -6,7 +6,6 @@ import { createStackNavigator, TransitionPresets } from '@react-navigation/stack
 import LoginScreen from '../screens/LoginScreen';
 import LoadScreen from '../screens/LoadScreen';
 import RegisScreen from '../screens/RegisScreen';
-import VerifyScreen from '../screens/VerifyScreen';
 import HomeScreen from '../screens/HomeScreen';
 import MenuScreen from '../screens/MenuScreen';
 import ChatScreen from '../screens/ChatScreen';
@@ -68,25 +67,6 @@ function MyScreens() {
         name='Success'
         component={SuccessfulRegistration}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name='Verify'
-        component={VerifyScreen}
-        options={({ navigation }) => ({
-          headerTitle: () => (
-            <View style={{ flexDirection: 'row', alignContent: 'center', alignItems: 'center' }}>
-              <Image
-                source={LogoImage}
-                style={{ width: 35, height: 35, marginRight: 5, marginStart: 30 }}
-              />
-              <Text style={{ color: '#030A8C', fontSize: 18, textAlign: 'center', fontWeight: 'bold', alignItems: 'center' }}>Changarrito FIF</Text>
-            </View>
-          ),
-          headerStyle: {
-            backgroundColor: 'white',
-          },
-          headerTintColor: '#030A8C',
-        })}
       />
       <Stack.Screen
         name="successful"

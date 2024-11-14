@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Image, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import LogoImage from '../assets/FoodStackLogoNT.png';
 import { useNavigation } from '@react-navigation/native';
 import CustomText from '../components/CustomText';
+import LogoImage from '../assets/FoodStackLogoNT.png';
 
 const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,15 +24,13 @@ const SearchBar = () => {
         source={LogoImage}
         style={{ width: 50, height: 50, marginRight: width * 0.015 }}
       />
-
-      {/* View envolvente para el TextInput y el ícono */}
-      <View style={styles.inputWrapper} >
+      <View style={styles.inputWrapper}>
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar productos..."
           value={searchQuery}
           onChangeText={setSearchQuery}
-          onPress={handleSearch}
+          onSubmitEditing={handleSearch}
         />
         <TouchableOpacity onPress={handleSearch} style={styles.iconContainer}>
           <Icon name="search" size={20} color="#AEAEAE" />

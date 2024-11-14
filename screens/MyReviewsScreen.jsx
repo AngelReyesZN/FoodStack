@@ -57,7 +57,7 @@ const MyReviewsScreen = () => {
         <TopBar />
         <View style={styles.headerContainer}>
           <BackButton />
-          <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
+          <CustomText style={styles.title} fontWeight='Semibold'>Reseñas</CustomText>
         </View>
         <CustomText variant="loading" style={styles.loadingText}>Cargando reseñas...</CustomText>
       </View>
@@ -69,7 +69,7 @@ const MyReviewsScreen = () => {
       <TopBar />
       <View style={styles.headerContainer}>
         <BackButton />
-        <CustomText variant="title" style={styles.title}>Reseñas</CustomText>
+        <CustomText  style={styles.title} fontWeight='Semibold'>Reseñas</CustomText>
       </View>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reviews.map((review, index) => (
@@ -117,6 +117,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: 'center',
+    fontSize: 24
   },
   headerContainer: {
     flexDirection: 'row',
