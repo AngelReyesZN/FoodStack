@@ -12,10 +12,9 @@ const options = [
   { id: '1', label: 'Notificaciones', icon: require('../assets/rscMenu/campana.png'), screen: 'Notifications' },
   { id: '2', label: 'Favoritos', icon: require('../assets/rscMenu/corazon.png'), screen: 'Favorites' },
   { id: '3', label: 'Historial', icon: require('../assets/rscMenu/tiempo-adelante.png'), screen: 'History' },
-  { id: '4', label: 'Mis productos', icon: require('../assets/rscMenu/producto.png'), screen: 'MyProducts' },
-  { id: '5', label: 'Mis reseñas', icon: require('../assets/rscMenu/review.png'), screen: 'MyReviews' },
-  { id: '6', label: 'Información personal', icon: require('../assets/rscMenu/user.png'), screen: 'PersonalInfo' },
-  { id: '7', label: 'Tarjetas', icon: require('../assets/rscMenu/tarjeta.png'), screen: 'Cards' },
+  { id: '4', label: 'Mis reseñas', icon: require('../assets/rscMenu/review.png'), screen: 'MyReviews' },
+  { id: '5', label: 'Información personal', icon: require('../assets/rscMenu/user.png'), screen: 'PersonalInfo' },
+  { id: '6', label: 'Tarjetas', icon: require('../assets/rscMenu/tarjeta.png'), screen: 'Cards' },
 ];
 
 const MenuScreen = ({ navigation }) => {

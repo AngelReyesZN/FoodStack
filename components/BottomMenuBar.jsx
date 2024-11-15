@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
+const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen, }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
@@ -42,11 +42,6 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.containerAddButton}>
-        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('AddProduct')}>
-          <Image source={require('../assets/iconsButtonBar/addbutton2.png')} style={styles.addButton} />
-        </TouchableOpacity>
-      </View>
       <View style={styles.menuIconsContainer}>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Home')}>
           <Image source={homeIcon} style={styles.iconImage} />
@@ -54,7 +49,7 @@ const BottomMenuBar = ({ isMenuScreen, isChatScreen, isHomeScreen }) => {
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Search')}>
           <Image source={require('../assets/iconsButtonBar/search.png')} style={styles.iconImage} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Chats')}>
+        <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('MyProducts')}>
           <Image source={chatIcon} style={styles.iconImage} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainer} onPress={() => navigateToScreen('Menu')}>

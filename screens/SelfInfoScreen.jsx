@@ -97,10 +97,10 @@ const SelfInfoScreen = ({ navigation }) => {
     }
   
     return (
-      <MainProductCardEdit 
-        product={item} 
-        navigation={navigation} 
-      />
+      <MainProductCardEdit
+      product={item}
+      onEditPress={() => navigation.navigate('EditProduct', { productId: item.id })}
+    />
     );
   };
 
