@@ -18,11 +18,6 @@ const ReviewsSection = ({
     <View style={styles.reviewsContainer}>
       <View style={styles.separatorReviews} />
       <CustomText style={styles.reviewCount} fontWeight='Bold'>{reviews.length} Reseñas</CustomText>
-      <View style={styles.fixedStars}>
-        {Array.from({ length: 5 }, (_, index) => (
-          <Icon key={index} name="star" size={30} color={index < averageRating ? "#FF6347" : "#ccc"} style={styles.starIcon} />
-        ))}
-      </View>
       <View style={styles.reviewContainer}>
         <CustomText style={styles.reviewLabel} fontWeight='Regular'>Tu reseña</CustomText>
         <TextInput
@@ -54,7 +49,9 @@ const ReviewsSection = ({
           <View key={index} style={styles.reviewItem}>
             <View style={styles.userHeader}>
               <Image source={{ uri: rev.usuario.foto }} style={styles.userImage} />
-              <CustomText style={styles.userName} fontWeight='SemiBold'>{rev.usuario.nombre}</CustomText>
+              <CustomText style={styles.userName} fontWeight='SemiBold'>
+  {rev.usuario.nombre.length > 20 ? `${rev.usuario.nombre.substring(0, 20)}...` : rev.usuario.nombre}
+</CustomText>
             </View>
             <View style={styles.reviewHeader}>
               <StarRating
