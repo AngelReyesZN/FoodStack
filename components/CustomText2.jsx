@@ -18,8 +18,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat-Bold',
   },
   subtitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: 'semibold',
     color: 'black',
     fontFamily: 'Montserrat-Bold',
   },

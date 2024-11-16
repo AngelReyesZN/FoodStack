@@ -12,7 +12,7 @@ const Header = ({ title, backButton = true, icon }) => {
         </View>
       )}
       <View style={[styles.titleContainer, !backButton && styles.titleContainerCentered]}>
-        <CustomText2 variant='title'>{title}</CustomText2>
+        <CustomText2 variant='subtitle'>{title}</CustomText2>
       </View>
       {icon && (
         <View style={styles.iconContainer}>
@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
   },
+
   titleContainer: {
     flex: 3,
     alignItems: 'center', // Centra el título horizontalmente

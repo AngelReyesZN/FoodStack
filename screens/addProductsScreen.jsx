@@ -12,7 +12,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
 import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
 import CustomText from '../components/CustomText';
-
+import Header from '../components/Header';
 
 const AddProductsScreen = ({ navigation }) => {
   const [productName, setProductName] = useState('');
@@ -147,12 +147,7 @@ const AddProductsScreen = ({ navigation }) => {
         />
       )}
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <CustomText style={styles.title} fontWeight="SemiBold">
-            Publicar producto
-          </CustomText>
-        </View>
+        <Header title="Publicar producto" />
         <View style={styles.formContainer}>
           <CustomText style={styles.label} fontWeight='Medium'>Nombre del Producto</CustomText>
           <TextInput
