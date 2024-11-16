@@ -9,6 +9,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import StarRating from '../components/StarRating';
 import CustomText from '../components/CustomText'; // Importa tu componente de texto personalizado
+import Header from '../components/Header'; 
 
 const MyReviewsScreen = () => {
   const [reviews, setReviews] = useState([]);
@@ -55,10 +56,7 @@ const MyReviewsScreen = () => {
     return (
       <View style={styles.container}>
         <TopBar />
-        <View style={styles.headerContainer}>
-          <BackButton />
-          <CustomText style={styles.title} fontWeight='Semibold'>Reseñas</CustomText>
-        </View>
+        <Header title="Reseñas" showBackButton={true} />
         <CustomText variant="loading" style={styles.loadingText}>Cargando reseñas...</CustomText>
       </View>
     );
@@ -67,10 +65,7 @@ const MyReviewsScreen = () => {
   return (
     <View style={styles.container}>
       <TopBar />
-      <View style={styles.headerContainer}>
-        <BackButton />
-        <CustomText style={styles.title} fontWeight='Semibold'>Reseñas</CustomText>
-      </View>
+      <Header title="Reseñas" showBackButton={true} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {reviews.map((review, index) => (
           <View key={index} style={styles.reviewItem}>

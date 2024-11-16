@@ -16,6 +16,8 @@ const BackButton = () => {
 const styles = StyleSheet.create({
   backButton: {
     zIndex: 10,
+    padding: 10,
+    paddingLeft: 0,
   },
   icon: {
     width: 30,
