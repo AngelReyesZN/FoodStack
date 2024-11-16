@@ -70,10 +70,12 @@ const MainProductCard = ({ product, navigation }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.detailsContainer}>
-        <CustomText style={styles.title} fontWeight='Bold'>{product.nombre}</CustomText>
+        <CustomText style={styles.title} fontWeight="Bold">
+          {product.nombre.length > 14 ? product.nombre.substring(0, 14) : product.nombre}
+        </CustomText>
         <CustomText style={styles.descripcion}>
-          {product.descripcion.substring(0, 20)}
-          {product.descripcion.length > 20 ? '...' : ''}
+          {product.descripcion.substring(0, 14)}
+          {product.descripcion.length > 14 ? '...' : ''}
         </CustomText>
       </View>
       <View style={styles.bottomContainer}>

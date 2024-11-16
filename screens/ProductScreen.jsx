@@ -65,7 +65,7 @@ const ProductScreen = ({ route }) => {
           const userDocRef = doc(db, reviewData.usuarioRef.path ? reviewData.usuarioRef.path : reviewData.usuarioRef);
           const userDoc = await getDoc(userDocRef);
           const userData = userDoc.exists() ? userDoc.data() : {};
-          
+
           return {
             ...reviewData,
             fechaResena: reviewData.fechaResena ? reviewData.fechaResena.toDate() : null,
@@ -158,7 +158,7 @@ const ProductScreen = ({ route }) => {
         const userSnapshot = await getDocs(userQuery);
         if (!userSnapshot.empty) {
           const userRef = userSnapshot.docs[0].ref;
-          
+
           // Obtener el tamaño actual de la colección 'resenas'
           const reviewsSnapshot = await getDocs(collection(db, 'resenas'));
           const newReviewId = `resena${reviewsSnapshot.size + 1}`;
@@ -206,81 +206,89 @@ const ProductScreen = ({ route }) => {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={[styles.container, { paddingBottom: keyboardVisible ? 0 : 20 }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <TopBar/>
+      <TopBar />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <View style={styles.headerContainer}>
-          <BackButton />
-          </View>
-          <CustomText style={styles.title} fontWeight="SemiBold">
-            <Text style={styles.category}>{product.categoria}</Text>
-          </CustomText>
-        </TouchableOpacity>
-        <CustomText style={styles.name} fontWeight='SemiBold'>{product.nombre}</CustomText>
         <Image source={{ uri: product.imagen }} style={styles.image} />
-        <View style={styles.sellerContainer}>
-          <TouchableOpacity onPress={navigateToSellerInfo}>
-            <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
-          </TouchableOpacity>
-          <View style={styles.sellerInfoContainer}>
-          <TouchableOpacity onPress={navigateToSellerInfo}>
-              <Text
-                style={styles.sellerName}
-                numberOfLines={1} // Limits the text to one line
-                ellipsizeMode="tail" // Adds "..." at the end if the text exceeds the width
-              >
-                {product.vendedor?.nombre || 'Vendedor desconocido'}
-              </Text>
-          </TouchableOpacity>
 
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>{averageRating}</Text>
-              <Icon name="star" size={18} color="#FF6347" style={styles.starIcon} />
+        <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+          <Icon
+            name={isFavorite ? 'heart' : 'heart-o'}
+            size={27}
+            color={isFavorite ? '#FF6347' : '#FF6347'}
+            style={[styles.favoriteIcon]}
+          />
+        </TouchableOpacity>
+
+        {/* aqui va el contendor con border borderRadius */}
+
+        <View style={styles.roudedcontainer}>
+
+          <CustomText style={styles.title} >
+            <CustomText style={styles.category} fontWeight="Regular">{product.categoria}</CustomText>
+          </CustomText>
+
+          <CustomText style={styles.name} fontWeight='Bold'>{product.nombre}</CustomText>
+
+          <View style={styles.fixedStars}>
+            {Array.from({ length: 5 }, (_, index) => (
+              <Icon key={index} name="star" size={30} color={index < averageRating ? "#FF6347" : "#ccc"} style={styles.starIcon} />
+            ))}
+          </View>
+          <View style={styles.containerDescription}>
+            <CustomText style={styles.TextDescription} fontWeight='Bold'>Descripción</CustomText>
+            <CustomText style={styles.description} fontWeight='Medium'>{product.descripcion}</CustomText>
+          </View>
+          <View style={styles.sellerContainer}>
+            <TouchableOpacity onPress={navigateToSellerInfo}>
+              <Image source={{ uri: product.vendedor?.foto || 'path/to/default/image' }} style={styles.sellerImage} />
+            </TouchableOpacity>
+            <View style={styles.sellerInfoContainer}>
+              <TouchableOpacity onPress={navigateToSellerInfo}>
+                <CustomText
+                  style={styles.sellerName}
+                  numberOfLines={1} // Limits the text to one line
+                  ellipsizeMode="tail" // Adds "..." at the end if the text exceeds the width
+                  fontWeight='Medium'
+                >
+                  {product.vendedor?.nombre || 'Vendedor desconocido'}
+                </CustomText>
+                <View style={styles.ratingContainer}>
+                  <CustomText style={styles.ratingText} fontWeight='Medium'>{averageRating}</CustomText>
+                  <Icon name="star" size={18} color="#FF6347" style={styles.starIcon} />
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={decreaseQuantity}>
+              <Image source={require('../assets/rscMenu/disminuir.png')} style={styles.buttonIcon} />
+            </TouchableOpacity>
+            <CustomText style={styles.quantity} fontWeight='Bold'>{quantity}</CustomText>
+            <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
+              <Image source={require('../assets/rscMenu/aumentar.png')} style={styles.buttonIcon} />
+            </TouchableOpacity>
+            <CustomText style={styles.price} fontWeight='Bold'>${product.precio}.00</CustomText>
+          </View>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
+              <CustomText style={styles.OrderText} fontWeight='SemiBold'>Ordenar</CustomText>
+            </TouchableOpacity>
+          </View>
+          <ReviewsSection
+            reviews={reviews}
+            review={review}
+            setReview={setReview}
+            rating={rating}
+            setRating={setRating}
+            addReview={addReview}
+            averageRating={averageRating}
+            keyboardVisible={keyboardVisible}
+          />
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={decreaseQuantity}>
-            <Image source={require('../assets/rscMenu/disminuir.png')} style={styles.buttonIcon} />
-          </TouchableOpacity>
-          <Text style={styles.quantity}>{quantity}</Text>
-          <TouchableOpacity style={styles.button} onPress={increaseQuantity}>
-            <Image source={require('../assets/rscMenu/aumentar.png')} style={styles.buttonIcon} />
-          </TouchableOpacity>
-          <Text style={styles.price}>${product.precio}.00</Text>
-        </View>
-        <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.imageButton} onPress={navigateToOrderScreen}>
-                        <CustomText style={styles.OrderText} fontWeight='SemiBold'>Ordenar</CustomText>
-                    </TouchableOpacity>
-          <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-            <Icon
-              name={isFavorite ? 'heart' : 'heart-o'}
-              size={27}
-              color={isFavorite ? '#FF6347' : '#FF6347'}
-              style={[styles.favoriteIcon]}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.separatorReviews} />
-        <View style={styles.containerDescription}>
-          <CustomText style={styles.TextDescription} fontWeight='Bold'>Descripción</CustomText>
-          <CustomText style={styles.description} fontWeight='Medium'>{product.descripcion}</CustomText>
-        </View>
-        <ReviewsSection
-          reviews={reviews}
-          review={review}
-          setReview={setReview}
-          rating={rating}
-          setRating={setRating}
-          addReview={addReview}
-          averageRating={averageRating}
-          keyboardVisible={keyboardVisible}
-        />
       </ScrollView>
       {!keyboardVisible && <BottomMenuBar />}
     </KeyboardAvoidingView>
@@ -293,6 +301,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     position: 'relative',
   },
+  roudedcontainer: {
+    borderRadius: 15, 
+    marginTop: -15,
+    backgroundColor: 'white',
+    elevation: 5,
+  },
   backButton: {
     marginRight: 10,
     paddingTop: 10,
@@ -302,33 +316,32 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   category: {
-    fontSize: 22,
+    fontSize: 15,
     textAlign: 'center',
-    marginTop: 10,
-    color: '#FF6347',
+    color: '#8B8B8B',
   },
   name: {
-    fontSize: 30,
+    fontSize: 20,
     textAlign: 'center',
     marginVertical: 10,
   },
   image: {
     width: '100%',
-    height: 230,
-    resizeMode: 'contain',
+    height: 300, // Increased height to cover more area
+    resizeMode: 'cover', // Ensures the image covers its container proportionally
     alignSelf: 'center',
   },
   sellerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginVertical: 20,
-    paddingLeft: 30,
+    marginTop: 25,
+    paddingLeft: 15,
   },
   sellerImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 10,
     marginRight: 10,
   },
   sellerInfoContainer: {
@@ -338,7 +351,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sellerName: {
-    fontSize: 20,
+    fontSize: 17,
     textDecorationLine: 'underline',
     flexShrink: 1,
     maxWidth: '80%',
@@ -346,21 +359,20 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 40,
+    marginTop: 5,
   },
   ratingText: {
-    fontSize: 20,
+    fontSize: 17,
   },
   starIcon: {
-    marginTop: 1,
     marginHorizontal: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginVertical: 10,
-    paddingLeft: 20,
+    marginVertical: 20,
+    alignSelf: 'center',
   },
   button: {
     width: 50,
@@ -398,13 +410,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   imageButton: {
-    width: '70%',
+    width: '90%',
     height: 40,
     backgroundColor: '#FF6347',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
-    marginLeft: 30,
+    alignSelf: 'center',
   },
   imageButtonIcon: {
     width: 25,
@@ -412,8 +424,12 @@ const styles = StyleSheet.create({
   },
   favoriteButton: {
     position: 'absolute',
-    top: 3,
-    right: 45,
+    top: 40, // Adjust the top value so it aligns better with the category
+    right: 15, // Adjust spacing as per your layout needs
+    zIndex: 1, // Ensures it stays above other elements
+    backgroundColor: '#FFF3F1',
+    borderRadius: 50,
+    padding: 5,
   },
   favoriteIcon: {
     margin: 3,
@@ -426,16 +442,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   containerDescription: {
-    paddingLeft: 30,
-    paddingRight: 30,
+    alignSelf: 'left',
+    paddingHorizontal: 15,
   },
   TextDescription: {
-    fontSize: 25,
-    textAlign: 'center',
+    fontSize: 14,
+    textAlign: 'left',
     marginBottom: 10,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     textAlign: 'justify',
   },
   OrderText: {
@@ -453,6 +469,13 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     flex: 1,
+    borderWidth: 1,
+    borderColor: '#DBDBDB',
+    width: '20%',
+    padding: 5,
+    marginLeft: 10,
+    borderRadius: 50,
+    marginTop: 10,
   },
   separator: {
     height: 1,
@@ -460,6 +483,11 @@ const styles = StyleSheet.create({
     width: '80%',
     alignSelf: 'center',
     marginTop: 20,
+  },
+  fixedStars: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
 });
 

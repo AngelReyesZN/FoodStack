@@ -83,8 +83,6 @@ const AddProductsScreen = ({ navigation }) => {
   };
 
   const handlePublishProduct = async () => {
-    navigation.navigate('LoadProduct');
-
     if (productName && productPrice && productUnits && productImage && productCategory && productDescription) {
       try {
         // Subir la imagen a Firebase Storage
@@ -177,6 +175,7 @@ const AddProductsScreen = ({ navigation }) => {
               <Picker.Item label="Frituras" value="Frituras" />
               <Picker.Item label="Dulces" value="Dulces" />
               <Picker.Item label="Comida" value="Comida" />
+              <Picker.Item label="Bebidas" value="Bebidas" />
               <Picker.Item label="Postres" value="Postres" />
               <Picker.Item label="Dispositivos" value="Dispositivos" />
               <Picker.Item label="Otros" value="Otros" />

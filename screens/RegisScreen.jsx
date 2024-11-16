@@ -84,7 +84,6 @@ const RegisScreen = ({ navigation }) => {
   };
 
   const handleRegistro = async () => {
-    navigation.navigate('Success');
     // Validar campos
     validateField('expediente', expediente);
     validateField('nombreUsuario', nombreUsuario);

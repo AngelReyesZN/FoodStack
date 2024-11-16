@@ -83,9 +83,8 @@ const MyReviewsScreen = () => {
                   <StarRating
                     maxStars={5}
                     rating={review.calificacionResena}
-                    onStarPress={() => {}}
-                    starSize={16}
-                    color={'#FF6347'}
+                    onStarPress={() => { }}
+                    starSize={13}
                   />
                 </View>
               </View>
@@ -153,11 +152,12 @@ const styles = StyleSheet.create({
   productImage: {
     width: 120,
     height: 120,
-    borderTopLeftRadius: 10, 
-    borderBottomLeftRadius: 10, 
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
   },
   reviewDetails: {
     flex: 1,
+    padding: 5,
   },
   productInfo: {
     justifyContent: 'space-between',
