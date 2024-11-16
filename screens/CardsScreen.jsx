@@ -7,6 +7,7 @@ import CustomText from '../components/CustomText';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
+import Header from '../components/Header';
 
 const CardsScreen = () => {
   const [titular, setTitular] = useState('');
@@ -115,14 +116,7 @@ const CardsScreen = () => {
   return (
     <View style={styles.container}>
       <TopBar/>
-      <View style={styles.headerContainer}>
-        <View style={styles.backButtonContainer}>
-          <BackButton />
-        </View>
-        <View style={styles.titleContainer}>
-          <CustomText variant='title'>Mis tarjetas</CustomText>
-        </View>
-      </View>
+      <Header title="Mis Tarjetas" showBackButton={true} />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Image
           source={require('../assets/cardImage.png')}

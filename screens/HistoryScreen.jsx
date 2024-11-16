@@ -7,6 +7,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import CustomText from '../components/CustomText';
 import { AntDesign } from '@expo/vector-icons';
+import CustomText2 from '../components/CustomText2';
 
 const HistoryScreen = ({navigation}) => {
   const [orders, setOrders] = useState([]);
@@ -159,7 +160,7 @@ const HistoryScreen = ({navigation}) => {
             style={[styles.sectionHeader, isPurchasesOpen ? styles.sectionHeaderOpen : styles.sectionHeaderClosed]}
             onPress={() => setIsPurchasesOpen(!isPurchasesOpen)}
           >
-            <CustomText style={styles.sectionHeaderText} variant={'title'}>Compras</CustomText>
+            <CustomText2 style={styles.sectionHeaderText} variant={'title'}>Compras</CustomText2>
             <AntDesign
               name={isPurchasesOpen ? 'up' : 'down'}
               size={16}
@@ -187,7 +188,7 @@ const HistoryScreen = ({navigation}) => {
             onPress={() => setIsSalesOpen(!isSalesOpen)}
           >
 
-            <CustomText style={styles.sectionHeaderText} variant={'title'}>Ventas</CustomText>
+            <CustomText2 style={styles.sectionHeaderText} variant={'title'}>Ventas</CustomText2>
             <AntDesign
               name={isSalesOpen ? 'up' : 'down'}
               size={16}

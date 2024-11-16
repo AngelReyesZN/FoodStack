@@ -7,25 +7,15 @@ import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import CustomText from '../components/CustomText';
+import Header from '../components/Header';
 
+const icon = require('../assets/rscMenu/campana.png'); // Importa la imagen de notificaciones
 const NotificationsScreen = () => {
   const [notificaciones, setNotificaciones] = useState([]);
 
   const renderHeader = () => (
     <View>
-      <View style={styles.headerContainer}>
-        <View style={styles.backButtonContainer}>
-          <BackButton />
-        </View>
-        <View style={styles.titleContainer}>
-          <CustomText style={styles.title} fontWeight="SemiBold">
-            Notificaciones
-          </CustomText>
-        </View>
-        <View style={styles.bellcon}>
-          <Image source={require('../assets/rscMenu/campana.png')} style={{ width: 30, height: 30 }} />
-        </View>
-      </View>
+      <Header title="Notificaciones" showBackButton={true} icon={icon}/>
       <View style={styles.separator} />
       <TouchableOpacity style={styles.clearButton} onPress={() => setNotificaciones([])}>
         <CustomText style={styles.clearButtonText}>Limpiar notificaciones</CustomText>

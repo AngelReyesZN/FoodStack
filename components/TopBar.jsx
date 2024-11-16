@@ -4,6 +4,7 @@ import CustomText from '../components/CustomText';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import SearchBar from '../components/SearchBar'; // Importa el componente SearchBar
+import CustomText2 from "./CustomText2";
 
 const TopBar = ({ title, showBackButton, showSearchBar, navigation }) => {
   return (
@@ -27,9 +28,9 @@ const TopBar = ({ title, showBackButton, showSearchBar, navigation }) => {
         <SearchBar />
       ) : (
         <View style={styles.titleContainer}>
-          <CustomText style={styles.text} variant='caption'>
+          <CustomText2 style={styles.text} variant='caption'>
             {showBackButton ? title : 'Food Stack'}
-          </CustomText>
+          </CustomText2>
         </View>
       )}
       <View style={styles.rightContainer} />
