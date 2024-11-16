@@ -74,8 +74,8 @@ const MainProductCard = ({ product, navigation }) => {
           {product.nombre.length > 14 ? product.nombre.substring(0, 14) : product.nombre}
         </CustomText>
         <CustomText style={styles.descripcion}>
-          {product.descripcion.substring(0, 20)}
-          {product.descripcion.length > 20 ? '...' : ''}
+          {product.descripcion.substring(0, 14)}
+          {product.descripcion.length > 14 ? '...' : ''}
         </CustomText>
       </View>
       <View style={styles.bottomContainer}>
