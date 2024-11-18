@@ -100,7 +100,7 @@ const InfoSeller = ({ route, navigation }) => {
   };
   
   if (!seller) {
-    return <Text>Cargando...</Text>;
+    return <CustomText>Cargando...</CustomText>;
   }
 
   return (

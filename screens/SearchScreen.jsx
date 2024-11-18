@@ -73,15 +73,6 @@ const SearchResults = ({ route }) => {
     </TouchableOpacity>
   );
 
-  const categories = [
-    { key: 'Comida', icon: require('../assets/SearchScreenIcons/comida.png') },
-    { key: 'Bebidas', icon: require('../assets/SearchScreenIcons/bebida.png') },
-    { key: 'Frituras', icon: require('../assets/SearchScreenIcons/frituras.png') },
-    { key: 'Postres', icon: require('../assets/SearchScreenIcons/postres.png') },
-    { key: 'Dulces', icon: require('../assets/SearchScreenIcons/Dulces.png') },
-    { key: 'Dispositivos', icon: require('../assets/SearchScreenIcons/Dispositivos.png') },
-  ];
-
   const renderCategoryIcon = ({ item }) => (
     <TouchableOpacity 
       onPress={() => handleCategorySelect(item.key)} 
@@ -180,17 +171,6 @@ const SearchResults = ({ route }) => {
         <CustomText style={styles.noResultsText}>No se encontraron productos</CustomText>
       )}
 
-      <View style={styles.recentContainer}>
-        <View style={styles.leftSection}>
-          <Image source={require('../assets/search.png')} style={styles.searchImage} />
-          <CustomText style={styles.searchText} variant='subtitle'>Explorar Categorías</CustomText>
-        </View>
-      </View>
-      <FlatList
-        data={categories}
-        renderItem={renderCategoryIcon}
-        keyExtractor={(item) => item.key}
-      />
     </View>
   );
 };

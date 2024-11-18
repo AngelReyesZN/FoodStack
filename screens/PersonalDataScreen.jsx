@@ -250,11 +250,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginTop: 20,
-    width: '90%',
+    width: '100%',
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 15,
   },
   label: {
     fontSize: 17,
