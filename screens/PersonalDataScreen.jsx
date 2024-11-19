@@ -62,7 +62,8 @@ const PersonalDataScreen = ({ navigation }) => {
     const cleanedPhone = formData.phone.replace(/\D/g, ''); // Solo números
     
     if (isEditing.phone && cleanedPhone.length !== 10) {
-      return setError('El número de teléfono debe tener 10 dígitos');
+      setError('El número de teléfono debe tener 10 dígitos');
+      return;
     }
   
     const updatedData = {
@@ -155,7 +156,7 @@ const UserInfoSection = ({
       <CustomText style={styles.label} fontWeight='Medium'>Expediente</CustomText>
       <CustomText style={styles.userInfo}>{user.expediente}</CustomText>
       <CustomText style={styles.label} fontWeight='Medium'>Teléfono</CustomText>
-      <CustomText
+      <TextInput
         style={styles.inputBox}
         value={formData.phone}
         onChangeText={(text) => setFormData((prev) => ({ ...prev, phone: text }))}
