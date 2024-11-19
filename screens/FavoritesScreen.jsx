@@ -4,7 +4,6 @@ import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc, getDocs, query, where, collection, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import BackButton from '../components/BackButton';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import MainProductCard from '../components/MainProductCard';
 import CustomText from '../components/CustomText';
@@ -24,12 +23,22 @@ const FavoritesScreen = () => {
         if (!userSnapshot.empty) {
           const userDoc = userSnapshot.docs[0];
           const favRefs = userDoc.data().favoritos || [];
-          const favs = await Promise.all(favRefs.map(async (ref) => {
-            const productDoc = await getDoc(ref);
-            return { id: ref.id, ...productDoc.data() };
-          }));
-          setFavorites(favs);
-          setInitialFavorites(favs);
+          const favs = await Promise.all(
+            favRefs.map(async (ref) => {
+              const productDoc = await getDoc(ref);
+              if (productDoc.exists()) {
+                return { id: ref.id, ...productDoc.data() };
+              } else {
+                // Si el producto ha sido eliminado, remuévelo de los favoritos
+                await updateDoc(userDoc.ref, {
+                  favoritos: arrayRemove(ref)
+                });
+                return null;
+              }
+            })
+          );
+          setFavorites(favs.filter(fav => fav !== null)); // Filtra productos eliminados
+          setInitialFavorites(favs.filter(fav => fav !== null));
         }
       } catch (error) {
         console.error('Error al cargar favoritos:', error);
@@ -78,16 +87,20 @@ const FavoritesScreen = () => {
         setPendingChanges((prev) => [...prev, { type: 'remove', productId }]);
         return prevFavorites.filter((fav) => fav.id !== productId);
       } else {
-        setPendingChanges((prev) => [...prev, { type: 'add', productId }]);
         const addedProduct = initialFavorites.find((product) => product.id === productId);
-        return [...prevFavorites, addedProduct];
+        if (addedProduct) {
+          setPendingChanges((prev) => [...prev, { type: 'add', productId }]);
+          return [...prevFavorites, addedProduct];
+        }
+        return prevFavorites; // Si no existe, no se agrega
       }
     });
   };
 
   const renderItem = ({ item }) => {
+    if (!item) return null; // Verificación para evitar productos nulos
+
     const isFavorite = favorites.some((fav) => fav.id === item.id);
-    
     return (
       <MainProductCard 
         product={item} 
@@ -112,9 +125,9 @@ const FavoritesScreen = () => {
           numColumns={2}
           ListFooterComponent={<View style={{ height: 60 }} />}
           keyExtractor={item => item.id.toString()}
-          key={2} // Cambia la propiedad key para forzar una nueva renderización
+          key={2}
           contentContainerStyle={[styles.productList, { paddingBottom: 100 }]}
-          columnWrapperStyle={styles.columnWrapper} // Estilo para las columnas
+          columnWrapperStyle={styles.columnWrapper}
         />
       )}
       <BottomMenuBar isMenuScreen={true} />
@@ -130,16 +143,12 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // Centra los elementos horizontalmente
+    justifyContent: 'center',
     paddingHorizontal: 20,
     marginTop: 20,
     width: '90%',
-    alignSelf: 'center', // Centra el contenedor horizontal
+    alignSelf: 'center',
     marginVertical: 10,
-  },
-  titleContainer: {
-    flex: 1,
-    alignItems: 'center', // Centra el título horizontalmente
   },
   title: {
     fontSize: 22,
@@ -164,55 +173,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   columnWrapper: {
-    justifyContent: 'space-between', // Espacio entre las columnas
-  },
-  productItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    marginBottom: 10,
-    borderRadius: 10,
-    padding: 10,
-    marginHorizontal: 10,
-    elevation: 5,
-    position: 'relative',
-    flex: 1, // Asegura que los elementos ocupen el mismo espacio
-    maxWidth: '48%', // Ajusta el ancho máximo de los elementos
-  },
-  productImage: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  productPrice: {
-    fontSize: 14,
-    color: '#030A8C',
-    marginBottom: 5,
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  favoriteIconWrapper: {
-    borderWidth: 1,
-    borderColor: '#D6DBDE',
-    borderRadius: 6,
-    padding: 3,
-  },
-  backButtonContainer: {
-    position: 'absolute',
-    left: 0,
+    justifyContent: 'space-between',
   },
 });
 
