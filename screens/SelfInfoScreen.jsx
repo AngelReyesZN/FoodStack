@@ -10,11 +10,9 @@ import { db } from '../services/firebaseConfig';
 import MainProductCardEdit from '../components/MainProductCardEdit';
 import CustomText from '../components/CustomText';
 
-
 const SelfInfoScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [userProducts, setUserProducts] = useState([]);
-  const [favorites, setFavorites] = useState([]);
   const [userRating, setUserRating] = useState('-');
   const [timeInApp, setTimeInApp] = useState('');
   const [timeMeasure, setTimeMeasure] = useState('');
@@ -32,35 +30,37 @@ const SelfInfoScreen = ({ navigation }) => {
             const userData = userDoc.data();
             setUser({ ...userData, id: userDoc.id });
 
-            // Calculate time in app
-            const registrationDate = userData.registroFecha.toDate();
-            const now = new Date();
-            const timeDiff = now - registrationDate;
-            const daysInApp = timeDiff / (1000 * 60 * 60 * 24);
+            // Calcular el tiempo en la aplicación
+            const registrationDate = userData.registroFecha?.toDate();
+            if (registrationDate) {
+              const now = new Date();
+              const timeDiff = now - registrationDate;
+              const daysInApp = timeDiff / (1000 * 60 * 60 * 24);
 
-            let timeDisplay, timeMeasure;
-            if (daysInApp < 31) {
-              timeDisplay = `${Math.floor(daysInApp)}`;
-              timeMeasure = 'días';
-            } else if (daysInApp < 365) {
-              const monthsInApp = (daysInApp / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
-              timeDisplay = `${monthsInApp}`;
-              timeMeasure = 'meses';
-            } else {
-              const yearsInApp = (daysInApp / 365).toFixed(1);
-              timeDisplay = `${yearsInApp}`;
-              timeMeasure = 'años';
+              let timeDisplay, timeMeasure;
+              if (daysInApp < 31) {
+                timeDisplay = `${Math.floor(daysInApp)}`;
+                timeMeasure = 'días';
+              } else if (daysInApp < 365) {
+                const monthsInApp = (daysInApp / 30.44).toFixed(1); // Aproximadamente 30.44 días en un mes
+                timeDisplay = `${monthsInApp}`;
+                timeMeasure = 'meses';
+              } else {
+                const yearsInApp = (daysInApp / 365).toFixed(1);
+                timeDisplay = `${yearsInApp}`;
+                timeMeasure = 'años';
+              }
+              setTimeInApp(timeDisplay);
+              setTimeMeasure(timeMeasure);
             }
-            setTimeInApp(timeDisplay);
-            setTimeMeasure(timeMeasure);
 
-            // Fetch user products after setting user data
+            // Fetch user products
             fetchUserProducts(userDoc.id);
           } else {
             console.error('No se encontró el usuario con el correo:', currentUser.email);
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error('Error al obtener datos del usuario:', error);
         }
       }
     };
@@ -69,18 +69,26 @@ const SelfInfoScreen = ({ navigation }) => {
       try {
         const q = query(collection(db, 'productos'), where('vendedorRef', '==', doc(db, 'usuarios', userId)));
         const querySnapshot = await getDocs(q);
-        const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setUserProducts(products);
+        if (!querySnapshot.empty) {
+          const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setUserProducts(products);
 
-        const productRefs = products.map(product => doc(db, 'productos', product.id));
-        const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
-        const reviewsSnapshot = await getDocs(reviewsQuery);
-        const reviews = reviewsSnapshot.docs.map(doc => doc.data());
-        const ratings = reviews.map(review => review.calificacionResena);
+          const productRefs = products.map(product => doc(db, 'productos', product.id));
+          if (productRefs.length > 0) {
+            const reviewsQuery = query(collection(db, 'resenas'), where('productoRef', 'in', productRefs));
+            const reviewsSnapshot = await getDocs(reviewsQuery);
+            if (!reviewsSnapshot.empty) {
+              const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+              const ratings = reviews.map(review => review.calificacionResena);
 
-        if (ratings.length > 0) {
-          const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
-          setUserRating((totalRating / ratings.length).toFixed(1));
+              if (ratings.length > 0) {
+                const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+                setUserRating((totalRating / ratings.length).toFixed(1));
+              }
+            }
+          }
+        } else {
+          console.log('No se encontraron productos para este usuario.');
         }
       } catch (error) {
         console.error('Error al cargar los productos del usuario:', error);
@@ -90,17 +98,16 @@ const SelfInfoScreen = ({ navigation }) => {
     fetchUserData();
   }, []);
 
-
   const renderItem = ({ item }) => {
     if (item.cantidad <= 0 || !item.statusView) {
       return null; // No renderiza este item si la cantidad es 0 o si statusView es falso
     }
-  
+
     return (
       <MainProductCardEdit
-      product={item}
-      onEditPress={() => navigation.navigate('EditProduct', { productId: item.id })}
-    />
+        product={item}
+        onEditPress={() => navigation.navigate('EditProduct', { productId: item.id })}
+      />
     );
   };
 
@@ -146,7 +153,7 @@ const SelfInfoScreen = ({ navigation }) => {
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
           numColumns={2}
-          contentContainerStyle={[styles.productList, { paddingBottom: 80 }]} // Ajuste aquí
+          contentContainerStyle={[styles.productList, { paddingBottom: 80 }]}
         />
       )}
       <BottomMenuBar />
@@ -244,7 +251,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 4,
   },
-  
 });
 
 export default SelfInfoScreen;
