@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert } from 'react-native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
-import BackButton from '../components/BackButton.jsx';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { agregarNotificacion } from '../services/notifications';
@@ -223,10 +222,11 @@ const ProductScreen = ({ route }) => {
           />
         </TouchableOpacity>
 
-        {/* aqui va el contendor con border borderRadius */}
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Icon name="chevron-left" size={22} color="#FF6347" />
+        </TouchableOpacity>
 
         <View style={styles.roudedcontainer}>
-
           <CustomText style={styles.title} >
             <CustomText style={styles.category} fontWeight="Regular">{product.categoria}</CustomText>
           </CustomText>
@@ -308,9 +308,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   backButton: {
-    marginRight: 10,
-    paddingTop: 10,
-    paddingLeft: 15,
+    position: 'absolute',
+    top: 40, // Adjust the top value so it aligns better with the category
+    left: 15, // Adjust spacing as per your layout needs
+    zIndex: 1, // Ensures it stays above other elements
+    backgroundColor: '#FFF3F1',
+    borderRadius: 50,
+    padding: 5,
+    height: 40,
+    width: 40,
+    alignItems: 'center',
+    paddingRight: 10,
+    justifyContent: 'center',
   },
   scrollViewContent: {
     paddingBottom: 20,
