@@ -2,13 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Image, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, updateDoc, query, where, getDocs, collection } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, query, where, getDocs, collection, deleteDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 import { db } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import BackButton from '../components/BackButton';
 import { agregarNotificacion } from '../services/notifications'; // Importar la función
 import ErrorAlert from '../components/ErrorAlert'; // Importar el componente
 import Header from '../components/Header';
@@ -109,15 +108,13 @@ const EditProductScreen = ({ route, navigation }) => {
       const auth = getAuth();
       const user = auth.currentUser;
       const userDocRef = await getUserDocRef(user.email);
-
+  
       const productDocRef = doc(db, 'productos', productId);
-      await updateDoc(productDocRef, {
-        statusView: false,
-      });
-
+      await deleteDoc(productDocRef); // Cambiar de updateDoc a deleteDoc para eliminar el documento completo
+  
       // Agregar notificación para el usuario
       await agregarNotificacion(userDocRef, 'Has eliminado tu producto exitosamente');
-
+  
       Alert.alert('Éxito', 'Producto eliminado exitosamente.');
       navigation.goBack();
     } catch (error) {
@@ -125,6 +122,7 @@ const EditProductScreen = ({ route, navigation }) => {
       setError('Hubo un problema al eliminar el producto.');
     }
   };
+  
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
