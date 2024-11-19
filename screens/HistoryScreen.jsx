@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   listContainer: {
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   itemContainer: {
     padding: 15,

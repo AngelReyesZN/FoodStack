@@ -1,27 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native'; // Importa Image desde react-native
+import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native';
 import { db, auth } from '../services/firebaseConfig';
 import { collection, query, where, onSnapshot, doc, getDocs, updateDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useFocusEffect } from '@react-navigation/native';
 import TopBar from '../components/TopBar';
 import BottomMenuBar from '../components/BottomMenuBar';
-import BackButton from '../components/BackButton';
 import CustomText from '../components/CustomText';
 import Header from '../components/Header';
 
-const icon = require('../assets/rscMenu/campana.png'); // Importa la imagen de notificaciones
+const icon = require('../assets/rscMenu/campana.png');
+
 const NotificationsScreen = () => {
   const [notificaciones, setNotificaciones] = useState([]);
 
   const renderHeader = () => (
     <View>
-      <Header title="Notificaciones" showBackButton={true} icon={icon}/>
+      <Header title="Notificaciones" showBackButton={true} icon={icon} />
       <View style={styles.separator} />
-      <TouchableOpacity style={styles.clearButton} onPress={() => setNotificaciones([])}>
+      <TouchableOpacity style={styles.clearButton} onPress={handleClearNotifications}>
         <CustomText style={styles.clearButtonText}>Limpiar notificaciones</CustomText>
       </TouchableOpacity>
     </View>
   );
+
+  const handleClearNotifications = async () => {
+    try {
+      const userQuery = query(collection(db, 'usuarios'), where('correo', '==', auth.currentUser.email));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (!userSnapshot.empty) {
+        const userDocRef = userSnapshot.docs[0].ref;
+        const q = query(collection(db, 'notificaciones'), where('usuarioRef', '==', userDocRef));
+        const snapshot = await getDocs(q);
+
+        const batch = writeBatch(db);
+        snapshot.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+
+        setNotificaciones([]);
+      } else {
+        console.error('No se encontró el documento del usuario.');
+      }
+    } catch (error) {
+      console.error('Error al limpiar las notificaciones:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserNotifications = async () => {
@@ -31,7 +56,6 @@ const NotificationsScreen = () => {
 
         if (!userSnapshot.empty) {
           const userDocRef = userSnapshot.docs[0].ref;
-
           const q = query(collection(db, 'notificaciones'), where('usuarioRef', '==', userDocRef));
 
           const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -52,7 +76,6 @@ const NotificationsScreen = () => {
     fetchUserNotifications();
   }, []);
 
-  // Función para marcar todas las notificaciones como leídas al entrar en la pantalla
   useFocusEffect(
     React.useCallback(() => {
       const markAllAsRead = async () => {
@@ -98,7 +121,7 @@ const NotificationsScreen = () => {
           <CustomText style={styles.fechaHora}>{hora}</CustomText>
         </View>
         <TouchableOpacity style={styles.marcarComoLeidaButton} onPress={() => marcarComoLeida(item.id)}>
-          <CustomText style={styles.deleteLabel} >Eliminar</CustomText>
+          <CustomText style={styles.deleteLabel}>Eliminar</CustomText>
         </TouchableOpacity>
       </View>
     );
@@ -110,13 +133,12 @@ const NotificationsScreen = () => {
       {item.data.map((notificacion, index) => (
         <View key={notificacion.id}>
           {renderNotificacion({ item: notificacion })}
-          {/* Agrega un separador debajo de cada notificación, excepto la última */}
           {index < item.data.length - 1 && <View style={styles.separatorN} />}
         </View>
       ))}
     </View>
   );
-  
+
   const marcarComoLeida = async (id) => {
     try {
       const notificacionRef = doc(db, 'notificaciones', id);
@@ -140,24 +162,19 @@ const NotificationsScreen = () => {
         renderItem={renderGroup}
         keyExtractor={(item) => item.fecha}
         contentContainerStyle={styles.notificacionList}
-        ListHeaderComponent={renderHeader} // Inserta el header aquí
+        ListHeaderComponent={renderHeader}
       />
       <BottomMenuBar isMenuScreen={true} />
     </View>
   );
 };
+
 const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
-    paddingBottom: height * .1,
-  },
-  title: {
-    fontSize: 24,
-    color: '#000',
-    textAlign: 'center',
-    flex: 1,
+    paddingBottom: height * 0.1,
   },
   separator: {
     height: 1,
@@ -172,13 +189,6 @@ const styles = StyleSheet.create({
     width: '85%',
     alignSelf: 'center',
     marginTop: 12,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginTop: 15,
   },
   clearButton: {
     alignSelf: 'flex-end',
@@ -218,14 +228,11 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     textAlign: 'left',
     marginLeft: 10,
-    marginTop:23,
-  },
-  marcarComoLeidaButton: {  
+    marginTop: 23,
   },
   deleteLabel: {
     color: "#C3AFAF",
-    textDecorationLine: 'underline', // Subrayado
-
+    textDecorationLine: 'underline',
   },
 });
 

@@ -202,7 +202,7 @@ const ProductScreen = ({ route }) => {
   }, []);
 
   if (!product) {
-    return <Text>Cargando...</Text>;
+    return <CustomText>Cargando...</CustomText>;
   }
 
   return (

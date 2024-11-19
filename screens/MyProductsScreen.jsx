@@ -8,6 +8,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import MainProductCardEdit from '../components/MainProductCardEdit';
 import Header from '../components/Header';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import CustomText from '../components/CustomText';
 
 const MyProductsScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
@@ -57,7 +58,7 @@ const MyProductsScreen = ({ navigation }) => {
       <View style={styles.container}>
         <TopBar />
         <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={styles.loadingText}>Cargando productos...</Text>
+        <CustomText style={styles.loadingText}>Cargando productos...</CustomText>
         <BottomMenuBar isMenuScreen={true} />
       </View>
     );

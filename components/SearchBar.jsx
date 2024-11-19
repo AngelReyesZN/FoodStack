@@ -13,6 +13,10 @@ const SearchBar = () => {
     navigation.navigate('Search', { searchQuery });
   };
 
+  const handleFocus = () => {
+    navigation.navigate('Search', { searchQuery });
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -31,6 +35,7 @@ const SearchBar = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           onSubmitEditing={handleSearch}
+          onFocus={handleFocus} // Agregamos onFocus para manejar la navegación al hacer clic en el TextInput
         />
         <TouchableOpacity onPress={handleSearch} style={styles.iconContainer}>
           <Icon name="search" size={20} color="#AEAEAE" />

@@ -105,7 +105,7 @@ const SelfInfoScreen = ({ navigation }) => {
   };
 
   if (!user) {
-    return <Text>Cargando...</Text>;
+    return <CustomText>Cargando...</CustomText>;
   }
 
   return (
