@@ -178,7 +178,7 @@ const HistoryScreen = ({navigation}) => {
                   contentContainerStyle={styles.listContainer}
                 />
               ) : (
-                <CustomText style={styles.emptyText} fontWeight='Regular'>No hay ventas.</CustomText>
+                <CustomText style={styles.emptyText} fontWeight='Regular'>No hay compras.</CustomText>
               )}
             </View>
           )}

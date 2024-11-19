@@ -187,7 +187,7 @@ Instrucciones: ${instructions}`;
   };
 
   if (!product) {
-    return <Customtext>Cargando...</Customtext>;
+    return <CustomText>Cargando...</CustomText>;
   }
 
   return (
