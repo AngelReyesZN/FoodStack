@@ -4,7 +4,7 @@
     "slug": "FoodStack",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/FoodStackLogo.png",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
@@ -14,28 +14,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/FoodStackLogo.png",
+        "foregroundImage": "./assets/orangeIcon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.angelzn.FoodStack",
       "label": "FoodStack"
-
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-    [
-      "expo-font",
-      {
-        "fonts": ["node_modules/@expo-google-fonts/inter/Montserrat_700Bold.ttf"]
-      }
-    ]
-  ],
     "extra": {
       "eas": {
-        "projectId": "789d9091-1340-4689-af3e-df29950ee98b"
+        "projectId": "eadfbbe5-86d9-4112-b517-690d40e8572c"
       }
-    }
+    },
+    "owner": "angelzn"
   }
 }

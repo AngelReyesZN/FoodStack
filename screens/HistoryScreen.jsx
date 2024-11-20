@@ -89,28 +89,32 @@ const HistoryScreen = ({navigation}) => {
       hour: '2-digit',
       minute: '2-digit',
     });
-
+  
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{purchaseDate}</CustomText>
         <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
-          {item.producto && (
-            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
+          {item.producto ? (
+            <>
+              <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
+              <View style={styles.productDetails}>
+                <View style={styles.productHeader}>
+                  <CustomText style={styles.productName}>{item.producto.nombre}</CustomText>
+                </View>
+                <CustomText style={styles.productQuantity}>
+                  Cantidad: {item.cantidad} | <Text style={styles.productPrice}>${item.producto.precio}.00</Text>
+                </CustomText>
+              </View>
+            </>
+          ) : (
+            <CustomText style={styles.productUnavailableText}>Producto no disponible</CustomText>
           )}
-          <View style={styles.productDetails}>
-            <View style={styles.productHeader}>
-              <CustomText style={styles.productName}>{item.producto?.nombre}</CustomText>
-            </View>
-            <CustomText style={styles.productQuantity}>
-              Cantidad: {item.cantidad} | <Text style={styles.productPrice}>${item.producto?.precio}.00</Text>
-            </CustomText>
-          </View>
         </View>
       </View>
     );
   };
-
+  
   const renderSale = ({ item }) => {
     const saleDate = item.fecha.toDate().toLocaleString('es-MX', {
       day: '2-digit',
@@ -119,28 +123,32 @@ const HistoryScreen = ({navigation}) => {
       hour: '2-digit',
       minute: '2-digit',
     });
-
+  
     return (
       <View style={styles.itemContainer}>
         <CustomText style={styles.dateText}>{saleDate}</CustomText>
         <CustomText style={styles.orderIdText} fontWeight='Bold'>ID: {item.id}</CustomText>
         <View style={styles.productContainer}>
-          {item.producto && (
-            <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
+          {item.producto ? (
+            <>
+              <Image source={{ uri: item.producto.imagen }} style={styles.productImage} resizeMode="cover" />
+              <View style={styles.productDetails}>
+                <View style={styles.productHeader}>
+                  <CustomText style={styles.productName}>{item.producto.nombre}</CustomText>
+                </View>
+                <CustomText style={styles.productQuantity}>
+                  Cantidad: {item.cantidad} | <Text style={styles.productPrice}>${item.producto.precio}.00</Text>
+                </CustomText>
+              </View>
+            </>
+          ) : (
+            <CustomText style={styles.productUnavailableText}>Producto no disponible</CustomText>
           )}
-          <View style={styles.productDetails}>
-            <View style={styles.productHeader}>
-              <CustomText style={styles.productName}>{item.producto?.nombre}</CustomText>
-              
-            </View>
-            <CustomText style={styles.productQuantity}>
-              Cantidad: {item.cantidad} | <Text style={styles.productPrice}>${item.producto?.precio}.00</Text>
-            </CustomText>
-          </View>
         </View>
       </View>
     );
   };
+  
 
   if (loading) {
     return (
@@ -222,6 +230,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
   },
+  productUnavailableText: {
+    fontSize: 14,
+    color: '#B4B4B4',
+    textAlign: 'center',
+    marginVertical: 5,
+  },
+  
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',

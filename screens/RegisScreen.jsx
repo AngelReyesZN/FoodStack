@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Image, ScrollView, Dimensions,StatusBar, Modal } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Checkbox from 'expo-checkbox';
-import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, addDoc  } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { db, auth, storage } from '../services/firebaseConfig';
@@ -84,83 +84,87 @@ const RegisScreen = ({ navigation }) => {
   };
 
   const handleRegistro = async () => {
+    // Transformar el correo a minúsculas para evitar problemas
+    const lowerCaseCorreo = correo.toLowerCase();
+  
     // Validar campos
     validateField('expediente', expediente);
     validateField('nombreUsuario', nombreUsuario);
     validateField('telefono', telefono);
-    validateField('correo', correo);
-    validateEmail(correo);
+    validateField('correo', lowerCaseCorreo);
+    validateEmail(lowerCaseCorreo);
     validateField('contrasena', contrasena);
     validatePasswordLength(contrasena, 'contrasena');
     validateField('confirmarContrasena', confirmarContrasena);
     validatePasswordLength(confirmarContrasena, 'confirmarContrasena');
     validateField('descripcionUsuario', descripcionUsuario);
-
+  
     // Verificar si hay errores
     if (Object.keys(errors).length > 0) {
       setError('Por favor, completa todos los campos correctamente');
       return;
     }
-
+  
     if (contrasena !== confirmarContrasena) {
       setError('Las contraseñas no coinciden');
       return;
     }
-
+  
     if (telefono.length !== 10) {
       setError('El número de teléfono debe tener 10 dígitos');
       return;
     }
-
+  
     try {
       // Verificar si el expediente ya existe en Firestore
       const usersCollectionRef = collection(db, 'usuarios');
       const expedienteQuery = query(usersCollectionRef, where('expediente', '==', Number(expediente)));
       const expedienteSnapshot = await getDocs(expedienteQuery);
-
+  
       if (!expedienteSnapshot.empty) {
         setError('El expediente ya existe');
         return;
       }
-
-      const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
-      const user = userCredential.user;
-
-      await sendEmailVerification(user);
-
+  
+      // Subir imagen si existe
       let imageUrl = '';
       if (image) {
         const response = await fetch(image);
         const blob = await response.blob();
-        const storageRef = ref(storage, `usuarios/${user.uid}-profile`);
+        const storageRef = ref(storage, `usuarios/${Date.now()}-profile`);
         await uploadBytes(storageRef, blob);
         imageUrl = await getDownloadURL(storageRef);
       }
-
-      const usersSnapshot = await getDocs(usersCollectionRef);
-      const newUserId = `user${usersSnapshot.size + 1}`;
-
+  
       const telefonoConPrefijo = `52${telefono}`;
-
-      await setDoc(doc(db, 'usuarios', newUserId), {
+  
+      // Agregar el nuevo usuario a Firestore con un ID generado automáticamente
+      await addDoc(usersCollectionRef, {
         expediente: Number(expediente),
         nombre: nombreUsuario,
         telefono: telefonoConPrefijo,
         contrasena: contrasena,
         foto: imageUrl,
-        correo: correo,
+        correo: lowerCaseCorreo,
         descripcionUsuario: descripcionUsuario,
         statusCard: false,
         registroFecha: new Date(),
       });
-
-      // setError('Registro exitoso. Por favor, verifica tu correo electrónico antes de iniciar sesión.');
+  
+      // Si todo lo anterior se ejecutó correctamente, crear el usuario en Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, lowerCaseCorreo, contrasena);
+      const user = userCredential.user;
+      await sendEmailVerification(user);
+      
       navigation.navigate('Success');
+      
     } catch (error) {
       console.error("Error al registrar el usuario:", error);
       setError("Hubo un problema al registrar el usuario.");
     }
   };
+  
+  
 
   //! VISUAL ELEMENTS
 

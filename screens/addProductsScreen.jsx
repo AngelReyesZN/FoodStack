@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Picker } from '@react-native-picker/picker';
-import { collection, getDocs, query, where, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, doc, addDoc  } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, auth } from '../services/firebaseConfig';
 import TopBar from '../components/TopBar';
@@ -90,20 +90,13 @@ const AddProductsScreen = ({ navigation }) => {
         const blob = await response.blob();
         const storageRef = ref(storage, `productos/${Date.now()}-${productName}`);
         await uploadBytes(storageRef, blob);
-
+  
         // Obtener la URL de descarga de la imagen
         const imageUrl = await getDownloadURL(storageRef);
-
-        // Obtener la colección de productos
-        const productsCollectionRef = collection(db, 'productos');
-        const productsSnapshot = await getDocs(productsCollectionRef);
-
-        // Generar un nuevo ID secuencial para el producto
-        const newProductId = `producto${productsSnapshot.size + 1}`;
-
+  
         // Crear referencias a los documentos del usuario
         const userDocRef = doc(db, 'usuarios', userDocId);
-
+  
         const newProduct = {
           nombre: productName,
           precio: Number(productPrice),
@@ -115,13 +108,13 @@ const AddProductsScreen = ({ navigation }) => {
           vendedorRef: userDocRef,
           statusView: true,
         };
-
-        // Agregar el nuevo producto a Firestore
-        await setDoc(doc(db, 'productos', newProductId), newProduct);
-
+  
+        // Agregar el nuevo producto a Firestore con un ID generado automáticamente
+        await addDoc(collection(db, 'productos'), newProduct);
+  
         // Agregar notificación para el usuario
         await agregarNotificacion(userDocRef, 'Has publicado un producto con éxito');
-
+  
         // Navegar a la pantalla de productos cargados
         navigation.navigate('LoadProduct');
       } catch (error) {

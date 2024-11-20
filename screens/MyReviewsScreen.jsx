@@ -9,7 +9,7 @@ import BottomMenuBar from '../components/BottomMenuBar';
 import BackButton from '../components/BackButton';
 import StarRating from '../components/StarRating';
 import CustomText from '../components/CustomText'; // Importa tu componente de texto personalizado
-import Header from '../components/Header'; 
+import Header from '../components/Header';
 
 const MyReviewsScreen = () => {
   const [reviews, setReviews] = useState([]);
@@ -30,11 +30,13 @@ const MyReviewsScreen = () => {
           const loadedReviews = await Promise.all(reviewsSnapshot.docs.map(async reviewDoc => {
             const reviewData = reviewDoc.data();
             const productDoc = await getDoc(reviewData.productoRef);
-            const productData = productDoc.exists() ? productDoc.data() : {};
+
+            // Verificar si el producto existe
+            const productData = productDoc.exists() ? productDoc.data() : null;
 
             return {
               ...reviewData,
-              producto: productData,
+              producto: productData, // Será null si el producto no existe
               fechaResena: reviewData.fechaResena ? reviewData.fechaResena.toDate() : null,
             };
           }));
@@ -70,23 +72,34 @@ const MyReviewsScreen = () => {
         {reviews.map((review, index) => (
           <View key={index} style={styles.reviewItem}>
             <View style={styles.imageContainer}>
-              <Image source={{ uri: review.producto.imagen }} style={styles.productImage} />
+              {review.producto ? (
+                <Image source={{ uri: review.producto.imagen }} style={styles.productImage} />
+              ) : (
+                <CustomText style={styles.productNotFound}>Producto no disponible</CustomText>
+              )}
             </View>
             <View style={styles.reviewDetails}>
               <View style={styles.productInfo}>
-                <CustomText variant="subtitle" style={styles.productName}>{review.producto.nombre}</CustomText>
+                <CustomText variant="subtitle" style={styles.productName} fontWeight='SemiBold'>
+                  {review.producto ? review.producto.nombre : "Producto eliminado"}
+                </CustomText>
                 <View style={styles.rateDateContainer}>
                   <CustomText variant="caption" style={styles.reviewDate}>
                     {review.fechaResena ? review.fechaResena.toLocaleDateString() : 'Fecha desconocida'}
                   </CustomText>
-                  <View style={styles.verticalLine} />
-                  <StarRating
-                    maxStars={5}
-                    rating={review.calificacionResena}
-                    onStarPress={() => { }}
-                    starSize={13}
-                  />
+                  {review.producto && (
+                    <>
+                      <View style={styles.verticalLine} />
+                      <StarRating
+                        maxStars={5}
+                        rating={review.calificacionResena}
+                        onStarPress={() => { }}
+                        starSize={13}
+                      />
+                    </>
+                  )}
                 </View>
+
               </View>
               <View style={styles.reviewTextContainer}>
                 <CustomText variant="body" style={styles.reviewText}>{review.comentario}</CustomText>
@@ -105,6 +118,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+  },
+  productNotFound: {
+    color: '#666',
+    fontSize: 14,
+    textAlign: 'center',
+    padding: 15
   },
   title: {
     position: 'absolute',
@@ -165,8 +184,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   productName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 17,
     color: '#333',
     alignSelf: 'flex-start',
     marginBottom: 5,
